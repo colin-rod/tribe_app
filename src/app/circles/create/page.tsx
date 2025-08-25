@@ -93,13 +93,13 @@ export default function CreateCirclePage() {
 
       if (circleError) throw circleError
 
-      // Add creator as admin member
+      // Add creator as member - RBAC trigger will automatically assign owner role
       const { error: memberError } = await supabase
         .from('circle_members')
         .insert({
           circle_id: circle.id,
           user_id: user.id,
-          role: 'admin',
+          role: 'admin', // Use admin for now, RBAC will assign owner role
           join_method: 'admin_added',
           status: 'active'
         })

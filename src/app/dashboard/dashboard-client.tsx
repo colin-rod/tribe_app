@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import type { Profile, TribeWithMembers } from '@/types/database'
+import type { Profile, TribeWithMembers, CirclePermissions } from '@/types/database'
+import { getUserCirclePermissions } from '@/lib/rbac'
 
 interface DashboardClientProps {
   user: User
@@ -18,14 +19,30 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
   const [circleFilter, setCircleFilter] = useState<'all' | 'family' | 'community'>('all')
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [selectedPost, setSelectedPost] = useState<string | null>(null)
+  const [newComment, setNewComment] = useState('')
+  const [submittingComment, setSubmittingComment] = useState(false)
+  const [circlePermissions, setCirclePermissions] = useState<CirclePermissions | null>(null)
   const router = useRouter()
 
-  // Load posts for selected circle
+  // Load posts and permissions for selected circle
   useEffect(() => {
     if (selectedCircle) {
       loadPosts()
+      loadCirclePermissions()
     }
   }, [selectedCircle])
+
+  const loadCirclePermissions = async () => {
+    if (!selectedCircle || !user) return
+    
+    try {
+      const permissions = await getUserCirclePermissions(user.id, selectedCircle.id)
+      setCirclePermissions(permissions)
+    } catch (error) {
+      console.error('Error loading circle permissions:', error)
+    }
+  }
 
   const loadPosts = async () => {
     if (!selectedCircle) return
@@ -55,6 +72,104 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
     }
   }
 
+  const handleLikePost = async (postId: string) => {
+    try {
+      const existingLike = posts.find(p => p.id === postId)?.likes?.find((like: any) => like.user_id === user.id)
+      
+      if (existingLike) {
+        // Unlike the post
+        const { error } = await supabase
+          .from('likes')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', user.id)
+        
+        if (error) throw error
+        
+        // Update local state
+        setPosts(prevPosts => prevPosts.map(post => 
+          post.id === postId 
+            ? { ...post, likes: post.likes.filter((like: any) => like.user_id !== user.id) }
+            : post
+        ))
+      } else {
+        // Like the post
+        const { error } = await supabase
+          .from('likes')
+          .insert({ post_id: postId, user_id: user.id })
+        
+        if (error) throw error
+        
+        // Update local state
+        setPosts(prevPosts => prevPosts.map(post => 
+          post.id === postId 
+            ? { ...post, likes: [...(post.likes || []), { user_id: user.id }] }
+            : post
+        ))
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error)
+    }
+  }
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+
+      if (error) throw error
+
+      // Update local state
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== postId))
+      
+    } catch (error) {
+      console.error('Error deleting post:', error)
+      alert('Failed to delete post. Please try again.')
+    }
+  }
+
+  const handleAddComment = async (e: React.FormEvent, postId: string) => {
+    e.preventDefault()
+    if (!newComment.trim()) return
+
+    setSubmittingComment(true)
+    try {
+      const { data: comment, error } = await supabase
+        .from('comments')
+        .insert({
+          post_id: postId,
+          author_id: user.id,
+          content: newComment.trim()
+        })
+        .select(`
+          *,
+          profiles (first_name, last_name, avatar_url)
+        `)
+        .single()
+
+      if (error) throw error
+
+      // Update local state
+      setPosts(prevPosts => prevPosts.map(post => 
+        post.id === postId 
+          ? { ...post, comments: [...(post.comments || []), comment] }
+          : post
+      ))
+      
+      setNewComment('')
+    } catch (error) {
+      console.error('Error adding comment:', error)
+    } finally {
+      setSubmittingComment(false)
+    }
+  }
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/')
@@ -81,13 +196,31 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
             </div>
             
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
-                {profile?.first_name} {profile?.last_name}
-              </span>
+              {/* User Profile Info */}
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-blue-700">
+                    {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                  </span>
+                </div>
+                <div className="hidden md:block">
+                  <p className="text-sm font-medium text-gray-900">
+                    {profile?.first_name} {profile?.last_name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Sign Out Button */}
               <button
                 onClick={handleSignOut}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
                 Sign out
               </button>
             </div>
@@ -246,9 +379,24 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
                         style={{ backgroundColor: selectedCircle.color }}
                       />
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900">
-                          {selectedCircle.name}
-                        </h2>
+                        <div className="flex items-center space-x-3">
+                          <h2 className="text-xl font-semibold text-gray-900">
+                            {selectedCircle.name}
+                          </h2>
+                          {circlePermissions && circlePermissions.userRole !== 'none' && (
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              circlePermissions.isOwner 
+                                ? 'bg-purple-100 text-purple-700'
+                                : circlePermissions.isAdmin
+                                ? 'bg-blue-100 text-blue-700' 
+                                : circlePermissions.isModerator
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {circlePermissions.userRole}
+                            </span>
+                          )}
+                        </div>
                         {selectedCircle.description && (
                           <p className="text-sm text-gray-600 mt-1">
                             {selectedCircle.description}
@@ -264,18 +412,31 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
                       >
                         Create Circle
                       </button>
-                      <button
-                        onClick={() => router.push('/dashboard/invite')}
-                        className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                      >
-                        Invite
-                      </button>
-                      {selectedCircle && (
+                      
+                      {circlePermissions?.canInviteMembers && (
+                        <button
+                          onClick={() => router.push('/dashboard/invite')}
+                          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                          Invite Members
+                        </button>
+                      )}
+                      
+                      {circlePermissions?.canCreatePosts && selectedCircle && (
                         <button
                           onClick={() => router.push(`/circles/${selectedCircle.id}/post`)}
                           className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           New Post
+                        </button>
+                      )}
+                      
+                      {circlePermissions?.canUpdate && (
+                        <button
+                          onClick={() => router.push(`/circles/${selectedCircle.id}/edit`)}
+                          className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        >
+                          Circle Settings
                         </button>
                       )}
                     </div>
@@ -335,28 +496,185 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
                               🎉 {post.milestone_type.replace('_', ' ')}
                             </div>
                           )}
+
+                          {/* Media Display */}
+                          {post.media_urls && post.media_urls.length > 0 && (
+                            <div className="mb-4">
+                              {post.media_urls.length === 1 ? (
+                                // Single media item - full width
+                                <div className="rounded-lg overflow-hidden">
+                                  {post.media_urls[0].includes('.mp4') || post.media_urls[0].includes('.mov') || post.media_urls[0].includes('.webm') ? (
+                                    <video 
+                                      src={post.media_urls[0]} 
+                                      controls 
+                                      className="w-full max-h-96 object-cover"
+                                    />
+                                  ) : (
+                                    <img 
+                                      src={post.media_urls[0]} 
+                                      alt="Post media" 
+                                      className="w-full max-h-96 object-cover"
+                                    />
+                                  )}
+                                </div>
+                              ) : (
+                                // Multiple media items - grid layout
+                                <div className={`grid gap-2 rounded-lg overflow-hidden ${
+                                  post.media_urls.length === 2 ? 'grid-cols-2' : 
+                                  post.media_urls.length === 3 ? 'grid-cols-3' :
+                                  'grid-cols-2'
+                                }`}>
+                                  {post.media_urls.slice(0, 4).map((url: string, index: number) => (
+                                    <div key={index} className="relative">
+                                      {url.includes('.mp4') || url.includes('.mov') || url.includes('.webm') ? (
+                                        <video 
+                                          src={url} 
+                                          controls 
+                                          className="w-full h-32 object-cover"
+                                        />
+                                      ) : (
+                                        <img 
+                                          src={url} 
+                                          alt={`Post media ${index + 1}`} 
+                                          className="w-full h-32 object-cover"
+                                        />
+                                      )}
+                                      {/* Show +X more overlay on last item if there are more than 4 items */}
+                                      {index === 3 && post.media_urls.length > 4 && (
+                                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                          <span className="text-white text-lg font-semibold">
+                                            +{post.media_urls.length - 4}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                         
                         {/* Post Actions */}
                         <div className="px-6 py-3 border-t border-gray-200">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                              <button className="flex items-center space-x-1 text-gray-500 hover:text-red-500">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <button 
+                                onClick={() => handleLikePost(post.id)}
+                                className={`flex items-center space-x-1 transition-colors ${
+                                  post.likes?.some((like: any) => like.user_id === user.id) 
+                                    ? 'text-red-500' 
+                                    : 'text-gray-500 hover:text-red-500'
+                                }`}
+                              >
+                                <svg className="w-5 h-5" fill={
+                                  post.likes?.some((like: any) => like.user_id === user.id) ? 'currentColor' : 'none'
+                                } stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
                                 <span className="text-sm">{post.likes?.length || 0}</span>
                               </button>
                               
-                              <button className="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
+                              <button 
+                                onClick={() => setSelectedPost(selectedPost === post.id ? null : post.id)}
+                                className="flex items-center space-x-1 text-gray-500 hover:text-blue-500"
+                              >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                 </svg>
                                 <span className="text-sm">{post.comments?.length || 0}</span>
                               </button>
                             </div>
+
+                            {/* Post Management Actions */}
+                            <div className="flex items-center space-x-2">
+                              {/* Edit - only post author or moderators+ */}
+                              {(post.author_id === user.id || circlePermissions?.canModerate) && (
+                                <button
+                                  onClick={() => router.push(`/circles/${selectedCircle.id}/post/${post.id}/edit`)}
+                                  className="p-1 text-gray-500 hover:text-blue-500"
+                                  title="Edit post"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                              )}
+                              
+                              {/* Delete - only post author or moderators+ */}
+                              {(post.author_id === user.id || circlePermissions?.canModerate) && (
+                                <button
+                                  onClick={() => handleDeletePost(post.id)}
+                                  className="p-1 text-gray-500 hover:text-red-500"
+                                  title="Delete post"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
+
+                        {/* Comments Section */}
+                        {selectedPost === post.id && (
+                          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                            {/* Existing Comments */}
+                            {post.comments && post.comments.length > 0 && (
+                              <div className="space-y-3 mb-4">
+                                {post.comments.map((comment: any) => (
+                                  <div key={comment.id} className="flex space-x-3">
+                                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                      <span className="text-xs font-medium text-gray-600">
+                                        {comment.profiles?.first_name?.[0]}{comment.profiles?.last_name?.[0]}
+                                      </span>
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="bg-white rounded-lg px-3 py-2">
+                                        <p className="text-sm font-medium text-gray-900">
+                                          {comment.profiles?.first_name} {comment.profiles?.last_name}
+                                        </p>
+                                        <p className="text-sm text-gray-700">{comment.content}</p>
+                                      </div>
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        {new Date(comment.created_at).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {/* Add Comment Form - only if user can create comments */}
+                            {circlePermissions?.canRead && (
+                              <form onSubmit={(e) => handleAddComment(e, post.id)} className="flex space-x-3">
+                              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                <span className="text-xs font-medium text-gray-600">
+                                  {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                                </span>
+                              </div>
+                              <div className="flex-1 flex space-x-2">
+                                <input
+                                  type="text"
+                                  value={newComment}
+                                  onChange={(e) => setNewComment(e.target.value)}
+                                  placeholder="Add a comment..."
+                                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  disabled={submittingComment}
+                                />
+                                <button
+                                  type="submit"
+                                  disabled={!newComment.trim() || submittingComment}
+                                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {submittingComment ? 'Posting...' : 'Post'}
+                                </button>
+                              </div>
+                              </form>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))
                   )}

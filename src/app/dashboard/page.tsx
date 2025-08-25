@@ -32,29 +32,28 @@ export default function DashboardPage() {
 
         setUser(user)
 
-        // Get user's circles
-        const { data: userCircles, error: circlesError } = await supabase
+        // Get user's circles with a simpler approach to avoid recursion
+        const { data: userMemberships, error: membershipsError } = await supabase
           .from('circle_members')
-          .select(`
-            *,
-            circles (
-              *,
-              circle_members (
-                *,
-                profiles (
-                  first_name,
-                  last_name,
-                  avatar_url
-                )
-              )
-            )
-          `)
+          .select('*, circles(*)')
           .eq('user_id', user.id)
           .eq('status', 'active')
 
-        if (circlesError) {
-          console.error('Error fetching circles:', circlesError)
+        if (membershipsError) {
+          console.error('Error fetching memberships:', membershipsError)
+          console.error('Full error details:', JSON.stringify(membershipsError, null, 2))
         }
+
+        // Transform to the expected format
+        const userCircles = userMemberships?.map(membership => ({
+          ...membership,
+          circles: {
+            ...membership.circles,
+            circle_members: [] // We'll load this separately if needed
+          }
+        })) || []
+
+        console.log('Fetched user circles:', userCircles)
 
         setUserCircles(userCircles || [])
 

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'member' | 'viewer'
+export type UserRole = 'owner' | 'admin' | 'moderator' | 'member' | 'viewer'
 export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'expired'
 export type CircleType = 'family' | 'community' | 'topic' | 'local'
 export type CirclePrivacy = 'private' | 'public' | 'invite_only'
@@ -172,4 +172,70 @@ export interface CircleJoinRequest {
   requested_at: string
   reviewed_at: string | null
   reviewed_by: string | null
+}
+
+// RBAC System Types
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'moderate' | 'invite' | 'admin'
+export type ResourceType = 'circle' | 'post' | 'comment' | 'member' | 'invitation'
+
+export interface Permission {
+  id: string
+  name: string
+  resource_type: ResourceType
+  action: PermissionAction
+  description: string | null
+  created_at: string
+}
+
+export interface Role {
+  id: string
+  name: string
+  description: string | null
+  is_system_role: boolean
+  created_at: string
+}
+
+export interface RolePermission {
+  id: string
+  role_id: string
+  permission_id: string
+  created_at: string
+  role?: Role
+  permission?: Permission
+}
+
+export interface UserRoleAssignment {
+  id: string
+  user_id: string
+  role_id: string
+  context_type: string
+  context_id: string | null
+  granted_by: string | null
+  granted_at: string
+  expires_at: string | null
+  role?: Role
+}
+
+// RBAC Utility Types
+export interface RBACContext {
+  type: 'circle' | 'tribe' | 'global'
+  id?: string
+}
+
+export interface UserPermissions {
+  [key: string]: boolean
+}
+
+export interface CirclePermissions {
+  canRead: boolean
+  canUpdate: boolean
+  canDelete: boolean
+  canCreatePosts: boolean
+  canModerate: boolean
+  canInviteMembers: boolean
+  canManageMembers: boolean
+  isOwner: boolean
+  isAdmin: boolean
+  isModerator: boolean
+  userRole: UserRole | 'none'
 }
