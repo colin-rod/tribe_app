@@ -130,9 +130,9 @@ export default function CreateBranchPage() {
 
       // Add creator as member with basic member entry
       const { error: memberError } = await supabase
-        .from('circle_members')
+        .from('branch_members')
         .insert({
-          circle_id: circle.id,
+          branch_id: branch.id,
           user_id: user.id,
           role: 'owner', // Keep for backward compatibility, but RBAC is source of truth
           join_method: 'admin_added',
@@ -145,8 +145,8 @@ export default function CreateBranchPage() {
       router.push('/dashboard')
       
     } catch (error: any) {
-      console.error('Error creating circle:', error)
-      alert(`Failed to create circle: ${error.message}`)
+      console.error('Error creating branch:', error)
+      alert(`Failed to create branch: ${error.message}`)
     } finally {
       setSubmitting(false)
     }
@@ -175,7 +175,7 @@ export default function CreateBranchPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h1 className="text-lg font-semibold text-gray-900">Create New Circle</h1>
+              <h1 className="text-lg font-semibold text-gray-900">Create New Branch</h1>
             </div>
           </div>
         </div>
@@ -186,22 +186,22 @@ export default function CreateBranchPage() {
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow">
           <div className="p-6 space-y-6">
             
-            {/* Circle Type Selection */}
+            {/* Branch Type Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                What type of circle do you want to create?
+                What type of branch do you want to create?
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={() => {
-                    setCircleType('family')
+                    setBranchType('family')
                     setPrivacy('private')
                     setIsDiscoverable(false)
                     setAutoApprove(false)
                   }}
                   className={`p-6 text-left rounded-lg border-2 transition-colors ${
-                    circleType === 'family' 
+                    branchType === 'family' 
                       ? 'border-blue-500 bg-blue-50' 
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -210,23 +210,23 @@ export default function CreateBranchPage() {
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                       <span className="text-xl">👨‍👩‍👧‍👦</span>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900">Family Circle</h3>
+                    <h3 className="text-lg font-medium text-gray-900">Family Branch</h3>
                   </div>
                   <p className="text-sm text-gray-600">
-                    Private circles for sharing family moments, child updates, and memories with specific family members.
+                    Private branches for sharing family moments, child updates, and memories with specific family members.
                   </p>
                 </button>
                 
                 <button
                   type="button"
                   onClick={() => {
-                    setCircleType('community')
+                    setBranchType('community')
                     setPrivacy('public')
                     setIsDiscoverable(true)
                     setAutoApprove(true)
                   }}
                   className={`p-6 text-left rounded-lg border-2 transition-colors ${
-                    circleType === 'community' 
+                    branchType === 'community' 
                       ? 'border-green-500 bg-green-50' 
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -235,7 +235,7 @@ export default function CreateBranchPage() {
                     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                       <span className="text-xl">🌍</span>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900">Community Circle</h3>
+                    <h3 className="text-lg font-medium text-gray-900">Community Branch</h3>
                   </div>
                   <p className="text-sm text-gray-600">
                     Connect with other parents around shared interests, local communities, or parenting stages.
@@ -244,34 +244,34 @@ export default function CreateBranchPage() {
               </div>
             </div>
 
-            {/* Tribe Selection */}
-            {userTribes.length > 1 && (
+            {/* Tree Selection */}
+            {userTrees.length > 1 && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Select Tribe for this Circle *
+                  Select Tree for this Branch *
                 </label>
                 <div className="space-y-2">
-                  {userTribes.map((tribeData) => (
-                    <label key={tribeData.tribe_id} className="flex items-center">
+                  {userTrees.map((treeData) => (
+                    <label key={treeData.tree_id} className="flex items-center">
                       <input
                         type="radio"
-                        name="tribe"
-                        value={tribeData.tribe_id}
-                        checked={selectedTribeId === tribeData.tribe_id}
-                        onChange={(e) => setSelectedTribeId(e.target.value)}
+                        name="tree"
+                        value={treeData.tree_id}
+                        checked={selectedTreeId === treeData.tree_id}
+                        onChange={(e) => setSelectedTreeId(e.target.value)}
                         className="mr-3 text-blue-600"
                       />
                       <div>
                         <div className="font-medium text-gray-900">
-                          {tribeData.tribes?.name}
-                          {tribeData.tribe_id === primaryTribeId && (
+                          {treeData.trees?.name}
+                          {treeData.tree_id === primaryTreeId && (
                             <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                               Primary
                             </span>
                           )}
                         </div>
-                        {tribeData.tribes?.description && (
-                          <div className="text-sm text-gray-500">{tribeData.tribes.description}</div>
+                        {treeData.trees?.description && (
+                          <div className="text-sm text-gray-500">{treeData.trees.description}</div>
                         )}
                       </div>
                     </label>
@@ -282,12 +282,12 @@ export default function CreateBranchPage() {
 
             {/* Basic Information */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Circle Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Branch Information</h3>
               
               <div className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Circle Name *
+                    Branch Name *
                   </label>
                   <input
                     type="text"
@@ -295,7 +295,7 @@ export default function CreateBranchPage() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder={circleType === 'family' ? "Emma's Circle" : "New Dads in Brooklyn"}
+                    placeholder={branchType === 'family' ? "Emma's Branch" : "New Dads in Brooklyn"}
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -309,14 +309,14 @@ export default function CreateBranchPage() {
                     rows={3}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder={circleType === 'family' ? "Share updates and memories about Emma" : "A supportive community for new fathers in Brooklyn"}
+                    placeholder={branchType === 'family' ? "Share updates and memories about Emma" : "A supportive community for new fathers in Brooklyn"}
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Circle Color
+                    Branch Color
                   </label>
                   <div className="flex space-x-2">
                     {colorOptions.map((colorOption) => (
@@ -336,7 +336,7 @@ export default function CreateBranchPage() {
             </div>
 
             {/* Community-specific settings */}
-            {circleType === 'community' && (
+            {branchType === 'community' && (
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Community Settings</h3>
                 
@@ -385,12 +385,12 @@ export default function CreateBranchPage() {
                           name="privacy"
                           value="public"
                           checked={privacy === 'public'}
-                          onChange={(e) => setPrivacy(e.target.value as CirclePrivacy)}
+                          onChange={(e) => setPrivacy(e.target.value as BranchPrivacy)}
                           className="mr-3"
                         />
                         <div>
                           <div className="font-medium text-sm">Public</div>
-                          <div className="text-xs text-gray-500">Anyone can find and join this circle</div>
+                          <div className="text-xs text-gray-500">Anyone can find and join this branch</div>
                         </div>
                       </label>
                       
@@ -400,7 +400,7 @@ export default function CreateBranchPage() {
                           name="privacy"
                           value="invite_only"
                           checked={privacy === 'invite_only'}
-                          onChange={(e) => setPrivacy(e.target.value as CirclePrivacy)}
+                          onChange={(e) => setPrivacy(e.target.value as BranchPrivacy)}
                           className="mr-3"
                         />
                         <div>
@@ -435,7 +435,7 @@ export default function CreateBranchPage() {
                         />
                         <div>
                           <div className="font-medium text-sm">Show in public directory</div>
-                          <div className="text-xs text-gray-500">Help people discover this circle</div>
+                          <div className="text-xs text-gray-500">Help people discover this branch</div>
                         </div>
                       </label>
                     </div>
@@ -458,10 +458,10 @@ export default function CreateBranchPage() {
               </button>
               <button
                 type="submit"
-                disabled={submitting || !name.trim() || !selectedTribeId}
+                disabled={submitting || !name.trim() || !selectedTreeId}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Creating Circle...' : 'Create Circle'}
+                {submitting ? 'Creating Branch...' : 'Create Branch'}
               </button>
             </div>
           </div>

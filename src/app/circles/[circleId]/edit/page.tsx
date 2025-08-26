@@ -3,28 +3,28 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { rbac, getUserCirclePermissions, getCrossTribeAccess, createCrossTribeAccess, revokeCrossTribeAccess } from '@/lib/rbac'
+import { rbac, getUserBranchPermissions, getCrossTreeAccess, createCrossTreeAccess, revokeCrossTreeAccess } from '@/lib/rbac'
 import type { User } from '@supabase/supabase-js'
-import type { CirclePermissions, CrossTribeAccess } from '@/types/database'
+import type { BranchPermissions, CrossTreeAccess } from '@/types/database'
 
 interface PageProps {
   params: Promise<{ circleId: string }>
 }
 
-export default function CircleEditPage({ params }: PageProps) {
+export default function BranchEditPage({ params }: PageProps) {
   const [user, setUser] = useState<User | null>(null)
-  const [circle, setCircle] = useState<any>(null)
+  const [branch, setBranch] = useState<any>(null)
   const [members, setMembers] = useState<any[]>([])
-  const [permissions, setPermissions] = useState<CirclePermissions | null>(null)
-  const [crossTribeAccess, setCrossTribeAccess] = useState<CrossTribeAccess[]>([])
-  const [availableTribes, setAvailableTribes] = useState<any[]>([])
+  const [permissions, setPermissions] = useState<BranchPermissions | null>(null)
+  const [crossTreeAccess, setCrossTreeAccess] = useState<CrossTreeAccess[]>([])
+  const [availableTrees, setAvailableTrees] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<'general' | 'members' | 'permissions' | 'danger'>('general')
   const router = useRouter()
   
   // Unwrap the params promise
-  const { circleId } = use(params)
+  const { circleId: branchId } = use(params)
 
   // Form state
   const [name, setName] = useState('')
@@ -35,7 +35,7 @@ export default function CircleEditPage({ params }: PageProps) {
   const [autoApproveMembers, setAutoApproveMembers] = useState(false)
 
   useEffect(() => {
-    const loadCircleData = async () => {
+    const loadBranchData = async () => {
       try {
         // Get authenticated user
         const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -47,21 +47,21 @@ export default function CircleEditPage({ params }: PageProps) {
 
         setUser(user)
 
-        // Get circle data
-        const { data: circleData, error: circleError } = await supabase
-          .from('circles')
+        // Get branch data
+        const { data: branchData, error: branchError } = await supabase
+          .from('branches')
           .select('*')
-          .eq('id', circleId)
+          .eq('id', branchId)
           .single()
 
-        if (circleError || !circleData) {
-          console.error('Error loading circle:', circleError)
+        if (branchError || !branchData) {
+          console.error('Error loading branch:', branchError)
           router.push('/dashboard')
           return
         }
 
-        // Check if user has permission to edit this circle using RBAC
-        const userPermissions = await getUserCirclePermissions(user.id, circleId)
+        // Check if user has permission to edit this branch using RBAC
+        const userPermissions = await getUserBranchPermissions(user.id, branchId)
         
         if (!userPermissions.canUpdate) {
           router.push('/dashboard')
@@ -70,17 +70,17 @@ export default function CircleEditPage({ params }: PageProps) {
 
         setPermissions(userPermissions)
 
-        setCircle(circleData)
-        setName(circleData.name)
-        setDescription(circleData.description || '')
-        setColor(circleData.color || '#3B82F6')
-        setPrivacy(circleData.privacy || 'private')
-        setIsDiscoverable(circleData.is_discoverable || false)
-        setAutoApproveMembers(circleData.auto_approve_members || false)
+        setBranch(branchData)
+        setName(branchData.name)
+        setDescription(branchData.description || '')
+        setColor(branchData.color || '#3B82F6')
+        setPrivacy(branchData.privacy || 'private')
+        setIsDiscoverable(branchData.is_discoverable || false)
+        setAutoApproveMembers(branchData.auto_approve_members || false)
 
-        // Load circle members
+        // Load branch members
         const { data: membersData, error: membersError } = await supabase
-          .from('circle_members')
+          .from('branch_members')
           .select(`
             id,
             user_id,
@@ -95,38 +95,38 @@ export default function CircleEditPage({ params }: PageProps) {
               avatar_url
             )
           `)
-          .eq('circle_id', circleId)
+          .eq('branch_id', branchId)
           .order('added_at', { ascending: false })
 
         if (!membersError && membersData) {
           setMembers(membersData)
         }
 
-        // Load cross-tribe access data
-        const crossTribeData = await getCrossTribeAccess(circleId)
-        setCrossTribeAccess(crossTribeData)
+        // Load cross-tree access data
+        const crossTreeData = await getCrossTreeAccess(branchId)
+        setCrossTreeAccess(crossTreeData)
 
-        // Load available tribes for cross-tribe invitations (exclude current circle's tribe)
-        const { data: allTribes } = await supabase
-          .from('tribes')
+        // Load available trees for cross-tree invitations (exclude current branch's tree)
+        const { data: allTrees } = await supabase
+          .from('trees')
           .select('id, name, description')
-          .neq('id', circleData.tribe_id)
+          .neq('id', branchData.tree_id)
           .eq('is_active', true)
 
-        if (allTribes) {
-          setAvailableTribes(allTribes)
+        if (allTrees) {
+          setAvailableTrees(allTrees)
         }
 
       } catch (error) {
-        console.error('Error loading circle data:', error)
+        console.error('Error loading branch data:', error)
         router.push('/dashboard')
       } finally {
         setLoading(false)
       }
     }
 
-    loadCircleData()
-  }, [circleId, router])
+    loadBranchData()
+  }, [branchId, router])
 
   const handleSaveGeneral = async () => {
     if (!circle || !user) return
