@@ -3,11 +3,15 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import { rbac } from '@/lib/rbac'
+import { getUserPrimaryTribe, getUserTribes } from '@/lib/tribes'
 import type { User } from '@supabase/supabase-js'
 import type { CircleType, CirclePrivacy } from '@/types/database'
 
 export default function CreateCirclePage() {
   const [user, setUser] = useState<User | null>(null)
+  const [userTribes, setUserTribes] = useState<any[]>([])
+  const [primaryTribeId, setPrimaryTribeId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
@@ -22,6 +26,7 @@ export default function CreateCirclePage() {
   const [location, setLocation] = useState('')
   const [autoApprove, setAutoApprove] = useState(false)
   const [isDiscoverable, setIsDiscoverable] = useState(false)
+  const [selectedTribeId, setSelectedTribeId] = useState<string | null>(null)
 
   // Available categories
   const [categories, setCategories] = useState<any[]>([])
@@ -33,7 +38,24 @@ export default function CreateCirclePage() {
         router.push('/auth/login')
         return
       }
+      
       setUser(user)
+
+      // Get user's tribes
+      const tribes = await getUserTribes(user.id)
+      setUserTribes(tribes)
+
+      // Get user's primary tribe
+      const primaryTribe = await getUserPrimaryTribe(user.id)
+      setPrimaryTribeId(primaryTribe)
+      setSelectedTribeId(primaryTribe) // Default to primary tribe
+
+      // If user has no tribes, redirect to onboarding
+      if (!tribes.length || !primaryTribe) {
+        router.push('/onboarding')
+        return
+      }
+
       setLoading(false)
     }
 
@@ -68,15 +90,16 @@ export default function CreateCirclePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || !name.trim()) return
+    if (!user || !name.trim() || !selectedTribeId) return
 
     setSubmitting(true)
 
     try {
-      // Create the circle
+      // Create the circle within the selected tribe
       const { data: circle, error: circleError } = await supabase
         .from('circles')
         .insert({
+          tribe_id: selectedTribeId, // Required tribe association
           name: name.trim(),
           description: description.trim() || null,
           type: circleType,
@@ -93,13 +116,25 @@ export default function CreateCirclePage() {
 
       if (circleError) throw circleError
 
-      // Add creator as member - RBAC trigger will automatically assign owner role
+      // Assign owner role using RBAC system (circle creator automatically gets owner role)
+      const ownerAssigned = await rbac.assignRole(
+        user.id,
+        'owner',
+        { type: 'circle', id: circle.id },
+        user.id
+      )
+
+      if (!ownerAssigned) {
+        throw new Error('Failed to assign owner role')
+      }
+
+      // Add creator as member with basic member entry
       const { error: memberError } = await supabase
         .from('circle_members')
         .insert({
           circle_id: circle.id,
           user_id: user.id,
-          role: 'admin', // Use admin for now, RBAC will assign owner role
+          role: 'owner', // Keep for backward compatibility, but RBAC is source of truth
           join_method: 'admin_added',
           status: 'active'
         })
@@ -208,6 +243,42 @@ export default function CreateCirclePage() {
                 </button>
               </div>
             </div>
+
+            {/* Tribe Selection */}
+            {userTribes.length > 1 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Select Tribe for this Circle *
+                </label>
+                <div className="space-y-2">
+                  {userTribes.map((tribeData) => (
+                    <label key={tribeData.tribe_id} className="flex items-center">
+                      <input
+                        type="radio"
+                        name="tribe"
+                        value={tribeData.tribe_id}
+                        checked={selectedTribeId === tribeData.tribe_id}
+                        onChange={(e) => setSelectedTribeId(e.target.value)}
+                        className="mr-3 text-blue-600"
+                      />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {tribeData.tribes?.name}
+                          {tribeData.tribe_id === primaryTribeId && (
+                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                              Primary
+                            </span>
+                          )}
+                        </div>
+                        {tribeData.tribes?.description && (
+                          <div className="text-sm text-gray-500">{tribeData.tribes.description}</div>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Basic Information */}
             <div>
@@ -387,7 +458,7 @@ export default function CreateCirclePage() {
               </button>
               <button
                 type="submit"
-                disabled={submitting || !name.trim()}
+                disabled={submitting || !name.trim() || !selectedTribeId}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? 'Creating Circle...' : 'Create Circle'}

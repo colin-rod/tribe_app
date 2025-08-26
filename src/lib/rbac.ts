@@ -6,7 +6,8 @@ import type {
   UserPermissions,
   UserRoleAssignment,
   Role,
-  Permission
+  Permission,
+  CrossTribeAccess
 } from '@/types/database'
 
 export class RBACService {
@@ -196,7 +197,7 @@ export class RBACService {
         userRole
       }
 
-      // If no role, check if it's a public circle for read access
+      // If no role in the circle's tribe, check for cross-tribe access or public circle
       if (userRole === 'none') {
         const { data: circle } = await supabase
           .from('circles')
@@ -204,7 +205,18 @@ export class RBACService {
           .eq('id', circleId)
           .single()
         
+        // Check for public access
         permissions.canRead = circle?.privacy === 'public'
+        
+        // Check for cross-tribe access
+        const hasCrossTribeAccess = await hasUserCrossTribeAccess(userId, circleId)
+        if (hasCrossTribeAccess) {
+          // Get cross-tribe permissions - for now, assume basic permissions
+          permissions.canRead = true
+          permissions.canCreatePosts = true
+          // Cross-tribe users typically can't manage or moderate
+        }
+        
         return permissions
       }
 
@@ -376,4 +388,97 @@ export async function isUserCircleAdmin(userId: string, circleId: string): Promi
 export async function isUserCircleOwner(userId: string, circleId: string): Promise<boolean> {
   const permissions = await rbac.getCirclePermissions(userId, circleId)
   return permissions.isOwner
+}
+
+// Cross-tribe access functions
+export async function createCrossTribeAccess(
+  circleId: string, 
+  tribeId: string, 
+  invitedBy: string,
+  permissions: { can_read: boolean; can_comment: boolean; can_like: boolean }
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('cross_tribe_access')
+      .insert({
+        circle_id: circleId,
+        tribe_id: tribeId,
+        invited_by: invitedBy,
+        permissions,
+        status: 'active'
+      })
+
+    return !error
+  } catch (error) {
+    console.error('Error creating cross-tribe access:', error)
+    return false
+  }
+}
+
+export async function getCrossTribeAccess(circleId: string): Promise<CrossTribeAccess[]> {
+  try {
+    const { data, error } = await supabase
+      .from('cross_tribe_access')
+      .select(`
+        *,
+        tribes (
+          id,
+          name,
+          description
+        )
+      `)
+      .eq('circle_id', circleId)
+      .eq('status', 'active')
+
+    if (error) {
+      console.error('Error fetching cross-tribe access:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error getting cross-tribe access:', error)
+    return []
+  }
+}
+
+export async function revokeCrossTribeAccess(crossTribeAccessId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('cross_tribe_access')
+      .update({ status: 'revoked' })
+      .eq('id', crossTribeAccessId)
+
+    return !error
+  } catch (error) {
+    console.error('Error revoking cross-tribe access:', error)
+    return false
+  }
+}
+
+export async function hasUserCrossTribeAccess(userId: string, circleId: string): Promise<boolean> {
+  try {
+    // Get user's tribes
+    const { data: userTribes, error: tribesError } = await supabase
+      .from('tribe_members')
+      .select('tribe_id')
+      .eq('user_id', userId)
+
+    if (tribesError || !userTribes) return false
+
+    // Check if any of user's tribes have cross-tribe access to this circle
+    const tribeIds = userTribes.map(tm => tm.tribe_id)
+    
+    const { data: crossTribeAccess, error: accessError } = await supabase
+      .from('cross_tribe_access')
+      .select('id')
+      .eq('circle_id', circleId)
+      .in('tribe_id', tribeIds)
+      .eq('status', 'active')
+
+    return !accessError && crossTribeAccess && crossTribeAccess.length > 0
+  } catch (error) {
+    console.error('Error checking cross-tribe access:', error)
+    return false
+  }
 }

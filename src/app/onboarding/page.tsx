@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { rbac } from '@/lib/rbac'
 import { useRouter } from 'next/navigation'
 
 export default function OnboardingPage() {
@@ -53,44 +54,59 @@ export default function OnboardingPage() {
   const createTribeAndCircles = async () => {
     if (!user) return
 
+    if (!tribeName.trim()) {
+      alert('Please enter a tribe name to continue')
+      return
+    }
+
     setLoading(true)
     try {
       let tribe = null
       
-      // Create optional tribe if user provided tribe info
-      if (tribeName.trim()) {
-        const { data: tribeData, error: tribeError } = await supabase
-          .from('tribes')
-          .insert({
-            name: tribeName,
-            description: tribeDescription,
-            created_by: user.id
-          })
-          .select()
-          .single()
+      // Create required tribe
+      const { data: tribeData, error: tribeError } = await supabase
+        .from('tribes')
+        .insert({
+          name: tribeName.trim(),
+          description: tribeDescription.trim() || null,
+          created_by: user.id
+        })
+        .select()
+        .single()
 
-        if (tribeError) throw tribeError
-        tribe = tribeData
+      if (tribeError) throw tribeError
+      tribe = tribeData
 
-        // Add user as admin of the tribe
-        const { error: memberError } = await supabase
-          .from('tribe_members')
-          .insert({
-            tribe_id: tribe.id,
-            user_id: user.id,
-            role: 'admin'
-          })
+      // Assign owner role using RBAC system (tribe creator gets owner role)
+      const ownerAssigned = await rbac.assignRole(
+        user.id,
+        'owner',
+        { type: 'tribe', id: tribe.id },
+        user.id
+      )
 
-        if (memberError) throw memberError
+      if (!ownerAssigned) {
+        throw new Error('Failed to assign owner role to tribe')
       }
 
-      // Create circles (they can exist independently now)
+      // Add user as member for backward compatibility
+      const { error: memberError } = await supabase
+        .from('tribe_members')
+        .insert({
+          tribe_id: tribe.id,
+          user_id: user.id,
+          role: 'owner'
+        })
+
+      if (memberError) throw memberError
+
+      // Create circles within the tribe
       for (const circle of circles) {
         if (circle.name.trim()) {
           const { data: newCircle, error: circleError } = await supabase
             .from('circles')
             .insert({
-              tribe_id: tribe?.id || null, // Optional tribe association
+              tribe_id: tribe.id, // Required tribe association
               name: circle.name,
               description: circle.description,
               color: circle.color,
@@ -105,13 +121,25 @@ export default function OnboardingPage() {
 
           if (circleError) throw circleError
 
-          // Add user to the circle
+          // Assign owner role using RBAC system (circle creator gets owner role)
+          const ownerAssigned = await rbac.assignRole(
+            user.id,
+            'owner',
+            { type: 'circle', id: newCircle.id },
+            user.id
+          )
+
+          if (!ownerAssigned) {
+            throw new Error('Failed to assign owner role to circle')
+          }
+
+          // Add user to circle_members for backward compatibility
           const { error: circleMemberError } = await supabase
             .from('circle_members')
             .insert({
               circle_id: newCircle.id,
               user_id: user.id,
-              role: 'admin',
+              role: 'owner',
               join_method: 'admin_added',
               status: 'active'
             })
@@ -149,7 +177,7 @@ export default function OnboardingPage() {
           Welcome to Tribe!
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Let's set up your family tribe
+          Every family needs a tribe. Let's create yours!
         </p>
       </div>
 
@@ -158,22 +186,23 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Create Your Family Tribe (Optional)</h3>
+                <h3 className="text-lg font-medium text-gray-900">Create Your Family Tribe</h3>
                 <p className="mt-1 text-sm text-gray-600">
-                  A tribe helps organize family-specific circles, but you can also create community circles independently
+                  Your tribe is your family's home base. All your circles will live within your tribe, and you can share special circles with other families.
                 </p>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Tribe Name (Optional)
+                  Tribe Name *
                 </label>
                 <input
                   type="text"
                   value={tribeName}
                   onChange={(e) => setTribeName(e.target.value)}
-                  placeholder="e.g., The Smith Family (leave blank to skip)"
+                  placeholder="e.g., The Smith Family"
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  required
                 />
               </div>
               
@@ -344,10 +373,10 @@ export default function OnboardingPage() {
                 
                 <button
                   onClick={createTribeAndCircles}
-                  disabled={loading || !circles.some(c => c.name.trim())}
+                  disabled={loading || !tribeName.trim() || !circles.some(c => c.name.trim())}
                   className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Creating...' : 'Create Tribe'}
+                  {loading ? 'Creating...' : 'Create Tribe & Circles'}
                 </button>
               </div>
             </div>

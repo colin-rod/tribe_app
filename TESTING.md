@@ -1,11 +1,14 @@
 # Tribe App Testing Guide
 
-This document provides comprehensive testing scenarios for the Tribe app's core functionality.
+This document provides comprehensive testing scenarios for the Tribe app's tribe-first architecture with RBAC permissions.
 
 ## 🗂️ **Table of Contents**
 - [Prerequisites](#prerequisites)
-- [Authentication Flow](#authentication-flow)
-- [Circle Creation](#circle-creation)
+- [Authentication & Onboarding](#authentication--onboarding)
+- [Tribe Management](#tribe-management)
+- [Circle Creation & Management](#circle-creation--management)
+- [RBAC Permissions Testing](#rbac-permissions-testing)
+- [Cross-Tribe Functionality](#cross-tribe-functionality)
 - [Post Creation & Media](#post-creation--media)
 - [Real-time Features](#real-time-features)
 - [Profile System](#profile-system)
@@ -20,19 +23,22 @@ This document provides comprehensive testing scenarios for the Tribe app's core 
 ### Setup Checklist
 - [ ] Supabase project created and configured
 - [ ] Environment variables set in `.env.local`
-- [ ] Database migration run (`20241225_circles_first_architecture.sql`)
+- [ ] Database migrations run (especially `20250826_implement_rbac_functions.sql`)
 - [ ] Development server running (`npm run dev`)
 - [ ] Browser dev tools open (F12) for debugging
 
-### Test User Account
-Create a test account with: `test+circles@yourdomain.com`
+### Test User Accounts
+Create multiple test accounts:
+- `test+tribe1@yourdomain.com` (Primary tribe owner)
+- `test+tribe2@yourdomain.com` (Secondary tribe owner) 
+- `test+member@yourdomain.com` (Tribe member)
 
 ---
 
-## 🔐 **Authentication Flow**
+## 🔐 **Authentication & Onboarding**
 
-### Test Case 1: New User Signup
-**Scenario:** First-time user registration
+### Test Case 1: New User Signup & Tribe Creation
+**Scenario:** First-time user registration with mandatory tribe creation
 
 **Steps:**
 1. Navigate to `http://localhost:3000`
@@ -40,97 +46,262 @@ Create a test account with: `test+circles@yourdomain.com`
 3. Fill registration form:
    - First name: "Test"
    - Last name: "User"
-   - Email: `test+circles@yourdomain.com`
+   - Email: `test+tribe1@yourdomain.com`
    - Password: "testpassword123"
 4. Click "Create account"
 5. Check email for confirmation link
 6. Click confirmation link
+7. **Onboarding Page**: Fill required tribe form:
+   - Tribe name: "Smith Family"
+   - Description: "Our family's home base"
+8. Click "Create Tribe & Continue"
 
 **Expected Result:**
 - [ ] User receives confirmation email
-- [ ] Confirmation redirects to dashboard
-- [ ] Console shows: "Loading dashboard data..." then "Dashboard data loaded successfully"
-- [ ] User sees empty state with "Create Circle" button
+- [ ] Confirmation redirects to onboarding (not dashboard)
+- [ ] Tribe creation form shows as required (no "Optional" label)
+- [ ] Form validation prevents submission without tribe name
+- [ ] After tribe creation, redirects to dashboard
+- [ ] Dashboard shows tribe-centric layout with "Smith Family" section
+- [ ] User automatically has 'owner' role in created tribe
 
 ### Test Case 2: Returning User Login
-**Scenario:** User with existing account signs in
+**Scenario:** User with existing tribe signs in
 
 **Steps:**
 1. Navigate to `http://localhost:3000/auth/login`
-2. Enter credentials
+2. Enter credentials for `test+tribe1@yourdomain.com`
 3. Click "Sign in"
 
 **Expected Result:**
 - [ ] Console shows: "Attempting sign in with: [email]"
 - [ ] Console shows: "Sign in successful, redirecting to dashboard"
 - [ ] Redirects to dashboard
-- [ ] Shows user's existing circles (if any)
+- [ ] Shows user's tribe(s) with circles organized underneath
+- [ ] Dashboard displays tribe-centric layout (not circle-type filtering)
 
 ---
 
-## 🎪 **Circle Creation**
+## 👥 **Tribe Management**
 
-### Test Case 3: Create Family Circle
-**Scenario:** User creates a private family circle
+### Test Case 3: Tribe Overview Page
+**Scenario:** User accesses tribe management interface
 
 **Steps:**
-1. From dashboard, click "Create Circle" (purple button)
-2. Select "Family Circle" card
+1. From dashboard, click "Manage Tribes" or navigate to `/tribes`
+2. View list of user's tribes
+3. Note role badges (owner/admin/member)
+4. Click "Manage" button for owned/admin tribes
+
+**Expected Result:**
+- [ ] `/tribes` page shows all user's tribes
+- [ ] Each tribe shows correct role badge
+- [ ] Created date displayed correctly
+- [ ] "Manage" button only visible for owners/admins
+- [ ] Empty state shown if no tribes exist
+- [ ] Back navigation to dashboard works
+
+### Test Case 4: Tribe Settings Access
+**Scenario:** Test tribe-level permissions and settings
+
+**Steps:**
+1. As tribe owner, access `/tribes/[tribeId]/settings`
+2. Try accessing as non-owner (should redirect)
+3. Check available settings tabs
+4. Test tribe member management
+
+**Expected Result:**
+- [ ] Only tribe owners/admins can access settings
+- [ ] Non-authorized users redirected or see permission error
+- [ ] Settings show tribe information, members, and permissions
+- [ ] Member management reflects RBAC roles correctly
+
+---
+
+## 🎪 **Circle Creation & Management**
+
+### Test Case 5: Create Circle with Tribe Selection
+**Scenario:** User creates a circle within their tribe
+
+**Steps:**
+1. From dashboard, click "Create Circle"
+2. **Tribe Selection**: Choose from dropdown "Smith Family"
 3. Fill out form:
    - Name: "Emma's Circle"
    - Description: "Updates and memories about Emma"
+   - Privacy: "private"
    - Color: Select blue
 4. Click "Create Circle"
 
 **Expected Result:**
-- [ ] Form shows family-specific UI (privacy locked to private)
-- [ ] Community settings section not visible
-- [ ] Console shows successful creation
+- [ ] Tribe selection dropdown populated with user's tribes
+- [ ] If user has only one tribe, it's pre-selected
+- [ ] Form requires tribe selection (validation error if empty)
+- [ ] Console shows successful creation with tribe_id
 - [ ] Redirects to dashboard
-- [ ] New circle appears in "Family Circles" section
-- [ ] Circle has blue color indicator
+- [ ] New circle appears under "Smith Family" tribe section
+- [ ] User automatically gets 'owner' role in circle
 
-### Test Case 4: Create Community Circle
-**Scenario:** User creates a discoverable community circle
+### Test Case 6: Create Public Circle with Discovery Settings
+**Scenario:** User creates a public circle within their tribe
 
 **Steps:**
 1. Click "Create Circle"
-2. Select "Community Circle" card
+2. Select tribe: "Smith Family"  
 3. Fill out form:
-   - Name: "New Dads Brooklyn"
-   - Description: "Support group for new fathers in Brooklyn"
+   - Name: "Brooklyn New Dads"
+   - Description: "Support group for new fathers"
+   - Privacy: "public"
    - Category: Select "parenting"
    - Location: "Brooklyn, NY"
-   - Privacy: Keep "Public"
-   - Check both "Auto-approve" and "Show in directory"
+   - Check "Auto-approve" and "Show in directory"
 4. Click "Create Circle"
 
 **Expected Result:**
-- [ ] Form shows community-specific settings
-- [ ] Privacy options visible and functional
+- [ ] Public circles still require tribe assignment
+- [ ] Privacy options work correctly 
 - [ ] Category dropdown populated from database
-- [ ] Auto-approve and discoverability options work
-- [ ] New circle appears in "Community Circles" section
+- [ ] Auto-approve and discoverability options functional
+- [ ] New circle appears under selected tribe section
+- [ ] Public circles can be discovered by non-tribe members
 
-### Test Case 5: Create Multiple Circles
-**Scenario:** User creates both family and community circles
+### Test Case 7: Create Multiple Circles
+**Scenario:** User creates multiple circles within tribes
 
 **Steps:**
-1. Create a family circle: "Baby #2 Circle"
-2. Create another family circle: "Family Updates"
-3. Create a community circle: "SF Bay Area Parents"
+1. Create private circle: "Baby #2 Circle" (in Smith Family)
+2. Create another private circle: "Family Updates" (in Smith Family)  
+3. Create public circle: "SF Bay Area Parents" (in Smith Family)
+4. Create second tribe: "Extended Family" 
+5. Create circle: "Holiday Planning" (in Extended Family)
 
 **Expected Result:**
-- [ ] Dashboard sidebar shows circles grouped by type
-- [ ] Family circles appear under "👨‍👩‍👧‍👦 Family Circles"
-- [ ] Community circles appear under "🌍 Community Circles"
-- [ ] Filter tabs work (All, Family, Community)
+- [ ] Dashboard shows circles grouped by tribe (not by type)
+- [ ] "Smith Family" section shows 3 circles
+- [ ] "Extended Family" section shows 1 circle
+- [ ] No filter tabs for circle types (tribe-centric view)
+- [ ] Each circle shows privacy level indicator
+
+---
+
+## 🔐 **RBAC Permissions Testing**
+
+### Test Case 8: Circle Owner Permissions
+**Scenario:** Test full owner permissions in circle
+
+**Steps:**
+1. As circle owner, access circle edit page `/circles/[circleId]/edit`
+2. Verify all management options available
+3. Test member management functions
+4. Test cross-tribe invitation features
+
+**Expected Result:**
+- [ ] Edit circle settings accessible
+- [ ] All circle modification options visible
+- [ ] Member management panel shows all controls
+- [ ] Cross-tribe invitation system accessible
+- [ ] Delete circle option available (only for owners)
+
+### Test Case 9: Circle Member Permission Restrictions  
+**Scenario:** Test limited member permissions
+
+**Steps:**
+1. Create second user account (`test+member@yourdomain.com`)
+2. Invite to existing circle as 'member' role
+3. Sign in as member user
+4. Try accessing circle edit page
+5. Test post creation permissions
+
+**Expected Result:**
+- [ ] Circle edit page shows "Permission denied" or redirects
+- [ ] Member can view circle content
+- [ ] Member can create posts (if permission allows)
+- [ ] Member cannot modify circle settings
+- [ ] Member cannot manage other members
+- [ ] UI appropriately hides unauthorized actions
+
+### Test Case 10: RBAC Function Testing
+**Scenario:** Test database-level RBAC functions
+
+**Steps:**
+1. Open Supabase SQL Editor
+2. Test `user_has_permission` function:
+```sql
+SELECT user_has_permission(
+  '[user-id]'::uuid,
+  'circle',
+  '[circle-id]'::uuid, 
+  'can_update_circle'
+);
+```
+3. Test with different roles and permissions
+
+**Expected Result:**
+- [ ] Function returns correct boolean values
+- [ ] Permission checks align with user roles
+- [ ] Function handles invalid inputs gracefully
+- [ ] Performance is acceptable (<100ms per call)
+
+---
+
+## 🔄 **Cross-Tribe Functionality**
+
+### Test Case 11: Cross-Tribe Access Setup
+**Scenario:** Set up cross-tribe circle sharing
+
+**Steps:**
+1. Create second tribe with `test+tribe2@yourdomain.com`
+2. Create circle "Shared Playgroup" in Tribe 1
+3. As Tribe 1 owner, invite Tribe 2 for cross-tribe access
+4. Configure permissions (read, comment, like)
+5. Accept invitation from Tribe 2
+
+**Expected Result:**
+- [ ] Cross-tribe invitation system works
+- [ ] Proper permission levels configurable
+- [ ] Invited tribe appears in cross-tribe access list
+- [ ] Members of Tribe 2 can see shared circle
+- [ ] Permissions respected (no unauthorized actions)
+
+### Test Case 12: Cross-Tribe User Experience
+**Scenario:** Test cross-tribe user interactions
+
+**Steps:**
+1. Sign in as Tribe 2 member
+2. Navigate to dashboard
+3. View shared circle from Tribe 1
+4. Test allowed actions (view, comment, like)
+5. Try prohibited actions (edit circle, manage members)
+
+**Expected Result:**
+- [ ] Shared circles visible in dashboard
+- [ ] Clear indication of cross-tribe access
+- [ ] Allowed actions work smoothly
+- [ ] Prohibited actions properly blocked
+- [ ] Error messages are user-friendly
+- [ ] No access to Tribe 1's other private circles
+
+### Test Case 13: Cross-Tribe Permission Management
+**Scenario:** Modify cross-tribe access permissions
+
+**Steps:**
+1. As Tribe 1 owner, access cross-tribe management
+2. Modify permissions for Tribe 2 (revoke commenting)
+3. Test updated permissions from Tribe 2 user perspective
+4. Revoke access entirely
+5. Verify access removal
+
+**Expected Result:**
+- [ ] Permission changes take effect immediately
+- [ ] Revoked permissions properly blocked
+- [ ] Full access revocation removes circle visibility
+- [ ] Changes reflected in real-time for affected users
 
 ---
 
 ## 📝 **Post Creation & Media**
 
-### Test Case 13: Basic Post Creation
+### Test Case 14: Basic Post Creation
 **Scenario:** User creates posts with different content types
 
 **Steps:**
@@ -147,7 +318,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] Posts appear in feed after creation
 - [ ] Auto-save draft functionality works
 
-### Test Case 14: Media Upload Testing
+### Test Case 15: Media Upload Testing
 **Scenario:** Test file upload functionality
 
 **Steps:**
@@ -166,7 +337,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] Upload progress indicators display
 - [ ] Media displays correctly in feed after posting
 
-### Test Case 15: Advanced Post Features
+### Test Case 16: Advanced Post Features
 **Scenario:** Test enhanced post creation features
 
 **Steps:**
@@ -187,7 +358,7 @@ Create a test account with: `test+circles@yourdomain.com`
 
 ## ⚡ **Real-time Features**
 
-### Test Case 16: Multi-Client Setup
+### Test Case 17: Multi-Client Setup
 **Scenario:** Prepare environment for real-time testing
 
 **Steps:**
@@ -203,7 +374,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] No connection errors in console
 - [ ] Both feeds load existing posts
 
-### Test Case 17: Real-time Posts
+### Test Case 18: Real-time Posts
 **Scenario:** Test live post updates across clients
 
 **Steps:**
@@ -220,7 +391,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] Multiple rapid posts all appear correctly
 - [ ] Console shows "Real-time posts update: INSERT" messages
 
-### Test Case 18: Real-time Comments
+### Test Case 19: Real-time Comments
 **Scenario:** Test live comment updates
 
 **Steps:**
@@ -237,7 +408,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] Console shows "Real-time comments update: INSERT"
 - [ ] Both windows show same comment count
 
-### Test Case 19: Real-time Likes
+### Test Case 20: Real-time Likes
 **Scenario:** Test live like/unlike updates
 
 **Steps:**
@@ -255,7 +426,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] Console shows "Real-time likes update: INSERT/DELETE"
 - [ ] UI remains smooth during rapid interactions
 
-### Test Case 20: Real-time Notifications
+### Test Case 21: Real-time Notifications
 **Scenario:** Test notification system for new posts
 
 **Steps:**
@@ -274,7 +445,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] No notifications appear for user's own posts
 - [ ] Manual close (X) button works
 
-### Test Case 21: Connection Reliability
+### Test Case 22: Connection Reliability
 **Scenario:** Test real-time connection stability
 
 **Steps:**
@@ -290,7 +461,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] Long sessions remain stable without memory leaks
 - [ ] Console shows connection/disconnection messages
 
-### Test Case 22: Real-time Error Handling
+### Test Case 23: Real-time Error Handling
 **Scenario:** Test graceful handling of real-time failures
 
 **Steps:**
@@ -310,7 +481,7 @@ Create a test account with: `test+circles@yourdomain.com`
 
 ## 👤 **Profile System**
 
-### Test Case 23: Profile Management
+### Test Case 24: Profile Management
 **Scenario:** Test user profile functionality
 
 **Steps:**
@@ -327,7 +498,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] Name changes reflect in all posts and comments
 - [ ] All settings tabs (Profile, Privacy, Notifications, Account) accessible
 
-### Test Case 24: Other User Profiles
+### Test Case 25: Other User Profiles
 **Scenario:** Test viewing other family members' profiles
 
 **Steps:**
@@ -343,7 +514,7 @@ Create a test account with: `test+circles@yourdomain.com`
 - [ ] Displays shared circles and posts from those circles only
 - [ ] Profile navigation works from posts and comments
 
-### Test Case 25: Profile Integration
+### Test Case 26: Profile Integration
 **Scenario:** Test profile integration throughout app
 
 **Steps:**
@@ -362,23 +533,25 @@ Create a test account with: `test+circles@yourdomain.com`
 
 ## 📱 **Dashboard & Navigation**
 
-### Test Case 26: Dashboard Navigation
-**Scenario:** User navigates through dashboard features
+### Test Case 27: Dashboard Navigation
+**Scenario:** User navigates through tribe-centric dashboard
 
 **Steps:**
-1. Click between Family and Community filter tabs
-2. Select different circles from sidebar
-3. Test "Create Circle", "Invite", and "New Post" buttons
+1. Navigate through different tribe sections
+2. Select different circles from tribe groupings
+3. Test "Create Circle", "Manage Tribes", and "New Post" buttons
 4. Try when no circle is selected
+5. Test tribe expansion/collapse if implemented
 
 **Expected Result:**
-- [ ] Filter tabs show/hide appropriate circles
+- [ ] Tribes show circles grouped underneath
 - [ ] Selecting circle updates main content area
 - [ ] "New Post" button only visible when circle selected
 - [ ] "Create Circle" always visible
-- [ ] "Invite" button always visible
+- [ ] "Manage Tribes" navigation works
+- [ ] No legacy circle type filter tabs present
 
-### Test Case 27: Empty States
+### Test Case 28: Empty States
 **Scenario:** User with no circles sees appropriate empty states
 
 **Steps:**
@@ -396,7 +569,7 @@ Create a test account with: `test+circles@yourdomain.com`
 
 ## 🗃️ **Database Verification**
 
-### Test Case 8: Database Structure
+### Test Case 29: Database Structure
 **Scenario:** Verify data is stored correctly
 
 **Steps:**
@@ -405,33 +578,45 @@ Create a test account with: `test+circles@yourdomain.com`
 
 **SQL Queries to Run:**
 ```sql
--- Check circles table
-SELECT id, name, type, privacy, category, is_discoverable, auto_approve_members 
+-- Check circles table (now with required tribe_id)
+SELECT id, name, tribe_id, privacy, category, is_discoverable, auto_approve_members 
 FROM circles 
 WHERE created_by = 'your-user-id';
 
--- Check circle memberships  
-SELECT cm.*, c.name as circle_name
+-- Check circle memberships with RBAC roles
+SELECT cm.*, c.name as circle_name, ur.role_id, r.name as role_name
 FROM circle_members cm
 JOIN circles c ON cm.circle_id = c.id
+LEFT JOIN user_roles ur ON ur.user_id = cm.user_id AND ur.context_type = 'circle' AND ur.context_id = c.id
+LEFT JOIN roles r ON r.id = ur.role_id
 WHERE cm.user_id = 'your-user-id';
 
--- Check circle categories
-SELECT * FROM circle_categories;
+-- Check tribe membership
+SELECT tm.*, t.name as tribe_name, ur.role_id, r.name as role_name
+FROM tribe_members tm
+JOIN tribes t ON t.id = tm.tribe_id
+LEFT JOIN user_roles ur ON ur.user_id = tm.user_id AND ur.context_type = 'tribe' AND ur.context_id = t.id
+LEFT JOIN roles r ON r.id = ur.role_id
+WHERE tm.user_id = 'your-user-id';
+
+-- Check cross-tribe access
+SELECT * FROM cross_tribe_access WHERE circle_id IN (
+  SELECT id FROM circles WHERE created_by = 'your-user-id'
+);
 ```
 
 **Expected Result:**
-- [ ] Circles table has all expected fields
-- [ ] Family circles: `type='family'`, `privacy='private'`, `is_discoverable=false`
-- [ ] Community circles: fields match form selections
-- [ ] User automatically added as admin member
-- [ ] Circle categories populated
+- [ ] All circles have valid tribe_id (not null)
+- [ ] Circle creator automatically has 'owner' role via RBAC
+- [ ] Tribe membership exists for all user's circles
+- [ ] RBAC roles properly assigned (owner/admin/member)
+- [ ] Cross-tribe access records created when configured
 
 ---
 
 ## ❌ **Error Scenarios**
 
-### Test Case 9: Form Validation
+### Test Case 30: Form Validation
 **Scenario:** Test form validation and error handling
 
 **Steps:**
@@ -447,7 +632,7 @@ SELECT * FROM circle_categories;
 - [ ] Network errors show user-friendly messages
 - [ ] No data corruption in database
 
-### Test Case 10: Authentication Errors
+### Test Case 31: Authentication Errors
 **Scenario:** Test authentication edge cases
 
 **Steps:**
@@ -464,7 +649,7 @@ SELECT * FROM circle_categories;
 
 ## 🌐 **Browser Testing**
 
-### Test Case 11: Cross-Browser Compatibility
+### Test Case 32: Cross-Browser Compatibility
 **Scenario:** Ensure app works across browsers
 
 **Browsers to Test:**
@@ -480,7 +665,7 @@ SELECT * FROM circle_categories;
 - [ ] Button interactions
 - [ ] Form submissions
 
-### Test Case 12: Mobile Responsiveness
+### Test Case 33: Mobile Responsiveness
 **Scenario:** Verify mobile user experience
 
 **Steps:**
@@ -547,7 +732,7 @@ SELECT * FROM circle_categories;
 
 ## 🚀 **Performance Testing**
 
-### Test Case 28: Load Testing
+### Test Case 34: Load Testing
 **Scenario:** Test app with multiple circles
 
 **Steps:**
@@ -567,12 +752,13 @@ SELECT * FROM circle_categories;
 ## 🔄 **Regression Testing**
 
 After any code changes, run through:
-- [ ] Authentication flow (Test Cases 1-2)
-- [ ] Basic circle creation (Test Cases 3-4) 
-- [ ] Post creation (Test Case 13)
-- [ ] Real-time posts (Test Case 17)
-- [ ] Profile system (Test Case 23)
-- [ ] Dashboard navigation (Test Case 26)
+- [ ] Authentication & tribe creation (Test Cases 1-2)
+- [ ] Basic circle creation with tribe (Test Cases 5-6)
+- [ ] RBAC permission checks (Test Case 8-9)
+- [ ] Post creation (Test Case 14)
+- [ ] Real-time posts (Test Case 18)
+- [ ] Tribe management (Test Case 3-4)
+- [ ] Dashboard navigation (Test Case 27)
 - [ ] One error scenario
 
 This ensures core functionality remains working.

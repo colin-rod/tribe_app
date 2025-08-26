@@ -1,3 +1,6 @@
+// RBAC System: Roles are managed through the RBAC system (user_roles table)
+// The 'role' fields in legacy tables (circle_members, tribe_members) are kept for backward compatibility
+// but the RBAC system is the source of truth for permissions
 export type UserRole = 'owner' | 'admin' | 'moderator' | 'member' | 'viewer'
 export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'expired'
 export type CircleType = 'family' | 'community' | 'topic' | 'local'
@@ -49,13 +52,13 @@ export interface TribeMember {
   id: string
   tribe_id: string
   user_id: string
-  role: UserRole
+  role: UserRole  // Kept for backward compatibility, but RBAC is source of truth
   joined_at: string
 }
 
 export interface Circle {
   id: string
-  tribe_id: string | null  // Now optional - circles can exist without tribes
+  tribe_id: string  // Required - circles must belong to a tribe
   name: string
   description: string | null
   color: string
@@ -75,7 +78,7 @@ export interface CircleMember {
   id: string
   circle_id: string
   user_id: string
-  role: UserRole
+  role: UserRole  // Kept for backward compatibility, but RBAC is source of truth
   added_at: string
   join_method: JoinMethod
   joined_via: string | null  // user_id of who invited/approved them
@@ -98,13 +101,29 @@ export interface CircleInvitation {
   circle_id: string
   invited_by: string
   email: string
-  role: UserRole
+  role: UserRole  // Role to be assigned via RBAC upon acceptance
   status: InvitationStatus
   token: string
   expires_at: string
   created_at: string
   accepted_at: string | null
   message: string | null
+}
+
+export interface CrossTribeAccess {
+  id: string
+  circle_id: string
+  tribe_id: string
+  invited_by: string
+  invited_at: string
+  permissions: {
+    can_read: boolean
+    can_comment: boolean
+    can_like: boolean
+    [key: string]: boolean
+  }
+  status: 'active' | 'revoked' | 'pending'
+  created_at: string
 }
 
 export interface Post {
@@ -140,7 +159,7 @@ export interface Invitation {
   tribe_id: string
   invited_by: string
   email: string
-  role: UserRole
+  role: UserRole  // Role to be assigned via RBAC upon acceptance
   status: InvitationStatus
   token: string
   expires_at: string
@@ -151,7 +170,7 @@ export interface Invitation {
 // Extended types with relations for circles-first architecture
 export interface CircleWithMembers extends Circle {
   circle_members: (CircleMember & { profiles: Profile })[]
-  tribe?: Tribe | null  // Now optional since circles can exist without tribes
+  tribe?: Tribe  // Optional relation data, but tribe_id is required
   category_info?: CircleCategory | null
 }
 

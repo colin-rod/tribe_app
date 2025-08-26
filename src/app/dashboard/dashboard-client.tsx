@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, TribeWithMembers, CirclePermissions } from '@/types/database'
 import { getUserCirclePermissions } from '@/lib/rbac'
+import { getUserTribes } from '@/lib/tribes'
 
 interface DashboardClientProps {
   user: User
@@ -16,7 +17,7 @@ interface DashboardClientProps {
 
 export default function DashboardClient({ user, profile, userCircles, tribes }: DashboardClientProps) {
   const [selectedCircle, setSelectedCircle] = useState(userCircles && userCircles.length > 0 ? userCircles[0]?.circles : null)
-  const [circleFilter, setCircleFilter] = useState<'all' | 'family' | 'community'>('all')
+  // Removed circle filter since we now organize by tribe
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedPost, setSelectedPost] = useState<string | null>(null)
@@ -365,15 +366,27 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
     router.push('/')
   }
 
-  // Filter circles based on selected filter
-  const filteredCircles = userCircles ? userCircles.filter(uc => {
-    if (circleFilter === 'all') return true
-    return uc.circles.type === circleFilter
-  }) : []
+  // No longer need to filter circles since they're organized by tribe
 
-  // Group circles by type for display
-  const familyCircles = userCircles ? userCircles.filter(uc => uc.circles.type === 'family') : []
-  const communityCircles = userCircles ? userCircles.filter(uc => uc.circles.type === 'community') : []
+  // Group circles by tribe for display
+  const circlesByTribe = userCircles ? userCircles.reduce((acc, uc) => {
+    const tribeId = uc.circles.tribe_id
+    const tribeName = tribes.find(t => t.tribe_id === tribeId)?.tribes?.name || 'Unknown Tribe'
+    
+    if (!acc[tribeId]) {
+      acc[tribeId] = {
+        tribe: tribes.find(t => t.tribe_id === tribeId)?.tribes || { name: tribeName },
+        circles: []
+      }
+    }
+    acc[tribeId].circles.push(uc)
+    return acc
+  }, {} as Record<string, { tribe: any, circles: any[] }>) : {}
+
+  // Separate community circles (if they don't belong to any tribe)
+  const communityCircles = userCircles ? userCircles.filter(uc => 
+    uc.circles.type === 'community' && !uc.circles.tribe_id
+  ) : []
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -416,8 +429,18 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
                 </button>
               </div>
               
-              {/* Profile Actions */}
+              {/* Navigation Actions */}
               <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => router.push('/tribes')}
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50"
+                  title="Manage Tribes"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </button>
+                
                 <button
                   onClick={() => router.push('/settings')}
                   className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -498,136 +521,122 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Your Circles</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Your Tribes & Circles</h2>
               
-              {/* Circle Type Filter */}
-              <div className="flex space-x-1 mb-4 p-1 bg-gray-100 rounded-lg">
+              {/* Tribes and their circles */}
+              <div className="space-y-6">
+                {Object.entries(circlesByTribe).map(([tribeId, tribeData]) => (
+                  <div key={tribeId} className="space-y-3">
+                    {/* Tribe Header */}
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                        {tribeData.tribe.name}
+                      </h3>
+                      <span className="text-xs text-gray-400">
+                        {tribeData.circles.length} circle{tribeData.circles.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    
+                    {/* Circles in this tribe */}
+                    <div className="space-y-2 ml-2">
+                      {tribeData.circles.map((userCircle: any) => (
+                        <button
+                          key={userCircle.circles.id}
+                          onClick={() => setSelectedCircle(userCircle.circles)}
+                          className={`w-full text-left p-3 rounded-lg transition-colors ${
+                            selectedCircle?.id === userCircle.circles.id
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <div 
+                              className="w-3 h-3 rounded-full mr-3"
+                              style={{ backgroundColor: userCircle.circles.color }}
+                            />
+                            <div>
+                              <div className="font-medium text-sm">{userCircle.circles.name}</div>
+                              <div className="text-xs text-gray-500">
+                                {userCircle.circles.type} • {userCircle.circles.member_count} members
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Community Circles (if any) */}
+                {communityCircles.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                        Community Circles
+                      </h3>
+                      <span className="text-xs text-gray-400">
+                        {communityCircles.length} circle{communityCircles.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 ml-2">
+                      {communityCircles.map((userCircle: any) => (
+                        <button
+                          key={userCircle.circles.id}
+                          onClick={() => setSelectedCircle(userCircle.circles)}
+                          className={`w-full text-left p-3 rounded-lg transition-colors ${
+                            selectedCircle?.id === userCircle.circles.id
+                              ? 'bg-green-50 text-green-700 border border-green-200'
+                              : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <div 
+                              className="w-3 h-3 rounded-full mr-3"
+                              style={{ backgroundColor: userCircle.circles.color }}
+                            />
+                            <div>
+                              <div className="font-medium text-sm">{userCircle.circles.name}</div>
+                              <div className="text-xs text-gray-500">
+                                {userCircle.circles.type} • {userCircle.circles.member_count} members
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Create Circle Button */}
+              <div className="mt-6 pt-4 border-t border-gray-200">
                 <button
-                  onClick={() => setCircleFilter('all')}
-                  className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-colors ${
-                    circleFilter === 'all'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  onClick={() => router.push('/circles/create')}
+                  className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                 >
-                  All
-                </button>
-                <button
-                  onClick={() => setCircleFilter('family')}
-                  className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-colors ${
-                    circleFilter === 'family'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Family
-                </button>
-                <button
-                  onClick={() => setCircleFilter('community')}
-                  className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-colors ${
-                    circleFilter === 'community'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Community
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Create Circle
                 </button>
               </div>
 
-              {/* Family Circles Section */}
-              {(circleFilter === 'all' || circleFilter === 'family') && familyCircles.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                    👨‍👩‍👧‍👦 Family Circles
-                  </h3>
-                  <div className="space-y-2">
-                    {familyCircles.map((userCircle) => (
-                      <button
-                        key={userCircle.circles.id}
-                        onClick={() => setSelectedCircle(userCircle.circles)}
-                        className={`w-full text-left p-3 rounded-lg transition-colors ${
-                          selectedCircle?.id === userCircle.circles.id
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <div 
-                            className="w-3 h-3 rounded-full mr-3"
-                            style={{ backgroundColor: userCircle.circles.color }}
-                          />
-                          <div>
-                            <div className="font-medium text-sm">{userCircle.circles.name}</div>
-                            <div className="text-xs text-gray-500">
-                              {userCircle.circles.member_count} members
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Community Circles Section */}
-              {(circleFilter === 'all' || circleFilter === 'community') && communityCircles.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                    🌍 Community Circles
-                  </h3>
-                  <div className="space-y-2">
-                    {communityCircles.map((userCircle) => (
-                      <button
-                        key={userCircle.circles.id}
-                        onClick={() => setSelectedCircle(userCircle.circles)}
-                        className={`w-full text-left p-3 rounded-lg transition-colors ${
-                          selectedCircle?.id === userCircle.circles.id
-                            ? 'bg-green-50 text-green-700 border border-green-200'
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <div 
-                            className="w-3 h-3 rounded-full mr-3"
-                            style={{ backgroundColor: userCircle.circles.color }}
-                          />
-                          <div>
-                            <div className="font-medium text-sm">{userCircle.circles.name}</div>
-                            <div className="text-xs text-gray-500">
-                              {userCircle.circles.privacy} • {userCircle.circles.member_count} members
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {filteredCircles.length === 0 && (
+              {/* No circles state */}
+              {Object.keys(circlesByTribe).length === 0 && communityCircles.length === 0 && (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   </div>
-                  <p className="text-gray-500 text-sm mb-2">
-                    {circleFilter === 'all' ? 'No circles yet' : `No ${circleFilter} circles`}
-                  </p>
+                  <p className="text-gray-500 text-sm mb-2">No circles yet</p>
                   <p className="text-gray-400 text-xs mb-4">
-                    Create your first circle to start sharing!
+                    Create your first circle to start sharing with your tribe!
                   </p>
-                  <button
-                    onClick={() => router.push('/circles/create')}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Create Circle
-                  </button>
                 </div>
               )}
+
             </div>
           </div>
 
