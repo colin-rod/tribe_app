@@ -432,7 +432,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
               {/* Navigation Actions */}
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => router.push('/tribes')}
+                  onClick={() => router.push('/trees')}
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50"
                   title="Manage Tribes"
                 >
@@ -612,7 +612,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
               {/* Create Circle Button */}
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <button
-                  onClick={() => router.push('/circles/create')}
+                  onClick={() => router.push('/branches/create')}
                   className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -681,7 +681,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                     
                     <div className="flex space-x-3">
                       <button
-                        onClick={() => router.push('/circles/create')}
+                        onClick={() => router.push('/branches/create')}
                         className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                       >
                         Create Circle
@@ -698,7 +698,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                       
                       {circlePermissions?.canCreatePosts && selectedCircle && (
                         <button
-                          onClick={() => router.push(`/circles/${selectedCircle.id}/post`)}
+                          onClick={() => router.push(`/branches/${selectedCircle.id}/post`)}
                           className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           New Post
@@ -707,7 +707,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                       
                       {circlePermissions?.canUpdate && (
                         <button
-                          onClick={() => router.push(`/circles/${selectedCircle.id}/edit`)}
+                          onClick={() => router.push(`/branches/${selectedCircle.id}/edit`)}
                           className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                         >
                           Circle Settings
@@ -734,7 +734,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                       <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
                       <p className="text-gray-500 mb-4">Start sharing memories with your circle!</p>
                       <button
-                        onClick={() => router.push(`/circles/${selectedCircle.id}/post`)}
+                        onClick={() => router.push(`/branches/${selectedCircle.id}/post`)}
                         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                       >
                         Create first post
@@ -878,7 +878,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                               {/* Edit - only post author or moderators+ */}
                               {(post.author_id === user.id || circlePermissions?.canModerate) && (
                                 <button
-                                  onClick={() => router.push(`/circles/${selectedCircle.id}/post/${post.id}/edit`)}
+                                  onClick={() => router.push(`/branches/${selectedCircle.id}/post/${post.id}/edit`)}
                                   className="p-1 text-gray-500 hover:text-blue-500"
                                   title="Edit post"
                                 >

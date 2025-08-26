@@ -3,16 +3,16 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { getUserCirclePermissions } from '@/lib/rbac'
+import { getUserBranchPermissions } from '@/lib/rbac'
 import type { User } from '@supabase/supabase-js'
 
 interface PageProps {
-  params: Promise<{ circleId: string }>
+  params: Promise<{ branchId: string }>
 }
 
-export default function CircleInvitePage({ params }: PageProps) {
+export default function BranchInvitePage({ params }: PageProps) {
   const [user, setUser] = useState<User | null>(null)
-  const [circle, setCircle] = useState<any>(null)
+  const [branch, setBranch] = useState<any>(null)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'member' | 'viewer'>('member')
   const [loading, setLoading] = useState(true)
@@ -21,7 +21,7 @@ export default function CircleInvitePage({ params }: PageProps) {
   const router = useRouter()
   
   // Unwrap the params promise
-  const { circleId } = use(params)
+  const { branchId } = use(params)
 
   useEffect(() => {
     const loadData = async () => {
@@ -36,38 +36,38 @@ export default function CircleInvitePage({ params }: PageProps) {
 
         setUser(user)
 
-        // Get circle data
-        const { data: circleData, error: circleError } = await supabase
-          .from('circles')
+        // Get branch data
+        const { data: branchData, error: branchError } = await supabase
+          .from('branches')
           .select(`
             id,
             name,
             color,
             privacy,
-            tribe_id,
-            tribes (
+            tree_id,
+            trees (
               id,
               name
             )
           `)
-          .eq('id', circleId)
+          .eq('id', branchId)
           .single()
 
-        if (circleError || !circleData) {
-          console.error('Error loading circle:', circleError)
+        if (branchError || !branchData) {
+          console.error('Error loading branch:', branchError)
           router.push('/dashboard')
           return
         }
 
-        // Check if user has permission to invite to this circle using RBAC
-        const permissions = await getUserCirclePermissions(user.id, circleId)
+        // Check if user has permission to invite to this branch using RBAC
+        const permissions = await getUserBranchPermissions(user.id, branchId)
         
         if (!permissions.canInviteMembers) {
           router.push('/dashboard')
           return
         }
 
-        setCircle(circleData)
+        setBranch(branchData)
 
       } catch (error) {
         console.error('Error loading data:', error)
@@ -78,12 +78,12 @@ export default function CircleInvitePage({ params }: PageProps) {
     }
 
     loadData()
-  }, [circleId, router])
+  }, [branchId, router])
 
   const sendInvitation = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!email.trim() || !circle || !user) {
+    if (!email.trim() || !branch || !user) {
       alert('Please fill in all required fields')
       return
     }
@@ -92,13 +92,13 @@ export default function CircleInvitePage({ params }: PageProps) {
     setSuccess(false)
 
     try {
-      console.log('Starting invitation process for:', { circleId, email: email.trim(), role, userId: user.id })
+      console.log('Starting invitation process for:', { branchId, email: email.trim(), role, userId: user.id })
 
-      // Check if the email is already a member of this circle
+      // Check if the email is already a member of this branch
       const { data: existingMember, error: checkError } = await supabase
-        .from('circle_members')
+        .from('branch_members')
         .select('id, status')
-        .eq('circle_id', circleId)
+        .eq('branch_id', branchId)
         .eq('profiles.email', email.trim())
         .single()
 
@@ -107,15 +107,15 @@ export default function CircleInvitePage({ params }: PageProps) {
       }
 
       if (existingMember && existingMember.status === 'active') {
-        alert('This person is already a member of this circle')
+        alert('This person is already a member of this branch')
         return
       }
 
-      // Check if there's already a pending invitation for this email/circle
+      // Check if there's already a pending invitation for this email/branch
       const { data: existingInvite, error: inviteCheckError } = await supabase
-        .from('circle_invitations')
+        .from('branch_invitations')
         .select('id, status')
-        .eq('circle_id', circleId)
+        .eq('branch_id', branchId)
         .eq('email', email.trim())
         .eq('status', 'pending')
         .single()
@@ -125,17 +125,17 @@ export default function CircleInvitePage({ params }: PageProps) {
       }
 
       if (existingInvite) {
-        alert('There is already a pending invitation for this email to this circle')
+        alert('There is already a pending invitation for this email to this branch')
         return
       }
 
-      console.log('Creating circle invitation...')
+      console.log('Creating branch invitation...')
       
-      // Create the circle-specific invitation
+      // Create the branch-specific invitation
       const { data: invitation, error: inviteError } = await supabase
-        .from('circle_invitations')
+        .from('branch_invitations')
         .insert({
-          circle_id: circleId,
+          branch_id: branchId,
           invited_by: user.id,
           email: email.trim(),
           role,
@@ -159,7 +159,7 @@ export default function CircleInvitePage({ params }: PageProps) {
       
       // Auto redirect after success
       setTimeout(() => {
-        router.push(`/circles/${circleId}/edit`)
+        router.push(`/branches/${branchId}/edit`)
       }, 2000)
 
     } catch (error: any) {
@@ -181,7 +181,7 @@ export default function CircleInvitePage({ params }: PageProps) {
     )
   }
 
-  if (!user || !circle) {
+  if (!user || !branch) {
     return null
   }
 
@@ -203,10 +203,10 @@ export default function CircleInvitePage({ params }: PageProps) {
               <div className="flex items-center">
                 <div 
                   className="w-4 h-4 rounded-full mr-3"
-                  style={{ backgroundColor: circle.color }}
+                  style={{ backgroundColor: branch.color }}
                 />
                 <h1 className="text-lg font-semibold text-gray-900">
-                  Invite to {circle.name}
+                  Invite to {branch.name}
                 </h1>
               </div>
             </div>
@@ -225,25 +225,25 @@ export default function CircleInvitePage({ params }: PageProps) {
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Invitation Sent!</h2>
             <p className="text-gray-600 mb-4">
-              We've sent an invitation to <strong>{email}</strong> to join <strong>{circle.name}</strong>.
+              We've sent an invitation to <strong>{email}</strong> to join <strong>{branch.name}</strong>.
             </p>
             <p className="text-sm text-gray-500">
-              Redirecting you back to circle settings...
+              Redirecting you back to branch settings...
             </p>
           </div>
         ) : (
           <form onSubmit={sendInvitation} className="bg-white rounded-lg shadow">
             <div className="p-6">
-              {/* Circle Info */}
+              {/* Branch Info */}
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center">
                   <div 
                     className="w-6 h-6 rounded-full mr-3"
-                    style={{ backgroundColor: circle.color }}
+                    style={{ backgroundColor: branch.color }}
                   />
                   <div>
-                    <h3 className="font-medium text-blue-900">{circle.name}</h3>
-                    <p className="text-sm text-blue-700">in {circle.tribes?.name}</p>
+                    <h3 className="font-medium text-blue-900">{branch.name}</h3>
+                    <p className="text-sm text-blue-700">in {branch.trees?.name}</p>
                   </div>
                 </div>
               </div>
@@ -280,7 +280,7 @@ export default function CircleInvitePage({ params }: PageProps) {
                     />
                     <div>
                       <div className="font-medium text-gray-900">Member</div>
-                      <div className="text-sm text-gray-500">Can post, comment, and like in this circle</div>
+                      <div className="text-sm text-gray-500">Can post, comment, and like in this branch</div>
                     </div>
                   </label>
                   
@@ -294,7 +294,7 @@ export default function CircleInvitePage({ params }: PageProps) {
                     />
                     <div>
                       <div className="font-medium text-gray-900">Viewer</div>
-                      <div className="text-sm text-gray-500">Can only view and like posts in this circle</div>
+                      <div className="text-sm text-gray-500">Can only view and like posts in this branch</div>
                     </div>
                   </label>
                 </div>
@@ -305,7 +305,7 @@ export default function CircleInvitePage({ params }: PageProps) {
                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">Invitation Summary</h4>
                   <p className="text-sm text-blue-800">
-                    <strong>{email}</strong> will be invited as a <strong>{role}</strong> to <strong>{circle.name}</strong>.
+                    <strong>{email}</strong> will be invited as a <strong>{role}</strong> to <strong>{branch.name}</strong>.
                   </p>
                 </div>
               )}

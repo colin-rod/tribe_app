@@ -7,7 +7,7 @@ import type { User } from '@supabase/supabase-js'
 
 interface CreatePostClientProps {
   user: User
-  circle: any
+  branch: any
 }
 
 const milestoneTypes = [
@@ -44,7 +44,7 @@ const formatTime = (date: Date): string => {
   return date.toLocaleDateString()
 }
 
-export default function CreatePostClient({ user, circle }: CreatePostClientProps) {
+export default function CreatePostClient({ user, branch }: CreatePostClientProps) {
   const [content, setContent] = useState('')
   const [milestoneType, setMilestoneType] = useState('')
   const [milestoneDate, setMilestoneDate] = useState('')
@@ -60,7 +60,7 @@ export default function CreatePostClient({ user, circle }: CreatePostClientProps
   const router = useRouter()
 
   // Auto-save key for localStorage
-  const draftKey = `post-draft-${circle.id}-${user.id}`
+  const draftKey = `post-draft-${branch.id}-${user.id}`
 
   // Load draft from localStorage on component mount
   useEffect(() => {
@@ -215,7 +215,7 @@ export default function CreatePostClient({ user, circle }: CreatePostClientProps
 
   const uploadFile = async (file: File, index: number): Promise<string> => {
     const fileExt = file.name.split('.').pop()
-    const fileName = `${user.id}/${circle.id}/${Date.now()}-${Math.random()}.${fileExt}`
+    const fileName = `${user.id}/${branch.id}/${Date.now()}-${Math.random()}.${fileExt}`
     
     const { data, error } = await supabase.storage
       .from('media')
@@ -264,7 +264,7 @@ export default function CreatePostClient({ user, circle }: CreatePostClientProps
       const { data, error } = await supabase
         .from('posts')
         .insert({
-          circle_id: circle.id,
+          branch_id: branch.id,
           author_id: user.id,
           content: content.trim() || null,
           media_urls: mediaUrls.length > 0 ? mediaUrls : null,
@@ -307,12 +307,12 @@ export default function CreatePostClient({ user, circle }: CreatePostClientProps
               <div className="flex items-center">
                 <div 
                   className="w-4 h-4 rounded-full mr-3"
-                  style={{ backgroundColor: circle.color }}
+                  style={{ backgroundColor: branch.color }}
                 />
                 <div>
                   <h1 className="text-lg font-semibold text-gray-900">New Post</h1>
                   <div className="flex items-center space-x-2">
-                    <p className="text-sm text-gray-500">{circle.name}</p>
+                    <p className="text-sm text-gray-500">{branch.name}</p>
                     {lastSaved && (
                       <div className="flex items-center space-x-1">
                         <span className="w-1 h-1 bg-gray-400 rounded-full"></span>

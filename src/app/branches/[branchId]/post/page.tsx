@@ -7,22 +7,22 @@ import CreatePostClient from './create-post-client'
 import type { User } from '@supabase/supabase-js'
 
 interface PageProps {
-  params: Promise<{ circleId: string }>
+  params: Promise<{ branchId: string }>
 }
 
 export default function CreatePostPage({ params }: PageProps) {
   const [user, setUser] = useState<User | null>(null)
-  const [circle, setCircle] = useState<any>(null)
+  const [branch, setBranch] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   
   // Unwrap the params promise
-  const { circleId } = use(params)
+  const { branchId } = use(params)
 
   useEffect(() => {
-    const checkAuthAndLoadCircle = async () => {
+    const checkAuthAndLoadBranch = async () => {
       try {
-        console.log('CreatePostPage - checking auth for circle:', circleId)
+        console.log('CreatePostPage - checking auth for branch:', branchId)
         
         // Check authentication
         const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -37,33 +37,33 @@ export default function CreatePostPage({ params }: PageProps) {
 
         setUser(user)
 
-        // Fetch circle data
-        const { data: circle, error: circleError } = await supabase
-          .from('circles')
+        // Fetch branch data
+        const { data: branch, error: branchError } = await supabase
+          .from('branches')
           .select('*')
-          .eq('id', circleId)
+          .eq('id', branchId)
           .single()
 
-        console.log('Circle fetch result:', { circle: !!circle, error: !!circleError })
+        console.log('Branch fetch result:', { branch: !!branch, error: !!branchError })
 
-        if (circleError || !circle) {
-          console.log('Circle not found, redirecting to dashboard')
+        if (branchError || !branch) {
+          console.log('Branch not found, redirecting to dashboard')
           router.push('/dashboard')
           return
         }
 
-        setCircle(circle)
+        setBranch(branch)
         
       } catch (error) {
-        console.error('Error in checkAuthAndLoadCircle:', error)
+        console.error('Error in checkAuthAndLoadBranch:', error)
         router.push('/dashboard')
       } finally {
         setLoading(false)
       }
     }
 
-    checkAuthAndLoadCircle()
-  }, [circleId, router])
+    checkAuthAndLoadBranch()
+  }, [branchId, router])
 
   if (loading) {
     return (
@@ -76,14 +76,14 @@ export default function CreatePostPage({ params }: PageProps) {
     )
   }
 
-  if (!user || !circle) {
+  if (!user || !branch) {
     return null // Will redirect in useEffect
   }
 
   return (
     <CreatePostClient 
       user={user} 
-      circle={circle}
+      branch={branch}
     />
   )
 }

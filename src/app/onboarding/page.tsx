@@ -212,7 +212,7 @@ export default function OnboardingPage() {
                 </label>
                 <textarea
                   value={treeDescription}
-                  onChange={(e) => setTreeDescription(e.target.value))
+                  onChange={(e) => setTreeDescription(e.target.value)}
                   placeholder="Tell us about your family..."
                   rows={3}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -266,7 +266,7 @@ export default function OnboardingPage() {
                       <textarea
                         placeholder="Description (optional)"
                         value={branch.description}
-                        onChange={(e) => updateBranch(index, 'description', e.target.value))
+                        onChange={(e) => updateBranch(index, 'description', e.target.value)}
                         rows={2}
                         className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       />
@@ -314,7 +314,7 @@ export default function OnboardingPage() {
                               name={`privacy-${index}`}
                               value="public"
                               checked={branch.privacy === 'public'}
-                              onChange={(e) => updateBranch(index, 'privacy', e.target.value))
+                              onChange={(e) => updateBranch(index, 'privacy', e.target.value)}
                               className="mr-2"
                             />
                             <span className="text-sm">Public - Anyone can join</span>
@@ -325,7 +325,7 @@ export default function OnboardingPage() {
                               name={`privacy-${index}`}
                               value="invite_only"
                               checked={branch.privacy === 'invite_only'}
-                              onChange={(e) => updateBranch(index, 'privacy', e.target.value))
+                              onChange={(e) => updateBranch(index, 'privacy', e.target.value)}
                               className="mr-2"
                             />
                             <span className="text-sm">Invite Only - Members must be invited</span>
@@ -343,7 +343,7 @@ export default function OnboardingPage() {
                           <button
                             key={color}
                             type="button"
-                            onClick={() => updateBranch(index, 'color', color))
+                            onClick={() => updateBranch(index, 'color', color)}
                             className={`w-6 h-6 rounded-full border-2 ${
                               branch.color === color ? 'border-gray-400' : 'border-gray-200'
                             }`}

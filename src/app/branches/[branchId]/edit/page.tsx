@@ -8,7 +8,7 @@ import type { User } from '@supabase/supabase-js'
 import type { BranchPermissions, CrossTreeAccess } from '@/types/database'
 
 interface PageProps {
-  params: Promise<{ circleId: string }>
+  params: Promise<{ branchId: string }>
 }
 
 export default function BranchEditPage({ params }: PageProps) {
@@ -24,7 +24,7 @@ export default function BranchEditPage({ params }: PageProps) {
   const router = useRouter()
   
   // Unwrap the params promise
-  const { circleId: branchId } = use(params)
+  const { branchId } = use(params)
 
   // Form state
   const [name, setName] = useState('')
@@ -553,7 +553,7 @@ export default function BranchEditPage({ params }: PageProps) {
                     <h2 className="text-2xl font-bold text-gray-900">Members</h2>
                     {permissions?.canInviteMembers && (
                       <button
-                        onClick={() => router.push(`/circles/${branchId}/invite`)}
+                        onClick={() => router.push(`/branches/${branchId}/invite`)}
                         className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                       >
                         Invite Members
