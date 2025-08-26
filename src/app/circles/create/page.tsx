@@ -4,29 +4,29 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { rbac } from '@/lib/rbac'
-import { getUserPrimaryTribe, getUserTribes } from '@/lib/tribes'
+import { getUserPrimaryTree, getUserTrees } from '@/lib/trees'
 import type { User } from '@supabase/supabase-js'
-import type { CircleType, CirclePrivacy } from '@/types/database'
+import type { BranchType, BranchPrivacy } from '@/types/database'
 
-export default function CreateCirclePage() {
+export default function CreateBranchPage() {
   const [user, setUser] = useState<User | null>(null)
-  const [userTribes, setUserTribes] = useState<any[]>([])
-  const [primaryTribeId, setPrimaryTribeId] = useState<string | null>(null)
+  const [userTrees, setUserTrees] = useState<any[]>([])
+  const [primaryTreeId, setPrimaryTreeId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
 
   // Form state
-  const [circleType, setCircleType] = useState<CircleType>('family')
+  const [branchType, setBranchType] = useState<BranchType>('family')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [color, setColor] = useState('#3B82F6')
-  const [privacy, setPrivacy] = useState<CirclePrivacy>('private')
+  const [privacy, setPrivacy] = useState<BranchPrivacy>('private')
   const [category, setCategory] = useState('')
   const [location, setLocation] = useState('')
   const [autoApprove, setAutoApprove] = useState(false)
   const [isDiscoverable, setIsDiscoverable] = useState(false)
-  const [selectedTribeId, setSelectedTribeId] = useState<string | null>(null)
+  const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null)
 
   // Available categories
   const [categories, setCategories] = useState<any[]>([])
@@ -41,17 +41,17 @@ export default function CreateCirclePage() {
       
       setUser(user)
 
-      // Get user's tribes
-      const tribes = await getUserTribes(user.id)
-      setUserTribes(tribes)
+      // Get user's trees
+      const trees = await getUserTrees(user.id)
+      setUserTrees(trees)
 
-      // Get user's primary tribe
-      const primaryTribe = await getUserPrimaryTribe(user.id)
-      setPrimaryTribeId(primaryTribe)
-      setSelectedTribeId(primaryTribe) // Default to primary tribe
+      // Get user's primary tree
+      const primaryTree = await getUserPrimaryTree(user.id)
+      setPrimaryTreeId(primaryTree)
+      setSelectedTreeId(primaryTree) // Default to primary tree
 
-      // If user has no tribes, redirect to onboarding
-      if (!tribes.length || !primaryTribe) {
+      // If user has no trees, redirect to onboarding
+      if (!trees.length || !primaryTree) {
         router.push('/onboarding')
         return
       }
@@ -61,7 +61,7 @@ export default function CreateCirclePage() {
 
     const loadCategories = async () => {
       const { data } = await supabase
-        .from('circle_categories')
+        .from('branch_categories')
         .select('*')
         .order('name')
       
@@ -90,37 +90,37 @@ export default function CreateCirclePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || !name.trim() || !selectedTribeId) return
+    if (!user || !name.trim() || !selectedTreeId) return
 
     setSubmitting(true)
 
     try {
-      // Create the circle within the selected tribe
-      const { data: circle, error: circleError } = await supabase
-        .from('circles')
+      // Create the branch within the selected tree
+      const { data: branch, error: branchError } = await supabase
+        .from('branches')
         .insert({
-          tribe_id: selectedTribeId, // Required tribe association
+          tree_id: selectedTreeId, // Required tree association
           name: name.trim(),
           description: description.trim() || null,
-          type: circleType,
-          privacy: circleType === 'family' ? 'private' : privacy,
+          type: branchType,
+          privacy: branchType === 'family' ? 'private' : privacy,
           category: category || null,
           location: location.trim() || null,
           color,
           created_by: user.id,
-          is_discoverable: circleType === 'community' && isDiscoverable,
+          is_discoverable: branchType === 'community' && isDiscoverable,
           auto_approve_members: autoApprove
         })
         .select()
         .single()
 
-      if (circleError) throw circleError
+      if (branchError) throw branchError
 
-      // Assign owner role using RBAC system (circle creator automatically gets owner role)
+      // Assign owner role using RBAC system (branch creator automatically gets owner role)
       const ownerAssigned = await rbac.assignRole(
         user.id,
         'owner',
-        { type: 'circle', id: circle.id },
+        { type: 'branch', id: branch.id },
         user.id
       )
 

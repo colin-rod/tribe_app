@@ -10,12 +10,12 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   
-  // Tribe creation form
-  const [tribeName, setTribeName] = useState('')
-  const [tribeDescription, setTribeDescription] = useState('')
+  // Tree creation form
+  const [treeName, setTreeName] = useState('')
+  const [treeDescription, setTreeDescription] = useState('')
   
-  // Circle creation form - now supporting different types
-  const [circles, setCircles] = useState([
+  // Branch creation form - now supporting different types
+  const [branches, setBranches] = useState([
     { name: '', description: '', color: '#3B82F6', type: 'family' as const, privacy: 'private' as const }
   ])
   
@@ -34,124 +34,124 @@ export default function OnboardingPage() {
     getUser()
   }, [router])
 
-  const addCircle = () => {
-    setCircles([...circles, { name: '', description: '', color: '#3B82F6', type: 'family' as const, privacy: 'private' as const }])
+  const addBranch = () => {
+    setBranches([...branches, { name: '', description: '', color: '#3B82F6', type: 'family' as const, privacy: 'private' as const }])
   }
 
-  const removeCircle = (index: number) => {
-    if (circles.length > 1) {
-      setCircles(circles.filter((_, i) => i !== index))
+  const removeBranch = (index: number) => {
+    if (branches.length > 1) {
+      setBranches(branches.filter((_, i) => i !== index))
     }
   }
 
-  const updateCircle = (index: number, field: string, value: string) => {
-    const updated = circles.map((circle, i) => 
-      i === index ? { ...circle, [field]: value } : circle
+  const updateBranch = (index: number, field: string, value: string) => {
+    const updated = branches.map((branch, i) => 
+      i === index ? { ...branch, [field]: value } : branch
     )
-    setCircles(updated)
+    setBranches(updated)
   }
 
-  const createTribeAndCircles = async () => {
+  const createTreeAndBranches = async () => {
     if (!user) return
 
-    if (!tribeName.trim()) {
-      alert('Please enter a tribe name to continue')
+    if (!treeName.trim()) {
+      alert('Please enter a tree name to continue')
       return
     }
 
     setLoading(true)
     try {
-      let tribe = null
+      let tree = null
       
-      // Create required tribe
-      const { data: tribeData, error: tribeError } = await supabase
-        .from('tribes')
+      // Create required tree
+      const { data: treeData, error: treeError } = await supabase
+        .from('trees')
         .insert({
-          name: tribeName.trim(),
-          description: tribeDescription.trim() || null,
+          name: treeName.trim(),
+          description: treeDescription.trim() || null,
           created_by: user.id
         })
         .select()
         .single()
 
-      if (tribeError) throw tribeError
-      tribe = tribeData
+      if (treeError) throw treeError
+      tree = treeData
 
-      // Assign owner role using RBAC system (tribe creator gets owner role)
+      // Assign owner role using RBAC system (tree creator gets owner role)
       const ownerAssigned = await rbac.assignRole(
         user.id,
         'owner',
-        { type: 'tribe', id: tribe.id },
+        { type: 'tree', id: tree.id },
         user.id
       )
 
       if (!ownerAssigned) {
-        throw new Error('Failed to assign owner role to tribe')
+        throw new Error('Failed to assign owner role to tree')
       }
 
       // Add user as member for backward compatibility
       const { error: memberError } = await supabase
-        .from('tribe_members')
+        .from('tree_members')
         .insert({
-          tribe_id: tribe.id,
+          tree_id: tree.id,
           user_id: user.id,
           role: 'owner'
         })
 
       if (memberError) throw memberError
 
-      // Create circles within the tribe
-      for (const circle of circles) {
-        if (circle.name.trim()) {
-          const { data: newCircle, error: circleError } = await supabase
-            .from('circles')
+      // Create branches within the tree
+      for (const branch of branches) {
+        if (branch.name.trim()) {
+          const { data: newBranch, error: branchError } = await supabase
+            .from('branches')
             .insert({
-              tribe_id: tribe.id, // Required tribe association
-              name: circle.name,
-              description: circle.description,
-              color: circle.color,
-              type: circle.type,
-              privacy: circle.privacy,
+              tree_id: tree.id, // Required tree association
+              name: branch.name,
+              description: branch.description,
+              color: branch.color,
+              type: branch.type,
+              privacy: branch.privacy,
               created_by: user.id,
-              is_discoverable: circle.type === 'community', // Community circles are discoverable
-              auto_approve_members: circle.type === 'community' && circle.privacy === 'public'
+              is_discoverable: branch.type === 'community', // Community branches are discoverable
+              auto_approve_members: branch.type === 'community' && branch.privacy === 'public'
             })
             .select()
             .single()
 
-          if (circleError) throw circleError
+          if (branchError) throw branchError
 
-          // Assign owner role using RBAC system (circle creator gets owner role)
+          // Assign owner role using RBAC system (branch creator gets owner role)
           const ownerAssigned = await rbac.assignRole(
             user.id,
             'owner',
-            { type: 'circle', id: newCircle.id },
+            { type: 'branch', id: newBranch.id },
             user.id
           )
 
           if (!ownerAssigned) {
-            throw new Error('Failed to assign owner role to circle')
+            throw new Error('Failed to assign owner role to branch')
           }
 
-          // Add user to circle_members for backward compatibility
-          const { error: circleMemberError } = await supabase
-            .from('circle_members')
+          // Add user to branch_members for backward compatibility
+          const { error: branchMemberError } = await supabase
+            .from('branch_members')
             .insert({
-              circle_id: newCircle.id,
+              branch_id: newBranch.id,
               user_id: user.id,
               role: 'owner',
               join_method: 'admin_added',
               status: 'active'
             })
 
-          if (circleMemberError) throw circleMemberError
+          if (branchMemberError) throw branchMemberError
         }
       }
 
       router.push('/dashboard')
     } catch (error: any) {
-      console.error('Error creating circles:', error)
-      alert('Failed to create your circles. Please try again.')
+      console.error('Error creating branches:', error)
+      alert('Failed to create your branches. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -177,7 +177,7 @@ export default function OnboardingPage() {
           Welcome to Tribe!
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Every family needs a tribe. Let's create yours!
+          Every family needs a tree. Let's create yours!
         </p>
       </div>
 
@@ -186,20 +186,20 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Create Your Family Tribe</h3>
+                <h3 className="text-lg font-medium text-gray-900">Create Your Family Tree</h3>
                 <p className="mt-1 text-sm text-gray-600">
-                  Your tribe is your family's home base. All your circles will live within your tribe, and you can share special circles with other families.
+                  Your tree is your family's home base. All your branches will live within your tree, and you can share special branches with other families.
                 </p>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Tribe Name *
+                  Tree Name *
                 </label>
                 <input
                   type="text"
-                  value={tribeName}
-                  onChange={(e) => setTribeName(e.target.value)}
+                  value={treeName}
+                  onChange={(e) => setTreeName(e.target.value)}
                   placeholder="e.g., The Smith Family"
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   required
@@ -211,8 +211,8 @@ export default function OnboardingPage() {
                   Description (optional)
                 </label>
                 <textarea
-                  value={tribeDescription}
-                  onChange={(e) => setTribeDescription(e.target.value)}
+                  value={treeDescription}
+                  onChange={(e) => setTreeDescription(e.target.value))
                   placeholder="Tell us about your family..."
                   rows={3}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -223,7 +223,7 @@ export default function OnboardingPage() {
                 onClick={() => setStep(2)}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Next: Create Circles
+                Next: Create Branches
               </button>
             </div>
           )}
@@ -231,19 +231,19 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Create Your Circles</h3>
+                <h3 className="text-lg font-medium text-gray-900">Create Your Branches</h3>
                 <p className="mt-1 text-sm text-gray-600">
-                  Circles are groups within your tribe (e.g., one per child, or by topic)
+                  Branches are groups within your tree (e.g., one per child, or by topic)
                 </p>
               </div>
               
-              {circles.map((circle, index) => (
+              {branches.map((branch, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-medium text-gray-700">Circle {index + 1}</h4>
-                    {circles.length > 1 && (
+                    <h4 className="text-sm font-medium text-gray-700">Branch {index + 1}</h4>
+                    {branches.length > 1 && (
                       <button
-                        onClick={() => removeCircle(index)}
+                        onClick={() => removeBranch(index)}
                         className="text-red-600 hover:text-red-800 text-sm"
                       >
                         Remove
@@ -255,9 +255,9 @@ export default function OnboardingPage() {
                     <div>
                       <input
                         type="text"
-                        placeholder="Circle name (e.g., Emma's Circle, New Dads NYC)"
-                        value={circle.name}
-                        onChange={(e) => updateCircle(index, 'name', e.target.value)}
+                        placeholder="Branch name (e.g., Emma's Branch, New Dads NYC)"
+                        value={branch.name}
+                        onChange={(e) => updateBranch(index, 'name', e.target.value)}
                         className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -265,8 +265,8 @@ export default function OnboardingPage() {
                     <div>
                       <textarea
                         placeholder="Description (optional)"
-                        value={circle.description}
-                        onChange={(e) => updateCircle(index, 'description', e.target.value)}
+                        value={branch.description}
+                        onChange={(e) => updateBranch(index, 'description', e.target.value))
                         rows={2}
                         className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       />
@@ -274,14 +274,14 @@ export default function OnboardingPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Circle Type
+                        Branch Type
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
-                          onClick={() => updateCircle(index, 'type', 'family')}
+                          onClick={() => updateBranch(index, 'type', 'family')}
                           className={`p-2 text-sm rounded-lg border-2 transition-colors ${
-                            circle.type === 'family' 
+                            branch.type === 'family' 
                               ? 'border-blue-500 bg-blue-50 text-blue-700' 
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
@@ -290,9 +290,9 @@ export default function OnboardingPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => updateCircle(index, 'type', 'community')}
+                          onClick={() => updateBranch(index, 'type', 'community')}
                           className={`p-2 text-sm rounded-lg border-2 transition-colors ${
-                            circle.type === 'community' 
+                            branch.type === 'community' 
                               ? 'border-green-500 bg-green-50 text-green-700' 
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
@@ -302,7 +302,7 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
-                    {circle.type === 'community' && (
+                    {branch.type === 'community' && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Privacy
@@ -313,8 +313,8 @@ export default function OnboardingPage() {
                               type="radio"
                               name={`privacy-${index}`}
                               value="public"
-                              checked={circle.privacy === 'public'}
-                              onChange={(e) => updateCircle(index, 'privacy', e.target.value)}
+                              checked={branch.privacy === 'public'}
+                              onChange={(e) => updateBranch(index, 'privacy', e.target.value))
                               className="mr-2"
                             />
                             <span className="text-sm">Public - Anyone can join</span>
@@ -324,8 +324,8 @@ export default function OnboardingPage() {
                               type="radio"
                               name={`privacy-${index}`}
                               value="invite_only"
-                              checked={circle.privacy === 'invite_only'}
-                              onChange={(e) => updateCircle(index, 'privacy', e.target.value)}
+                              checked={branch.privacy === 'invite_only'}
+                              onChange={(e) => updateBranch(index, 'privacy', e.target.value))
                               className="mr-2"
                             />
                             <span className="text-sm">Invite Only - Members must be invited</span>
@@ -343,9 +343,9 @@ export default function OnboardingPage() {
                           <button
                             key={color}
                             type="button"
-                            onClick={() => updateCircle(index, 'color', color)}
+                            onClick={() => updateBranch(index, 'color', color))
                             className={`w-6 h-6 rounded-full border-2 ${
-                              circle.color === color ? 'border-gray-400' : 'border-gray-200'
+                              branch.color === color ? 'border-gray-400' : 'border-gray-200'
                             }`}
                             style={{ backgroundColor: color }}
                           />
@@ -360,7 +360,7 @@ export default function OnboardingPage() {
                 onClick={addCircle}
                 className="w-full py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Add Another Circle
+                Add Another Branch
               </button>
               
               <div className="flex space-x-3">
@@ -372,11 +372,11 @@ export default function OnboardingPage() {
                 </button>
                 
                 <button
-                  onClick={createTribeAndCircles}
-                  disabled={loading || !tribeName.trim() || !circles.some(c => c.name.trim())}
+                  onClick={createTreeAndBranches}
+                  disabled={loading || !treeName.trim() || !branches.some(c => c.name.trim())}
                   className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Creating...' : 'Create Tribe & Circles'}
+                  {loading ? 'Creating...' : 'Create Tree & Branches'}
                 </button>
               </div>
             </div>

@@ -1,13 +1,13 @@
 import { supabase } from './supabase/client'
 import type { 
   UserRole, 
-  CirclePermissions, 
+  BranchPermissions, 
   RBACContext, 
   UserPermissions,
   UserRoleAssignment,
   Role,
   Permission,
-  CrossTribeAccess
+  CrossTreeAccess
 } from '@/types/database'
 
 export class RBACService {
@@ -33,7 +33,7 @@ export class RBACService {
     }
   }
 
-  // Get user's role in a specific context (circle, tribe, global)
+  // Get user's role in a specific context (branch, tree, global)
   async getUserRole(
     userId: string, 
     context: RBACContext
@@ -45,15 +45,15 @@ export class RBACService {
     }
 
     try {
-      // First check if user is circle creator (automatic owner)
-      if (context.type === 'circle' && context.id) {
-        const { data: circle } = await supabase
-          .from('circles')
+      // First check if user is branch creator (automatic owner)
+      if (context.type === 'branch' && context.id) {
+        const { data: branch } = await supabase
+          .from('branches')
           .select('created_by')
           .eq('id', context.id)
           .single()
         
-        if (circle?.created_by === userId) {
+        if (branch?.created_by === userId) {
           this.roleCache.set(cacheKey, 'owner')
           return 'owner'
         }
@@ -173,17 +173,17 @@ export class RBACService {
     }
   }
 
-  // Get comprehensive circle permissions for a user
-  async getCirclePermissions(
+  // Get comprehensive branch permissions for a user
+  async getBranchPermissions(
     userId: string,
-    circleId: string
-  ): Promise<CirclePermissions> {
+    branchId: string
+  ): Promise<BranchPermissions> {
     try {
-      const context: RBACContext = { type: 'circle', id: circleId }
+      const context: RBACContext = { type: 'branch', id: branchId }
       const userRole = await this.getUserRole(userId, context)
       
       // Base permissions object
-      const permissions: CirclePermissions = {
+      const permissions: BranchPermissions = {
         canRead: false,
         canUpdate: false,
         canDelete: false,
@@ -197,24 +197,24 @@ export class RBACService {
         userRole
       }
 
-      // If no role in the circle's tribe, check for cross-tribe access or public circle
+      // If no role in the branch's tree, check for cross-tree access or public branch
       if (userRole === 'none') {
-        const { data: circle } = await supabase
-          .from('circles')
+        const { data: branch } = await supabase
+          .from('branches')
           .select('privacy')
-          .eq('id', circleId)
+          .eq('id', branchId)
           .single()
         
         // Check for public access
-        permissions.canRead = circle?.privacy === 'public'
+        permissions.canRead = branch?.privacy === 'public'
         
-        // Check for cross-tribe access
-        const hasCrossTribeAccess = await hasUserCrossTribeAccess(userId, circleId)
-        if (hasCrossTribeAccess) {
-          // Get cross-tribe permissions - for now, assume basic permissions
+        // Check for cross-tree access
+        const hasCrossTreeAccess = await hasUserCrossTreeAccess(userId, branchId)
+        if (hasCrossTreeAccess) {
+          // Get cross-tree permissions - for now, assume basic permissions
           permissions.canRead = true
           permissions.canCreatePosts = true
-          // Cross-tribe users typically can't manage or moderate
+          // Cross-tree users typically can't manage or moderate
         }
         
         return permissions
@@ -235,7 +235,7 @@ export class RBACService {
         case 'admin':
           permissions.canRead = true
           permissions.canUpdate = true
-          permissions.canDelete = false // Admins can't delete circles
+          permissions.canDelete = false // Admins can't delete branches
           permissions.canCreatePosts = true
           permissions.canModerate = true
           permissions.canInviteMembers = true
@@ -276,7 +276,7 @@ export class RBACService {
       return permissions
 
     } catch (error) {
-      console.error('Error getting circle permissions:', error)
+      console.error('Error getting branch permissions:', error)
       return {
         canRead: false,
         canUpdate: false,
@@ -362,47 +362,47 @@ export class RBACService {
 // Convenience functions for common operations
 export const rbac = RBACService.getInstance()
 
-export async function getUserCircleRole(userId: string, circleId: string): Promise<UserRole | 'none'> {
-  return rbac.getUserRole(userId, { type: 'circle', id: circleId })
+export async function getUserBranchRole(userId: string, branchId: string): Promise<UserRole | 'none'> {
+  return rbac.getUserRole(userId, { type: 'branch', id: branchId })
 }
 
-export async function getUserCirclePermissions(userId: string, circleId: string): Promise<CirclePermissions> {
-  return rbac.getCirclePermissions(userId, circleId)
+export async function getUserBranchPermissions(userId: string, branchId: string): Promise<BranchPermissions> {
+  return rbac.getBranchPermissions(userId, branchId)
 }
 
-export async function canUserCreatePosts(userId: string, circleId: string): Promise<boolean> {
-  const permissions = await rbac.getCirclePermissions(userId, circleId)
+export async function canUserCreatePosts(userId: string, branchId: string): Promise<boolean> {
+  const permissions = await rbac.getBranchPermissions(userId, branchId)
   return permissions.canCreatePosts
 }
 
-export async function canUserModerate(userId: string, circleId: string): Promise<boolean> {
-  const permissions = await rbac.getCirclePermissions(userId, circleId)
+export async function canUserModerate(userId: string, branchId: string): Promise<boolean> {
+  const permissions = await rbac.getBranchPermissions(userId, branchId)
   return permissions.canModerate
 }
 
-export async function isUserCircleAdmin(userId: string, circleId: string): Promise<boolean> {
-  const permissions = await rbac.getCirclePermissions(userId, circleId)
+export async function isUserBranchAdmin(userId: string, branchId: string): Promise<boolean> {
+  const permissions = await rbac.getBranchPermissions(userId, branchId)
   return permissions.isAdmin
 }
 
-export async function isUserCircleOwner(userId: string, circleId: string): Promise<boolean> {
-  const permissions = await rbac.getCirclePermissions(userId, circleId)
+export async function isUserBranchOwner(userId: string, branchId: string): Promise<boolean> {
+  const permissions = await rbac.getBranchPermissions(userId, branchId)
   return permissions.isOwner
 }
 
-// Cross-tribe access functions
-export async function createCrossTribeAccess(
-  circleId: string, 
-  tribeId: string, 
+// Cross-tree access functions
+export async function createCrossTreeAccess(
+  branchId: string, 
+  treeId: string, 
   invitedBy: string,
   permissions: { can_read: boolean; can_comment: boolean; can_like: boolean }
 ): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from('cross_tribe_access')
+      .from('cross_tree_access')
       .insert({
-        circle_id: circleId,
-        tribe_id: tribeId,
+        branch_id: branchId,
+        tree_id: treeId,
         invited_by: invitedBy,
         permissions,
         status: 'active'
@@ -410,75 +410,85 @@ export async function createCrossTribeAccess(
 
     return !error
   } catch (error) {
-    console.error('Error creating cross-tribe access:', error)
+    console.error('Error creating cross-tree access:', error)
     return false
   }
 }
 
-export async function getCrossTribeAccess(circleId: string): Promise<CrossTribeAccess[]> {
+export async function getCrossTreeAccess(branchId: string): Promise<CrossTreeAccess[]> {
   try {
     const { data, error } = await supabase
-      .from('cross_tribe_access')
+      .from('cross_tree_access')
       .select(`
         *,
-        tribes (
+        trees (
           id,
           name,
           description
         )
       `)
-      .eq('circle_id', circleId)
+      .eq('branch_id', branchId)
       .eq('status', 'active')
 
     if (error) {
-      console.error('Error fetching cross-tribe access:', error)
+      console.error('Error fetching cross-tree access:', error)
       return []
     }
 
     return data || []
   } catch (error) {
-    console.error('Error getting cross-tribe access:', error)
+    console.error('Error getting cross-tree access:', error)
     return []
   }
 }
 
-export async function revokeCrossTribeAccess(crossTribeAccessId: string): Promise<boolean> {
+export async function revokeCrossTreeAccess(crossTreeAccessId: string): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from('cross_tribe_access')
+      .from('cross_tree_access')
       .update({ status: 'revoked' })
-      .eq('id', crossTribeAccessId)
+      .eq('id', crossTreeAccessId)
 
     return !error
   } catch (error) {
-    console.error('Error revoking cross-tribe access:', error)
+    console.error('Error revoking cross-tree access:', error)
     return false
   }
 }
 
-export async function hasUserCrossTribeAccess(userId: string, circleId: string): Promise<boolean> {
+export async function hasUserCrossTreeAccess(userId: string, branchId: string): Promise<boolean> {
   try {
-    // Get user's tribes
-    const { data: userTribes, error: tribesError } = await supabase
-      .from('tribe_members')
-      .select('tribe_id')
+    // Get user's trees
+    const { data: userTrees, error: treesError } = await supabase
+      .from('tree_members')
+      .select('tree_id')
       .eq('user_id', userId)
 
-    if (tribesError || !userTribes) return false
+    if (treesError || !userTrees) return false
 
-    // Check if any of user's tribes have cross-tribe access to this circle
-    const tribeIds = userTribes.map(tm => tm.tribe_id)
+    // Check if any of user's trees have cross-tree access to this branch
+    const treeIds = userTrees.map(tm => tm.tree_id)
     
-    const { data: crossTribeAccess, error: accessError } = await supabase
-      .from('cross_tribe_access')
+    const { data: crossTreeAccess, error: accessError } = await supabase
+      .from('cross_tree_access')
       .select('id')
-      .eq('circle_id', circleId)
-      .in('tribe_id', tribeIds)
+      .eq('branch_id', branchId)
+      .in('tree_id', treeIds)
       .eq('status', 'active')
 
-    return !accessError && crossTribeAccess && crossTribeAccess.length > 0
+    return !accessError && crossTreeAccess && crossTreeAccess.length > 0
   } catch (error) {
-    console.error('Error checking cross-tribe access:', error)
+    console.error('Error checking cross-tree access:', error)
     return false
   }
 }
+
+// Backward compatibility aliases (to be removed after full migration)
+export const getUserCircleRole = getUserBranchRole
+export const getUserCirclePermissions = getUserBranchPermissions
+export const isUserCircleAdmin = isUserBranchAdmin
+export const isUserCircleOwner = isUserBranchOwner
+export const createCrossTribeAccess = createCrossTreeAccess
+export const getCrossTribeAccess = getCrossTreeAccess
+export const revokeCrossTribeAccess = revokeCrossTreeAccess
+export const hasUserCrossTribeAccess = hasUserCrossTreeAccess

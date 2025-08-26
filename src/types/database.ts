@@ -1,10 +1,10 @@
 // RBAC System: Roles are managed through the RBAC system (user_roles table)
-// The 'role' fields in legacy tables (circle_members, tribe_members) are kept for backward compatibility
+// The 'role' fields in legacy tables (branch_members, tree_members) are kept for backward compatibility
 // but the RBAC system is the source of truth for permissions
 export type UserRole = 'owner' | 'admin' | 'moderator' | 'member' | 'viewer'
 export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'expired'
-export type CircleType = 'family' | 'community' | 'topic' | 'local'
-export type CirclePrivacy = 'private' | 'public' | 'invite_only'
+export type BranchType = 'family' | 'community' | 'topic' | 'local'
+export type BranchPrivacy = 'private' | 'public' | 'invite_only'
 export type JoinMethod = 'invited' | 'requested' | 'auto_approved' | 'admin_added'
 export type FamilyRole = 'parent' | 'child' | 'grandparent' | 'grandchild' | 'sibling' | 'spouse' | 'partner' | 'other'
 export type ProfileVisibility = 'public' | 'circles' | 'private'
@@ -37,7 +37,7 @@ export interface UserSettings {
   updated_at: string
 }
 
-export interface Tribe {
+export interface Tree {
   id: string
   name: string
   description: string | null
@@ -48,25 +48,25 @@ export interface Tribe {
   settings: Record<string, any>
 }
 
-export interface TribeMember {
+export interface TreeMember {
   id: string
-  tribe_id: string
+  tree_id: string
   user_id: string
   role: UserRole  // Kept for backward compatibility, but RBAC is source of truth
   joined_at: string
 }
 
-export interface Circle {
+export interface Branch {
   id: string
-  tribe_id: string  // Required - circles must belong to a tribe
+  tree_id: string  // Required - branches must belong to a tree
   name: string
   description: string | null
   color: string
   created_by: string
   created_at: string
   updated_at: string
-  type: CircleType
-  privacy: CirclePrivacy
+  type: BranchType
+  privacy: BranchPrivacy
   category: string | null
   location: string | null
   member_count: number
@@ -74,9 +74,9 @@ export interface Circle {
   auto_approve_members: boolean
 }
 
-export interface CircleMember {
+export interface BranchMember {
   id: string
-  circle_id: string
+  branch_id: string
   user_id: string
   role: UserRole  // Kept for backward compatibility, but RBAC is source of truth
   added_at: string
@@ -87,7 +87,7 @@ export interface CircleMember {
   approved_at: string | null
 }
 
-export interface CircleCategory {
+export interface BranchCategory {
   id: string
   name: string
   description: string | null
@@ -96,9 +96,9 @@ export interface CircleCategory {
   created_at: string
 }
 
-export interface CircleInvitation {
+export interface BranchInvitation {
   id: string
-  circle_id: string
+  branch_id: string
   invited_by: string
   email: string
   role: UserRole  // Role to be assigned via RBAC upon acceptance
@@ -110,10 +110,10 @@ export interface CircleInvitation {
   message: string | null
 }
 
-export interface CrossTribeAccess {
+export interface CrossTreeAccess {
   id: string
-  circle_id: string
-  tribe_id: string
+  branch_id: string
+  tree_id: string
   invited_by: string
   invited_at: string
   permissions: {
@@ -128,7 +128,7 @@ export interface CrossTribeAccess {
 
 export interface Post {
   id: string
-  circle_id: string
+  branch_id: string
   author_id: string
   content: string | null
   media_urls: string[] | null
@@ -156,7 +156,7 @@ export interface Like {
 
 export interface Invitation {
   id: string
-  tribe_id: string
+  tree_id: string
   invited_by: string
   email: string
   role: UserRole  // Role to be assigned via RBAC upon acceptance
@@ -167,44 +167,44 @@ export interface Invitation {
   accepted_at: string | null
 }
 
-// Extended types with relations for circles-first architecture
-export interface CircleWithMembers extends Circle {
-  circle_members: (CircleMember & { profiles: Profile })[]
-  tribe?: Tribe  // Optional relation data, but tribe_id is required
-  category_info?: CircleCategory | null
+// Extended types with relations for branches-first architecture
+export interface BranchWithMembers extends Branch {
+  branch_members: (BranchMember & { profiles: Profile })[]
+  tree?: Tree  // Optional relation data, but tree_id is required
+  category_info?: BranchCategory | null
 }
 
-export interface CircleWithDetails extends Circle {
-  circle_members: (CircleMember & { profiles: Profile })[]
+export interface BranchWithDetails extends Branch {
+  branch_members: (BranchMember & { profiles: Profile })[]
   posts_count?: number
   recent_activity?: string | null
-  user_membership?: CircleMember | null  // Current user's membership in this circle
+  user_membership?: BranchMember | null  // Current user's membership in this branch
 }
 
 export interface PostWithDetails extends Post {
   profiles: Profile
   comments: (Comment & { profiles: Profile })[]
   likes: Like[]
-  circle: Circle
+  branch: Branch
 }
 
-// Keep tribe-related types for backward compatibility
-export interface TribeWithMembers extends Tribe {
-  tribe_members: (TribeMember & { profiles: Profile })[]
-  circles: Circle[]
+// Keep tree-related types for backward compatibility
+export interface TreeWithMembers extends Tree {
+  tree_members: (TreeMember & { profiles: Profile })[]
+  branches: Branch[]
 }
 
-// New types for circle discovery and management
-export interface CircleDiscovery {
-  featured_circles: Circle[]
-  categories: CircleCategory[]
-  user_circles: CircleWithMembers[]
-  suggested_circles: Circle[]
+// New types for branch discovery and management
+export interface BranchDiscovery {
+  featured_branches: Branch[]
+  categories: BranchCategory[]
+  user_branches: BranchWithMembers[]
+  suggested_branches: Branch[]
 }
 
-export interface CircleJoinRequest {
+export interface BranchJoinRequest {
   id: string
-  circle_id: string
+  branch_id: string
   user_id: string
   message: string | null
   status: 'pending' | 'approved' | 'rejected'
@@ -215,7 +215,7 @@ export interface CircleJoinRequest {
 
 // RBAC System Types
 export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'moderate' | 'invite' | 'admin'
-export type ResourceType = 'circle' | 'post' | 'comment' | 'member' | 'invitation'
+export type ResourceType = 'branch' | 'post' | 'comment' | 'member' | 'invitation'
 
 export interface Permission {
   id: string
@@ -257,7 +257,7 @@ export interface UserRoleAssignment {
 
 // RBAC Utility Types
 export interface RBACContext {
-  type: 'circle' | 'tribe' | 'global'
+  type: 'branch' | 'tree' | 'global'
   id?: string
 }
 
@@ -265,7 +265,7 @@ export interface UserPermissions {
   [key: string]: boolean
 }
 
-export interface CirclePermissions {
+export interface BranchPermissions {
   canRead: boolean
   canUpdate: boolean
   canDelete: boolean
@@ -278,3 +278,20 @@ export interface CirclePermissions {
   isModerator: boolean
   userRole: UserRole | 'none'
 }
+
+// Backward compatibility type aliases (to be removed after full migration)
+export type Tribe = Tree
+export type TribeMember = TreeMember
+export type Circle = Branch
+export type CircleMember = BranchMember
+export type CircleCategory = BranchCategory
+export type CircleInvitation = BranchInvitation
+export type CircleType = BranchType
+export type CirclePrivacy = BranchPrivacy
+export type CircleWithMembers = BranchWithMembers
+export type CircleWithDetails = BranchWithDetails
+export type CircleDiscovery = BranchDiscovery
+export type CircleJoinRequest = BranchJoinRequest
+export type CirclePermissions = BranchPermissions
+export type CrossTribeAccess = CrossTreeAccess
+export type TribeWithMembers = TreeWithMembers
