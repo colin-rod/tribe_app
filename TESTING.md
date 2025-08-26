@@ -1,14 +1,14 @@
 # Tribe App Testing Guide
 
-This document provides comprehensive testing scenarios for the Tribe app's tribe-first architecture with RBAC permissions.
+This document provides comprehensive testing scenarios for the Tribe app's tree-first architecture with RBAC permissions.
 
 ## 🗂️ **Table of Contents**
 - [Prerequisites](#prerequisites)
 - [Authentication & Onboarding](#authentication--onboarding)
-- [Tribe Management](#tribe-management)
-- [Circle Creation & Management](#circle-creation--management)
+- [Tree Management](#tree-management)
+- [Branch Creation & Management](#branch-creation--management)
 - [RBAC Permissions Testing](#rbac-permissions-testing)
-- [Cross-Tribe Functionality](#cross-tribe-functionality)
+- [Cross-Tree Functionality](#cross-tree-functionality)
 - [Post Creation & Media](#post-creation--media)
 - [Real-time Features](#real-time-features)
 - [Profile System](#profile-system)
@@ -29,16 +29,16 @@ This document provides comprehensive testing scenarios for the Tribe app's tribe
 
 ### Test User Accounts
 Create multiple test accounts:
-- `test+tribe1@yourdomain.com` (Primary tribe owner)
-- `test+tribe2@yourdomain.com` (Secondary tribe owner) 
-- `test+member@yourdomain.com` (Tribe member)
+- `test+tree1@yourdomain.com` (Primary tree owner)
+- `test+tree2@yourdomain.com` (Secondary tree owner) 
+- `test+member@yourdomain.com` (Tree member)
 
 ---
 
 ## 🔐 **Authentication & Onboarding**
 
-### Test Case 1: New User Signup & Tribe Creation
-**Scenario:** First-time user registration with mandatory tribe creation
+### Test Case 1: New User Signup & Tree Creation
+**Scenario:** First-time user registration with mandatory tree creation
 
 **Steps:**
 1. Navigate to `http://localhost:3000`
@@ -46,52 +46,52 @@ Create multiple test accounts:
 3. Fill registration form:
    - First name: "Test"
    - Last name: "User"
-   - Email: `test+tribe1@yourdomain.com`
+   - Email: `test+tree1@yourdomain.com`
    - Password: "testpassword123"
 4. Click "Create account"
 5. Check email for confirmation link
 6. Click confirmation link
-7. **Onboarding Page**: Fill required tribe form:
-   - Tribe name: "Smith Family"
+7. **Onboarding Page**: Fill required tree form:
+   - Tree name: "Smith Family"
    - Description: "Our family's home base"
-8. Click "Create Tribe & Continue"
+8. Click "Create Tree & Continue"
 
 **Expected Result:**
 - [ ] User receives confirmation email
 - [ ] Confirmation redirects to onboarding (not dashboard)
-- [ ] Tribe creation form shows as required (no "Optional" label)
-- [ ] Form validation prevents submission without tribe name
-- [ ] After tribe creation, redirects to dashboard
-- [ ] Dashboard shows tribe-centric layout with "Smith Family" section
-- [ ] User automatically has 'owner' role in created tribe
+- [ ] Tree creation form shows as required (no "Optional" label)
+- [ ] Form validation prevents submission without tree name
+- [ ] After tree creation, redirects to dashboard
+- [ ] Dashboard shows tree-centric layout with "Smith Family" section
+- [ ] User automatically has 'owner' role in created tree
 
 ### Test Case 2: Returning User Login
-**Scenario:** User with existing tribe signs in
+**Scenario:** User with existing tree signs in
 
 **Steps:**
 1. Navigate to `http://localhost:3000/auth/login`
-2. Enter credentials for `test+tribe1@yourdomain.com`
+2. Enter credentials for `test+tree1@yourdomain.com`
 3. Click "Sign in"
 
 **Expected Result:**
 - [ ] Console shows: "Attempting sign in with: [email]"
 - [ ] Console shows: "Sign in successful, redirecting to dashboard"
 - [ ] Redirects to dashboard
-- [ ] Shows user's tribe(s) with circles organized underneath
-- [ ] Dashboard displays tribe-centric layout (not circle-type filtering)
+- [ ] Shows user's tree(s) with branches organized underneath
+- [ ] Dashboard displays tree-centric layout (not branch-type filtering)
 
 ---
 
-## 👥 **Tribe Management**
+## 🌳 **Tree Management**
 
-### Test Case 3: Tribe Overview Page
-**Scenario:** User accesses tribe management interface
+### Test Case 3: Tree Overview Page
+**Scenario:** User accesses tree management interface
 
 **Steps:**
-1. From dashboard, click "Manage Tribes" or navigate to `/tribes`
-2. View list of user's tribes
+1. From dashboard, click "Manage Trees" or navigate to `/trees`
+2. View list of user's trees
 3. Note role badges (owner/admin/member)
-4. Click "Manage" button for owned/admin tribes
+4. Click "Manage" button for owned/admin trees
 
 **Expected Result:**
 - [ ] `/tribes` page shows all user's tribes

@@ -129,12 +129,12 @@ export default function BranchEditPage({ params }: PageProps) {
   }, [branchId, router])
 
   const handleSaveGeneral = async () => {
-    if (!circle || !user) return
+    if (!branch || !user) return
 
     setSaving(true)
     try {
       const { error } = await supabase
-        .from('circles')
+        .from('branches')
         .update({
           name: name.trim(),
           description: description.trim() || null,
@@ -144,14 +144,14 @@ export default function BranchEditPage({ params }: PageProps) {
           auto_approve_members: autoApproveMembers,
           updated_at: new Date().toISOString()
         })
-        .eq('id', circleId)
+        .eq('id', branchId)
 
       if (error) {
         throw error
       }
 
-      setCircle({
-        ...circle,
+      setBranch({
+        ...branch,
         name: name.trim(),
         description: description.trim() || null,
         color,
@@ -160,11 +160,11 @@ export default function BranchEditPage({ params }: PageProps) {
         auto_approve_members: autoApproveMembers
       })
 
-      alert('Circle settings updated successfully!')
+      alert('Branch settings updated successfully!')
       
     } catch (error: any) {
-      console.error('Error updating circle:', error)
-      alert(`Failed to update circle: ${error.message}`)
+      console.error('Error updating branch:', error)
+      alert(`Failed to update branch: ${error.message}`)
     } finally {
       setSaving(false)
     }
@@ -176,7 +176,7 @@ export default function BranchEditPage({ params }: PageProps) {
       const roleAssigned = await rbac.assignRole(
         memberUserId,
         newRole,
-        { type: 'circle', id: circleId },
+        { type: 'branch', id: branchId },
         user!.id
       )
 
@@ -184,9 +184,9 @@ export default function BranchEditPage({ params }: PageProps) {
         throw new Error('Failed to assign role through RBAC')
       }
 
-      // Update circle_members for backward compatibility
+      // Update branch_members for backward compatibility
       const { error } = await supabase
-        .from('circle_members')
+        .from('branch_members')
         .update({ role: newRole })
         .eq('id', memberId)
 
@@ -204,17 +204,17 @@ export default function BranchEditPage({ params }: PageProps) {
   }
 
   const handleRemoveMember = async (memberId: string, memberName: string, memberUserId: string) => {
-    if (!confirm(`Are you sure you want to remove ${memberName} from this circle?`)) {
+    if (!confirm(`Are you sure you want to remove ${memberName} from this branch?`)) {
       return
     }
 
     try {
-      // Remove RBAC role assignments for this user in this circle
-      await rbac.removeRole(memberUserId, { type: 'circle', id: circleId })
+      // Remove RBAC role assignments for this user in this branch
+      await rbac.removeRole(memberUserId, { type: 'branch', id: branchId })
 
-      // Remove from circle_members table
+      // Remove from branch_members table
       const { error } = await supabase
-        .from('circle_members')
+        .from('branch_members')
         .delete()
         .eq('id', memberId)
 
@@ -228,13 +228,13 @@ export default function BranchEditPage({ params }: PageProps) {
     }
   }
 
-  const handleInviteTribe = async (tribeId: string) => {
-    if (!user || !circle) return
+  const handleInviteTree = async (treeId: string) => {
+    if (!user || !branch) return
 
     try {
-      const success = await createCrossTribeAccess(
-        circleId,
-        tribeId,
+      const success = await createCrossTreeAccess(
+        branchId,
+        treeId,
         user.id,
         {
           can_read: true,
@@ -244,28 +244,28 @@ export default function BranchEditPage({ params }: PageProps) {
       )
 
       if (success) {
-        // Refresh cross-tribe access data
-        const updatedData = await getCrossTribeAccess(circleId)
-        setCrossTribeAccess(updatedData)
-        alert('Tribe successfully invited to this circle!')
+        // Refresh cross-tree access data
+        const updatedData = await getCrossTreeAccess(branchId)
+        setCrossTreeAccess(updatedData)
+        alert('Tree successfully invited to this branch!')
       } else {
-        alert('Failed to invite tribe')
+        alert('Failed to invite tree')
       }
     } catch (error) {
-      console.error('Error inviting tribe:', error)
-      alert('Failed to invite tribe')
+      console.error('Error inviting tree:', error)
+      alert('Failed to invite tree')
     }
   }
 
   const handleRevokeAccess = async (accessId: string) => {
     try {
-      const success = await revokeCrossTribeAccess(accessId)
+      const success = await revokeCrossTreeAccess(accessId)
       
       if (success) {
-        // Refresh cross-tribe access data
-        const updatedData = await getCrossTribeAccess(circleId)
-        setCrossTribeAccess(updatedData)
-        alert('Tribe access revoked successfully!')
+        // Refresh cross-tree access data
+        const updatedData = await getCrossTreeAccess(branchId)
+        setCrossTreeAccess(updatedData)
+        alert('Tree access revoked successfully!')
       } else {
         alert('Failed to revoke access')
       }
@@ -275,10 +275,10 @@ export default function BranchEditPage({ params }: PageProps) {
     }
   }
 
-  const handleDeleteCircle = async () => {
-    if (!circle || !user) return
+  const handleDeleteBranch = async () => {
+    if (!branch || !user) return
 
-    const confirmText = `DELETE ${circle.name}`
+    const confirmText = `DELETE ${branch.name}`
     const userInput = prompt(
       `This action cannot be undone. All posts, comments, and member data will be permanently deleted.\n\nTo confirm deletion, type: ${confirmText}`
     )
@@ -292,20 +292,20 @@ export default function BranchEditPage({ params }: PageProps) {
 
     setSaving(true)
     try {
-      // Delete the circle (cascade will handle related data)
+      // Delete the branch (cascade will handle related data)
       const { error } = await supabase
-        .from('circles')
+        .from('branches')
         .delete()
-        .eq('id', circleId)
+        .eq('id', branchId)
 
       if (error) throw error
 
-      alert('Circle deleted successfully')
+      alert('Branch deleted successfully')
       router.push('/dashboard')
       
     } catch (error: any) {
-      console.error('Error deleting circle:', error)
-      alert(`Failed to delete circle: ${error.message}`)
+      console.error('Error deleting branch:', error)
+      alert(`Failed to delete branch: ${error.message}`)
     } finally {
       setSaving(false)
     }
@@ -316,20 +316,20 @@ export default function BranchEditPage({ params }: PageProps) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading circle settings...</p>
+          <p className="text-gray-600">Loading branch settings...</p>
         </div>
       </div>
     )
   }
 
-  if (!user || !circle) {
+  if (!user || !branch) {
     return null
   }
 
   const tabs = [
     { id: 'general' as const, name: 'General', icon: '⚙️' },
     { id: 'members' as const, name: 'Members', icon: '👥' },
-    { id: 'permissions' as const, name: 'Cross-Tribe', icon: '🔗' },
+    { id: 'permissions' as const, name: 'Cross-Tree', icon: '🔗' },
     { id: 'danger' as const, name: 'Danger Zone', icon: '⚠️' }
   ]
 
@@ -354,7 +354,7 @@ export default function BranchEditPage({ params }: PageProps) {
                 className="w-4 h-4 rounded-full mr-3"
                 style={{ backgroundColor: color }}
               />
-              <h1 className="text-xl font-semibold text-gray-900">{circle.name} Settings</h1>
+              <h1 className="text-xl font-semibold text-gray-900">{branch.name} Settings</h1>
             </div>
             
             <div></div>
@@ -553,7 +553,7 @@ export default function BranchEditPage({ params }: PageProps) {
                     <h2 className="text-2xl font-bold text-gray-900">Members</h2>
                     {permissions?.canInviteMembers && (
                       <button
-                        onClick={() => router.push(`/circles/${circleId}/invite`)}
+                        onClick={() => router.push(`/circles/${branchId}/invite`)}
                         className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
                       >
                         Invite Members
@@ -621,22 +621,22 @@ export default function BranchEditPage({ params }: PageProps) {
 
               {activeTab === 'permissions' && (
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Cross-Tribe Access</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Cross-Tree Access</h2>
                   <p className="text-gray-600 mb-6">
-                    Share this circle with other tribes (like godparents, close family friends, or extended family).
+                    Share this branch with other trees (like godparents, close family friends, or extended family).
                   </p>
 
-                  {/* Current Cross-Tribe Access */}
+                  {/* Current Cross-Tree Access */}
                   <div className="mb-8">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Tribes with Access</h3>
-                    {crossTribeAccess.length > 0 ? (
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Trees with Access</h3>
+                    {crossTreeAccess.length > 0 ? (
                       <div className="space-y-3">
-                        {crossTribeAccess.map((access: any) => (
+                        {crossTreeAccess.map((access: any) => (
                           <div key={access.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                             <div>
-                              <h4 className="font-medium text-gray-900">{access.tribes?.name}</h4>
-                              {access.tribes?.description && (
-                                <p className="text-sm text-gray-500">{access.tribes.description}</p>
+                              <h4 className="font-medium text-gray-900">{access.trees?.name}</h4>
+                              {access.trees?.description && (
+                                <p className="text-sm text-gray-500">{access.trees.description}</p>
                               )}
                               <p className="text-xs text-gray-400">
                                 Invited on {new Date(access.invited_at).toLocaleDateString()}
@@ -652,39 +652,39 @@ export default function BranchEditPage({ params }: PageProps) {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-sm">No tribes currently have access to this circle.</p>
+                      <p className="text-gray-500 text-sm">No trees currently have access to this branch.</p>
                     )}
                   </div>
 
-                  {/* Invite New Tribes */}
+                  {/* Invite New Trees */}
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Invite Tribes</h3>
-                    {availableTribes.length > 0 ? (
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Invite Trees</h3>
+                    {availableTrees.length > 0 ? (
                       <div className="space-y-3">
-                        {availableTribes.filter(tribe => 
-                          !crossTribeAccess.some(access => access.tribe_id === tribe.id)
-                        ).map((tribe) => (
-                          <div key={tribe.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                        {availableTrees.filter(tree => 
+                          !crossTreeAccess.some(access => access.tree_id === tree.id)
+                        ).map((tree) => (
+                          <div key={tree.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                             <div>
-                              <h4 className="font-medium text-gray-900">{tribe.name}</h4>
-                              {tribe.description && (
-                                <p className="text-sm text-gray-500">{tribe.description}</p>
+                              <h4 className="font-medium text-gray-900">{tree.name}</h4>
+                              {tree.description && (
+                                <p className="text-sm text-gray-500">{tree.description}</p>
                               )}
                             </div>
                             <button
-                              onClick={() => handleInviteTribe(tribe.id)}
+                              onClick={() => handleInviteTree(tree.id)}
                               className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 border border-blue-300 rounded-md hover:bg-blue-50"
                             >
-                              Invite Tribe
+                              Invite Tree
                             </button>
                           </div>
                         ))}
                       </div>
                     ) : (
                       <p className="text-gray-500 text-sm">
-                        {availableTribes.length === 0 ? 
-                          'No other tribes are available to invite.' :
-                          'All available tribes have already been invited.'
+                        {availableTrees.length === 0 ? 
+                          'No other trees are available to invite.' :
+                          'All available trees have already been invited.'
                         }
                       </p>
                     )}
@@ -696,16 +696,16 @@ export default function BranchEditPage({ params }: PageProps) {
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Danger Zone</h2>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-red-800 mb-2">Delete Circle</h3>
+                    <h3 className="text-lg font-medium text-red-800 mb-2">Delete Branch</h3>
                     <p className="text-sm text-red-700 mb-4">
-                      Once you delete a circle, there is no going back. All posts, comments, and member data will be permanently deleted.
+                      Once you delete a branch, there is no going back. All posts, comments, and member data will be permanently deleted.
                     </p>
                     {permissions?.canDelete && (
                       <button
-                        onClick={handleDeleteCircle}
+                        onClick={handleDeleteBranch}
                         className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700"
                       >
-                        Delete This Circle
+                        Delete This Branch
                       </button>
                     )}
                   </div>

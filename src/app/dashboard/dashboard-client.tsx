@@ -4,26 +4,26 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import type { Profile, TribeWithMembers, CirclePermissions } from '@/types/database'
-import { getUserCirclePermissions } from '@/lib/rbac'
-import { getUserTribes } from '@/lib/tribes'
+import type { Profile, TreeWithMembers, BranchPermissions } from '@/types/database'
+import { getUserBranchPermissions } from '@/lib/rbac'
+import { getUserTrees } from '@/lib/trees'
 
 interface DashboardClientProps {
   user: User
   profile: Profile
   userCircles: any[]
-  tribes: any[]
+  trees: any[]
 }
 
-export default function DashboardClient({ user, profile, userCircles, tribes }: DashboardClientProps) {
-  const [selectedCircle, setSelectedCircle] = useState(userCircles && userCircles.length > 0 ? userCircles[0]?.circles : null)
-  // Removed circle filter since we now organize by tribe
+export default function DashboardClient({ user, profile, userCircles, trees }: DashboardClientProps) {
+  const [selectedBranch, setSelectedBranch] = useState(userCircles && userCircles.length > 0 ? userCircles[0]?.branches : null)
+  // Removed branch filter since we now organize by tree
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedPost, setSelectedPost] = useState<string | null>(null)
   const [newComment, setNewComment] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
-  const [circlePermissions, setCirclePermissions] = useState<CirclePermissions | null>(null)
+  const [branchPermissions, setBranchPermissions] = useState<BranchPermissions | null>(null)
   const [realtimeNotifications, setRealtimeNotifications] = useState<any[]>([])
   const router = useRouter()
 
