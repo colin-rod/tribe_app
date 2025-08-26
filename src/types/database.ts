@@ -3,6 +3,8 @@ export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'expired'
 export type CircleType = 'family' | 'community' | 'topic' | 'local'
 export type CirclePrivacy = 'private' | 'public' | 'invite_only'
 export type JoinMethod = 'invited' | 'requested' | 'auto_approved' | 'admin_added'
+export type FamilyRole = 'parent' | 'child' | 'grandparent' | 'grandchild' | 'sibling' | 'spouse' | 'partner' | 'other'
+export type ProfileVisibility = 'public' | 'circles' | 'private'
 
 export interface Profile {
   id: string
@@ -10,6 +12,24 @@ export interface Profile {
   first_name: string | null
   last_name: string | null
   avatar_url: string | null
+  bio: string | null
+  family_role: FamilyRole | null
+  created_at: string
+  updated_at: string
+}
+
+export interface UserSettings {
+  id: string
+  user_id: string
+  profile_visibility: ProfileVisibility
+  show_email: boolean
+  show_join_date: boolean
+  allow_circle_discovery: boolean
+  email_new_posts: boolean
+  email_comments: boolean
+  email_mentions: boolean
+  email_invitations: boolean
+  push_notifications: boolean
   created_at: string
   updated_at: string
 }

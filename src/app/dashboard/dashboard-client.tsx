@@ -23,7 +23,28 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
   const [newComment, setNewComment] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
   const [circlePermissions, setCirclePermissions] = useState<CirclePermissions | null>(null)
+  const [realtimeNotifications, setRealtimeNotifications] = useState<any[]>([])
   const router = useRouter()
+
+  // Function to show new post notifications
+  const showNewPostNotification = (post: any) => {
+    const notification = {
+      id: `post-${post.id}`,
+      type: 'new_post',
+      title: 'New post',
+      message: `${post.profiles?.first_name} ${post.profiles?.last_name} shared something new`,
+      timestamp: new Date(),
+      postId: post.id,
+      authorId: post.author_id
+    }
+    
+    setRealtimeNotifications(prev => [notification, ...prev.slice(0, 4)]) // Keep last 5
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      setRealtimeNotifications(prev => prev.filter(n => n.id !== notification.id))
+    }, 5000)
+  }
 
   // Load posts and permissions for selected circle
   useEffect(() => {
@@ -32,6 +53,175 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
       loadCirclePermissions()
     }
   }, [selectedCircle])
+
+  // Set up real-time subscriptions for posts
+  useEffect(() => {
+    if (!selectedCircle) return
+
+    console.log('Setting up real-time subscription for circle:', selectedCircle.id)
+
+    // Subscribe to posts table changes for this circle
+    const postsChannel = supabase
+      .channel(`posts-${selectedCircle.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts',
+          filter: `circle_id=eq.${selectedCircle.id}`
+        },
+        async (payload) => {
+          console.log('Real-time posts update:', payload)
+          
+          if (payload.eventType === 'INSERT') {
+            // New post created - fetch full post data with relations
+            const { data: newPost, error } = await supabase
+              .from('posts')
+              .select(`
+                *,
+                profiles (first_name, last_name, avatar_url),
+                comments (
+                  *,
+                  profiles (first_name, last_name, avatar_url)
+                ),
+                likes (user_id)
+              `)
+              .eq('id', payload.new.id)
+              .single()
+            
+            if (!error && newPost) {
+              setPosts(prevPosts => [newPost, ...prevPosts])
+              
+              // Show notification if it's not the current user's post
+              if (newPost.author_id !== user.id) {
+                showNewPostNotification(newPost)
+              }
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            // Post updated
+            const { data: updatedPost, error } = await supabase
+              .from('posts')
+              .select(`
+                *,
+                profiles (first_name, last_name, avatar_url),
+                comments (
+                  *,
+                  profiles (first_name, last_name, avatar_url)
+                ),
+                likes (user_id)
+              `)
+              .eq('id', payload.new.id)
+              .single()
+            
+            if (!error && updatedPost) {
+              setPosts(prevPosts => prevPosts.map(post => 
+                post.id === payload.new.id ? updatedPost : post
+              ))
+            }
+          } else if (payload.eventType === 'DELETE') {
+            // Post deleted
+            setPosts(prevPosts => prevPosts.filter(post => post.id !== payload.old.id))
+          }
+        }
+      )
+      .subscribe()
+
+    // Subscribe to comments for posts in this circle
+    const commentsChannel = supabase
+      .channel(`comments-${selectedCircle.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'comments'
+        },
+        async (payload) => {
+          console.log('Real-time comments update:', payload)
+          
+          if (payload.eventType === 'INSERT') {
+            // New comment added - fetch full comment data with profile
+            const { data: newComment, error } = await supabase
+              .from('comments')
+              .select(`
+                *,
+                profiles (first_name, last_name, avatar_url)
+              `)
+              .eq('id', payload.new.id)
+              .single()
+            
+            if (!error && newComment) {
+              // Check if this comment belongs to a post in current circle
+              setPosts(prevPosts => prevPosts.map(post => {
+                if (post.id === newComment.post_id) {
+                  return {
+                    ...post,
+                    comments: [...(post.comments || []), newComment]
+                  }
+                }
+                return post
+              }))
+            }
+          } else if (payload.eventType === 'DELETE') {
+            // Comment deleted
+            setPosts(prevPosts => prevPosts.map(post => ({
+              ...post,
+              comments: post.comments?.filter((comment: any) => comment.id !== payload.old.id) || []
+            })))
+          }
+        }
+      )
+      .subscribe()
+
+    // Subscribe to likes for posts in this circle  
+    const likesChannel = supabase
+      .channel(`likes-${selectedCircle.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'likes'
+        },
+        (payload) => {
+          console.log('Real-time likes update:', payload)
+          
+          if (payload.eventType === 'INSERT') {
+            // New like added
+            setPosts(prevPosts => prevPosts.map(post => {
+              if (post.id === payload.new.post_id) {
+                return {
+                  ...post,
+                  likes: [...(post.likes || []), { user_id: payload.new.user_id }]
+                }
+              }
+              return post
+            }))
+          } else if (payload.eventType === 'DELETE') {
+            // Like removed
+            setPosts(prevPosts => prevPosts.map(post => {
+              if (post.id === payload.old.post_id) {
+                return {
+                  ...post,
+                  likes: post.likes?.filter((like: any) => like.user_id !== payload.old.user_id) || []
+                }
+              }
+              return post
+            }))
+          }
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscriptions when component unmounts or circle changes
+    return () => {
+      console.log('Cleaning up real-time subscriptions')
+      supabase.removeChannel(postsChannel)
+      supabase.removeChannel(commentsChannel)
+      supabase.removeChannel(likesChannel)
+    }
+  }, [selectedCircle, user.id])
 
   const loadCirclePermissions = async () => {
     if (!selectedCircle || !user) return
@@ -196,37 +386,112 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
             </div>
             
             <div className="flex items-center space-x-4">
-              {/* User Profile Info */}
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-blue-700">
-                    {profile?.first_name?.[0]}{profile?.last_name?.[0]}
-                  </span>
-                </div>
-                <div className="hidden md:block">
-                  <p className="text-sm font-medium text-gray-900">
-                    {profile?.first_name} {profile?.last_name}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {user.email}
-                  </p>
-                </div>
+              {/* User Profile Info with Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition-colors"
+                >
+                  {profile?.avatar_url ? (
+                    <img
+                      className="w-8 h-8 rounded-full object-cover"
+                      src={profile.avatar_url}
+                      alt={`${profile.first_name} ${profile.last_name}`}
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-blue-700">
+                        {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                      </span>
+                    </div>
+                  )}
+                  <div className="hidden md:block text-left">
+                    <p className="text-sm font-medium text-gray-900">
+                      {profile?.first_name} {profile?.last_name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      View Profile
+                    </p>
+                  </div>
+                </button>
               </div>
               
-              {/* Sign Out Button */}
-              <button
-                onClick={handleSignOut}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Sign out
-              </button>
+              {/* Profile Actions */}
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => router.push('/settings')}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  title="Settings"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+                
+                {/* Sign Out Button */}
+                <button
+                  onClick={handleSignOut}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  title="Sign Out"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span className="hidden sm:inline">Sign out</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
+
+      {/* Real-time Notifications */}
+      {realtimeNotifications.length > 0 && (
+        <div className="fixed top-20 right-4 z-50 space-y-2">
+          {realtimeNotifications.map((notification) => (
+            <div
+              key={notification.id}
+              className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm animate-slide-in"
+              onClick={() => {
+                if (notification.postId) {
+                  setSelectedPost(notification.postId)
+                  // Scroll to post if needed
+                  const postElement = document.getElementById(`post-${notification.postId}`)
+                  if (postElement) {
+                    postElement.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }
+              }}
+            >
+              <div className="flex items-center cursor-pointer">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 011 1v1a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1h4zM3 8h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-gray-900">{notification.title}</p>
+                  <p className="text-sm text-gray-500">{notification.message}</p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setRealtimeNotifications(prev => prev.filter(n => n.id !== notification.id))
+                  }}
+                  className="ml-2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -468,23 +733,36 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
                     </div>
                   ) : (
                     posts.map((post) => (
-                      <div key={post.id} className="bg-white rounded-lg shadow">
+                      <div key={post.id} id={`post-${post.id}`} className="bg-white rounded-lg shadow scroll-mt-20">
                         {/* Post Header */}
                         <div className="p-6 pb-4">
                           <div className="flex items-center mb-4">
-                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-medium text-gray-600">
-                                {post.profiles?.first_name?.[0]}{post.profiles?.last_name?.[0]}
-                              </span>
-                            </div>
-                            <div className="ml-3">
-                              <p className="text-sm font-medium text-gray-900">
-                                {post.profiles?.first_name} {post.profiles?.last_name}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(post.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
+                            <button
+                              onClick={() => post.author_id !== user.id ? router.push(`/profile/${post.author_id}`) : router.push('/profile')}
+                              className="flex items-center hover:bg-gray-50 rounded-lg p-2 transition-colors -ml-2"
+                            >
+                              {post.profiles?.avatar_url ? (
+                                <img
+                                  className="w-10 h-10 rounded-full object-cover"
+                                  src={post.profiles.avatar_url}
+                                  alt={`${post.profiles.first_name} ${post.profiles.last_name}`}
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                  <span className="text-sm font-medium text-gray-600">
+                                    {post.profiles?.first_name?.[0]}{post.profiles?.last_name?.[0]}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="ml-3 text-left">
+                                <p className="text-sm font-medium text-gray-900 hover:text-blue-600">
+                                  {post.profiles?.first_name} {post.profiles?.last_name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(post.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </button>
                           </div>
                           
                           {post.content && (
@@ -625,16 +903,31 @@ export default function DashboardClient({ user, profile, userCircles, tribes }: 
                               <div className="space-y-3 mb-4">
                                 {post.comments.map((comment: any) => (
                                   <div key={comment.id} className="flex space-x-3">
-                                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                      <span className="text-xs font-medium text-gray-600">
-                                        {comment.profiles?.first_name?.[0]}{comment.profiles?.last_name?.[0]}
-                                      </span>
-                                    </div>
+                                    <button
+                                      onClick={() => comment.author_id !== user.id ? router.push(`/profile/${comment.author_id}`) : router.push('/profile')}
+                                    >
+                                      {comment.profiles?.avatar_url ? (
+                                        <img
+                                          className="w-8 h-8 rounded-full object-cover"
+                                          src={comment.profiles.avatar_url}
+                                          alt={`${comment.profiles.first_name} ${comment.profiles.last_name}`}
+                                        />
+                                      ) : (
+                                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                          <span className="text-xs font-medium text-gray-600">
+                                            {comment.profiles?.first_name?.[0]}{comment.profiles?.last_name?.[0]}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </button>
                                     <div className="flex-1">
                                       <div className="bg-white rounded-lg px-3 py-2">
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <button
+                                          onClick={() => comment.author_id !== user.id ? router.push(`/profile/${comment.author_id}`) : router.push('/profile')}
+                                          className="text-sm font-medium text-gray-900 hover:text-blue-600"
+                                        >
                                           {comment.profiles?.first_name} {comment.profiles?.last_name}
-                                        </p>
+                                        </button>
                                         <p className="text-sm text-gray-700">{comment.content}</p>
                                       </div>
                                       <p className="text-xs text-gray-500 mt-1">
