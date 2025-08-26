@@ -10,7 +10,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [userCircles, setUserCircles] = useState<any[]>([])
-  const [tribes, setTribes] = useState<any[]>([])
+  const [trees, setTrees] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -32,10 +32,10 @@ export default function DashboardPage() {
 
         setUser(user)
 
-        // Get user's circles with a simpler approach to avoid recursion
+        // Get user's branches with a simpler approach to avoid recursion
         const { data: userMemberships, error: membershipsError } = await supabase
-          .from('circle_members')
-          .select('*, circles(*)')
+          .from('branch_members')
+          .select('*, branches(*)')
           .eq('user_id', user.id)
           .eq('status', 'active')
 
@@ -45,28 +45,28 @@ export default function DashboardPage() {
         }
 
         // Transform to the expected format
-        const userCircles = userMemberships?.map(membership => ({
+        const userBranches = userMemberships?.map(membership => ({
           ...membership,
           circles: {
-            ...membership.circles,
+            ...membership.branches,
             circle_members: [] // We'll load this separately if needed
           }
         })) || []
 
-        console.log('Fetched user circles:', userCircles)
+        console.log('Fetched user branches:', userBranches)
 
-        setUserCircles(userCircles || [])
+        setUserCircles(userBranches || [])
 
-        // Get user's tribes (optional)
-        const { data: userTribes } = await supabase
-          .from('tribe_members')
+        // Get user's trees (optional)
+        const { data: userTrees } = await supabase
+          .from('tree_members')
           .select(`
             *,
-            tribes (*)
+            trees (*)
           `)
           .eq('user_id', user.id)
 
-        setTribes(userTribes || [])
+        setTrees(userTrees || [])
 
         // Get user profile
         const { data: profile } = await supabase
@@ -110,7 +110,7 @@ export default function DashboardPage() {
       user={user} 
       profile={profile} 
       userCircles={userCircles}
-      tribes={tribes}
+      trees={trees}
     />
   )
 }

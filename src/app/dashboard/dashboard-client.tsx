@@ -369,24 +369,24 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
 
   // No longer need to filter circles since they're organized by tribe
 
-  // Group circles by tribe for display
-  const circlesByTribe = userCircles ? userCircles.reduce((acc, uc) => {
-    const tribeId = uc.circles.tribe_id
-    const tribeName = tribes.find(t => t.tribe_id === tribeId)?.tribes?.name || 'Unknown Tribe'
+  // Group branches by tree for display
+  const branchesByTree = userCircles ? userCircles.reduce((acc, uc) => {
+    const treeId = uc.circles.tree_id
+    const treeName = trees.find(t => t.tree_id === treeId)?.trees?.name || 'Unknown Tree'
     
-    if (!acc[tribeId]) {
-      acc[tribeId] = {
-        tribe: tribes.find(t => t.tribe_id === tribeId)?.tribes || { name: tribeName },
+    if (!acc[treeId]) {
+      acc[treeId] = {
+        tree: trees.find(t => t.tree_id === treeId)?.trees || { name: treeName },
         circles: []
       }
     }
-    acc[tribeId].circles.push(uc)
+    acc[treeId].circles.push(uc)
     return acc
-  }, {} as Record<string, { tribe: any, circles: any[] }>) : {}
+  }, {} as Record<string, { tree: any, circles: any[] }>) : {}
 
-  // Separate community circles (if they don't belong to any tribe)
-  const communityCircles = userCircles ? userCircles.filter(uc => 
-    uc.circles.type === 'community' && !uc.circles.tribe_id
+  // Separate community branches (if they don't belong to any tree)
+  const communityBranches = userCircles ? userCircles.filter(uc => 
+    uc.circles.type === 'community' && !uc.circles.tree_id
   ) : []
 
   return (
@@ -526,21 +526,21 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
               
               {/* Tribes and their circles */}
               <div className="space-y-6">
-                {Object.entries(circlesByTribe).map(([tribeId, tribeData]) => (
-                  <div key={tribeId} className="space-y-3">
+                {Object.entries(branchesByTree).map(([treeId, treeData]) => (
+                  <div key={treeId} className="space-y-3">
                     {/* Tribe Header */}
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                        {tribeData.tribe.name}
+                        {treeData.tree.name}
                       </h3>
                       <span className="text-xs text-gray-400">
-                        {tribeData.circles.length} circle{tribeData.circles.length !== 1 ? 's' : ''}
+                        {treeData.circles.length} circle{treeData.circles.length !== 1 ? 's' : ''}
                       </span>
                     </div>
                     
                     {/* Circles in this tribe */}
                     <div className="space-y-2 ml-2">
-                      {tribeData.circles.map((userCircle: any) => (
+                      {treeData.circles.map((userCircle: any) => (
                         <button
                           key={userCircle.circles.id}
                           onClick={() => setSelectedBranch(userCircle.circles)}
@@ -569,19 +569,19 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                 ))}
 
                 {/* Community Circles (if any) */}
-                {communityCircles.length > 0 && (
+                {communityBranches.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
                         Community Circles
                       </h3>
                       <span className="text-xs text-gray-400">
-                        {communityCircles.length} circle{communityCircles.length !== 1 ? 's' : ''}
+                        {communityBranches.length} circle{communityBranches.length !== 1 ? 's' : ''}
                       </span>
                     </div>
                     
                     <div className="space-y-2 ml-2">
-                      {communityCircles.map((userCircle: any) => (
+                      {communityBranches.map((userCircle: any) => (
                         <button
                           key={userCircle.circles.id}
                           onClick={() => setSelectedBranch(userCircle.circles)}
@@ -624,7 +624,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
               </div>
 
               {/* No circles state */}
-              {Object.keys(circlesByTribe).length === 0 && communityCircles.length === 0 && (
+              {Object.keys(branchesByTree).length === 0 && communityBranches.length === 0 && (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
