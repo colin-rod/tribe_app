@@ -1,13 +1,22 @@
-// RBAC System: Roles are managed through the RBAC system (user_roles table)
-// The 'role' fields in legacy tables (branch_members, tree_members) are kept for backward compatibility
-// but the RBAC system is the source of truth for permissions
-export type UserRole = 'owner' | 'admin' | 'moderator' | 'member' | 'viewer'
-export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'expired'
-export type BranchType = 'family' | 'community' | 'topic' | 'local'
-export type BranchPrivacy = 'private' | 'public' | 'invite_only'
-export type JoinMethod = 'invited' | 'requested' | 'auto_approved' | 'admin_added'
+// Tree App Pivot: New role system and types aligned with database schema
+export type TreeRole = 'owner' | 'caregiver' | 'viewer'
+export type BranchRole = 'owner' | 'admin' | 'member'
+export type PrivacyLevel = 'private' | 'invite_only' | 'public'
+export type BranchKind = 'family' | 'community'
+export type InviteStatus = 'pending' | 'accepted' | 'expired' | 'revoked'
+export type JoinMethod = 'invited' | 'requested' | 'auto_approved' | 'admin_added' | 'direct'
 export type FamilyRole = 'parent' | 'child' | 'grandparent' | 'grandchild' | 'sibling' | 'spouse' | 'partner' | 'other'
 export type ProfileVisibility = 'public' | 'circles' | 'private'
+export type NotificationChannel = 'email' | 'sms' | 'push'
+export type OutboxStatus = 'queued' | 'processing' | 'sent' | 'failed'
+export type AssistantAuthor = 'parent' | 'assistant'
+export type SubscriptionPlan = 'free' | 'pro'
+
+// Legacy types for backward compatibility
+export type UserRole = BranchRole
+export type InvitationStatus = InviteStatus
+export type BranchType = BranchKind
+export type BranchPrivacy = PrivacyLevel
 
 export interface Profile {
   id: string
@@ -42,49 +51,46 @@ export interface Tree {
   name: string
   description: string | null
   created_by: string
+  location: string | null
+  config: Record<string, any>
   created_at: string
   updated_at: string
-  is_active: boolean
-  settings: Record<string, any>
 }
 
 export interface TreeMember {
   id: string
   tree_id: string
   user_id: string
-  role: UserRole  // Kept for backward compatibility, but RBAC is source of truth
+  role: TreeRole
   joined_at: string
 }
 
 export interface Branch {
   id: string
-  tree_id: string  // Required - branches must belong to a tree
+  tree_id: string | null  // Optional - community branches can exist without a tree
   name: string
   description: string | null
   color: string
   created_by: string
-  created_at: string
-  updated_at: string
-  type: BranchType
-  privacy: BranchPrivacy
-  category: string | null
-  location: string | null
+  kind: BranchKind
+  privacy: PrivacyLevel
   member_count: number
   is_discoverable: boolean
   auto_approve_members: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface BranchMember {
   id: string
   branch_id: string
   user_id: string
-  role: UserRole  // Kept for backward compatibility, but RBAC is source of truth
+  role: BranchRole
   added_at: string
   join_method: JoinMethod
   joined_via: string | null  // user_id of who invited/approved them
   status: string
-  requested_at: string | null
-  approved_at: string | null
+  created_at: string
 }
 
 export interface BranchCategory {
@@ -277,6 +283,106 @@ export interface BranchPermissions {
   isAdmin: boolean
   isModerator: boolean
   userRole: UserRole | 'none'
+}
+
+// New interfaces for Tree App pivot
+
+export interface Child {
+  id: string
+  tree_id: string
+  name: string
+  dob: string | null
+  created_by: string
+  created_at: string
+}
+
+export interface Invite {
+  id: string
+  tree_id: string | null
+  branch_id: string | null
+  invited_by: string
+  email: string | null
+  phone: string | null
+  role: string
+  status: InviteStatus
+  token: string
+  expires_at: string
+  created_at: string
+  accepted_at: string | null
+  message: string | null
+}
+
+export interface AssistantThread {
+  id: string
+  tree_id: string
+  created_by: string
+  title: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AssistantMessage {
+  id: string
+  thread_id: string
+  author: AssistantAuthor
+  content: string
+  created_at: string
+}
+
+export interface PushSubscription {
+  id: string
+  user_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  created_at: string
+  updated_at: string
+}
+
+export interface OutboxEntry {
+  id: number
+  branch_id: string
+  post_id: string | null
+  channel: NotificationChannel
+  payload: Record<string, any>
+  status: OutboxStatus
+  attempts: number
+  max_attempts: number
+  last_error: string | null
+  created_at: string
+  processed_at: string | null
+}
+
+export interface Subscription {
+  id: string
+  user_id: string
+  is_active: boolean
+  plan: SubscriptionPlan
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TreeWithChildren extends Tree {
+  tree_members: (TreeMember & { profiles: Profile })[]
+  branches: Branch[]
+  children: Child[]
+}
+
+export interface BranchWithTree extends Branch {
+  tree: Tree | null
+}
+
+// Plan limits interface
+export interface PlanLimits {
+  maxBranchInvites: number
+  storageRetentionDays: number
+  allowVideo: boolean
+  allowSMS: boolean
+  maxUploadSize: number // in MB
+  maxBranches: number
+  maxTreeMembers: number
 }
 
 // Backward compatibility type aliases (to be removed after full migration)
