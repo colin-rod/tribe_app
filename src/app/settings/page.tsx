@@ -393,7 +393,7 @@ export default function SettingsPage() {
                     <ul className="list-disc list-inside mt-2 space-y-1">
                       <li>Who can view your profile</li>
                       <li>Who can see your posts</li>
-                      <li>Circle discovery settings</li>
+                      <li>Branch discovery settings</li>
                       <li>Data sharing preferences</li>
                     </ul>
                   </div>
@@ -409,7 +409,7 @@ export default function SettingsPage() {
                     <ul className="list-disc list-inside mt-2 space-y-1">
                       <li>Email notifications for new posts</li>
                       <li>Push notifications for comments</li>
-                      <li>Circle invitation notifications</li>
+                      <li>Branch invitation notifications</li>
                       <li>Milestone reminders</li>
                     </ul>
                   </div>

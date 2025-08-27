@@ -14,7 +14,7 @@ export default function UserProfilePage({ params }: PageProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [sharedCircles, setSharedCircles] = useState<any[]>([])
+  const [sharedBranches, setSharedBranches] = useState<any[]>([])
   const [recentPosts, setRecentPosts] = useState<any[]>([])
   const [canViewProfile, setCanViewProfile] = useState(false)
   const router = useRouter()
@@ -55,12 +55,12 @@ export default function UserProfilePage({ params }: PageProps) {
 
         setUserProfile(profile)
 
-        // Check if current user can view this profile by finding shared circles
-        const { data: sharedCircleData, error: sharedError } = await supabase
-          .from('circle_members')
+        // Check if current user can view this profile by finding shared branches
+        const { data: sharedBranchData, error: sharedError } = await supabase
+          .from('branch_members')
           .select(`
-            circle_id,
-            circles (
+            branch_id,
+            branches (
               id,
               name,
               description,
@@ -71,26 +71,26 @@ export default function UserProfilePage({ params }: PageProps) {
           .eq('user_id', userId)
           .eq('status', 'active')
 
-        if (!sharedError && sharedCircleData) {
-          // Find circles that both users are members of
-          const { data: currentUserCircles, error: currentUserError } = await supabase
-            .from('circle_members')
-            .select('circle_id')
+        if (!sharedError && sharedBranchData) {
+          // Find branches that both users are members of
+          const { data: currentUserBranches, error: currentUserError } = await supabase
+            .from('branch_members')
+            .select('branch_id')
             .eq('user_id', user.id)
             .eq('status', 'active')
 
-          if (!currentUserError && currentUserCircles) {
-            const currentUserCircleIds = currentUserCircles.map(c => c.circle_id)
-            const shared = sharedCircleData.filter(sc => 
-              currentUserCircleIds.includes(sc.circle_id)
+          if (!currentUserError && currentUserBranches) {
+            const currentUserBranchIds = currentUserBranches.map(c => c.branch_id)
+            const shared = sharedBranchData.filter(sc => 
+              currentUserBranchIds.includes(sc.branch_id)
             )
             
-            setSharedCircles(shared)
+            setSharedBranches(shared)
             setCanViewProfile(shared.length > 0)
 
-            // If they can view the profile, load recent posts from shared circles
+            // If they can view the profile, load recent posts from shared branches
             if (shared.length > 0) {
-              const sharedCircleIds = shared.map(sc => sc.circle_id)
+              const sharedBranchIds = shared.map(sc => sc.branch_id)
               
               const { data: posts, error: postsError } = await supabase
                 .from('posts')
@@ -100,13 +100,13 @@ export default function UserProfilePage({ params }: PageProps) {
                   created_at,
                   media_urls,
                   milestone_type,
-                  circles (
+                  branches (
                     id,
                     name
                   )
                 `)
                 .eq('author_id', userId)
-                .in('circle_id', sharedCircleIds)
+                .in('branch_id', sharedBranchIds)
                 .order('created_at', { ascending: false })
                 .limit(5)
 
@@ -178,7 +178,7 @@ export default function UserProfilePage({ params }: PageProps) {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile Not Accessible</h1>
           <p className="text-gray-600 mb-4">
-            You can only view profiles of family members you share circles with.
+            You can only view profiles of family members you share branches with.
           </p>
           <button
             onClick={() => router.push('/dashboard')}
@@ -240,10 +240,10 @@ export default function UserProfilePage({ params }: PageProps) {
                   Family member since {formatDate(userProfile.created_at)}
                 </p>
                 
-                {/* Shared Circles Info */}
+                {/* Shared Branches Info */}
                 <div className="mt-3">
                   <span className="text-sm text-gray-600">
-                    You share {sharedCircles.length} circle{sharedCircles.length !== 1 ? 's' : ''} together
+                    You share {sharedBranches.length} branch{sharedBranches.length !== 1 ? 'es' : ''} together
                   </span>
                 </div>
               </div>
@@ -252,32 +252,32 @@ export default function UserProfilePage({ params }: PageProps) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Shared Circles */}
+          {/* Shared Branches */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Shared Circles</h2>
-              <p className="text-sm text-gray-500">Circles you both belong to</p>
+              <h2 className="text-lg font-medium text-gray-900">Shared Branches</h2>
+              <p className="text-sm text-gray-500">Branches you both belong to</p>
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {sharedCircles.map((sharedCircle) => (
+                {sharedBranches.map((sharedBranch) => (
                   <div
-                    key={sharedCircle.circle_id}
+                    key={sharedBranch.branch_id}
                     className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
                     onClick={() => router.push('/dashboard')}
                   >
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">
-                        {sharedCircle.circles.name}
+                        {sharedBranch.branches.name}
                       </h3>
-                      {sharedCircle.circles.description && (
+                      {sharedBranch.branches.description && (
                         <p className="text-sm text-gray-500 mt-1">
-                          {sharedCircle.circles.description}
+                          {sharedBranch.branches.description}
                         </p>
                       )}
                       <div className="mt-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {sharedCircle.circles.type}
+                          {sharedBranch.branches.type}
                         </span>
                       </div>
                     </div>
@@ -290,16 +290,16 @@ export default function UserProfilePage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Recent Posts in Shared Circles */}
+          {/* Recent Posts in Shared Branches */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Recent Posts</h2>
-              <p className="text-sm text-gray-500">Recent activity in shared circles</p>
+              <p className="text-sm text-gray-500">Recent activity in shared branches</p>
             </div>
             <div className="p-6">
               {recentPosts.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">
-                  No recent posts in shared circles
+                  No recent posts in shared branches
                 </p>
               ) : (
                 <div className="space-y-4">

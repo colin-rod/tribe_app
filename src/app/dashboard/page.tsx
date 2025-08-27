@@ -9,7 +9,7 @@ import type { User } from '@supabase/supabase-js'
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [userCircles, setUserCircles] = useState<any[]>([])
+  const [userBranches, setUserBranches] = useState<any[]>([])
   const [trees, setTrees] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -49,13 +49,13 @@ export default function DashboardPage() {
           ...membership,
           circles: {
             ...membership.branches,
-            circle_members: [] // We'll load this separately if needed
+            branch_members: [] // We'll load this separately if needed
           }
         })) || []
 
         console.log('Fetched user branches:', userBranches)
 
-        setUserCircles(userBranches || [])
+        setUserBranches(userBranches || [])
 
         // Get user's trees (optional)
         const { data: userTrees } = await supabase
@@ -109,7 +109,7 @@ export default function DashboardPage() {
     <DashboardClient 
       user={user} 
       profile={profile} 
-      userCircles={userCircles}
+      userBranches={userBranches}
       trees={trees}
     />
   )

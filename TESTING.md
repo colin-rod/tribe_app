@@ -1,6 +1,6 @@
-# Tribe App Testing Guide
+# Tree App Testing Guide
 
-This document provides comprehensive testing scenarios for the Tribe app's tree-first architecture with RBAC permissions.
+This document provides comprehensive testing scenarios for the Tree app's tree-first architecture with RBAC permissions.
 
 ## 🗂️ **Table of Contents**
 - [Prerequisites](#prerequisites)
@@ -42,7 +42,7 @@ Create multiple test accounts:
 
 **Steps:**
 1. Navigate to `http://localhost:3000`
-2. Click "Start your tribe"
+2. Click "Start your tree"
 3. Fill registration form:
    - First name: "Test"
    - Last name: "User"
@@ -94,7 +94,7 @@ Create multiple test accounts:
 4. Click "Manage" button for owned/admin trees
 
 **Expected Result:**
-- [ ] `/tribes` page shows all user's tribes
+- [ ] `/trees` page shows all user's trees
 - [ ] Each tribe shows correct role badge
 - [ ] Created date displayed correctly
 - [ ] "Manage" button only visible for owners/admins
@@ -118,20 +118,20 @@ Create multiple test accounts:
 
 ---
 
-## 🎪 **Circle Creation & Management**
+## 🎪 **Branch Creation & Management**
 
-### Test Case 5: Create Circle with Tribe Selection
-**Scenario:** User creates a circle within their tribe
+### Test Case 5: Create Branch with Tree Selection
+**Scenario:** User creates a branch within their tree
 
 **Steps:**
-1. From dashboard, click "Create Circle"
-2. **Tribe Selection**: Choose from dropdown "Smith Family"
+1. From dashboard, click "Create Branch"
+2. **Tree Selection**: Choose from dropdown "Smith Family"
 3. Fill out form:
-   - Name: "Emma's Circle"
+   - Name: "Emma's Branch"
    - Description: "Updates and memories about Emma"
    - Privacy: "private"
    - Color: Select blue
-4. Click "Create Circle"
+4. Click "Create Branch"
 
 **Expected Result:**
 - [ ] Tribe selection dropdown populated with user's tribes
@@ -155,7 +155,7 @@ Create multiple test accounts:
    - Category: Select "parenting"
    - Location: "Brooklyn, NY"
    - Check "Auto-approve" and "Show in directory"
-4. Click "Create Circle"
+4. Click "Create Branch"
 
 **Expected Result:**
 - [ ] Public circles still require tribe assignment
@@ -244,9 +244,9 @@ SELECT user_has_permission(
 
 ---
 
-## 🔄 **Cross-Tribe Functionality**
+## 🔄 **Cross-Tree Functionality**
 
-### Test Case 11: Cross-Tribe Access Setup
+### Test Case 11: Cross-Tree Access Setup
 **Scenario:** Set up cross-tribe circle sharing
 
 **Steps:**

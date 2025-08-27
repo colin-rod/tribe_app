@@ -1,11 +1,11 @@
-# Tribe App
+# Tree App
 
-A modern family sharing and community platform built with Next.js and Supabase. Create private family circles to share memories and milestones, or join community circles to connect with other parents.
+A modern family sharing and community platform built with Next.js and Supabase. Create private family branches to share memories and milestones, or join community branches to connect with other parents.
 
 ## ✨ Features
 
-- 👨‍👩‍👧‍👦 **Private Family Circles** - Share updates, photos, and memories with specific family members
-- 🌍 **Community Circles** - Connect with other parents around shared interests and local communities
+- 👨‍👩‍👧‍👦 **Private Family Branches** - Share updates, photos, and memories with specific family members
+- 🌍 **Community Branches** - Connect with other parents around shared interests and local communities
 - 📸 **Rich Media Support** - Share photos, videos, and milestone moments
 - 💬 **Comments & Reactions** - Engage with posts through likes and comments
 - 🔒 **Granular Privacy** - Control exactly who sees what content
@@ -23,8 +23,8 @@ A modern family sharing and community platform built with Next.js and Supabase. 
 
 1. **Clone and install dependencies**
    ```bash
-   git clone https://github.com/colin-rod/tribe_app.git
-   cd tribe_app
+   git clone https://github.com/colin-rod/tree_app.git
+   cd tree_app
    npm install
    ```
 
@@ -53,7 +53,7 @@ A modern family sharing and community platform built with Next.js and Supabase. 
 
 6. **Visit the app**
    - Open [http://localhost:3000](http://localhost:3000)
-   - Create an account and start building your tribe!
+   - Create an account and start growing your tree!
 
 ## 🗂️ Project Structure
 
@@ -61,7 +61,7 @@ A modern family sharing and community platform built with Next.js and Supabase. 
 ├── src/
 │   ├── app/
 │   │   ├── auth/           # Authentication pages
-│   │   ├── circles/        # Circle management
+│   │   ├── branches/       # Branch management
 │   │   ├── dashboard/      # Main dashboard
 │   │   └── page.tsx        # Landing page
 │   ├── lib/
@@ -76,9 +76,9 @@ A modern family sharing and community platform built with Next.js and Supabase. 
 
 ## 🎯 Core Concepts
 
-### Circle Types
-- **Family Circles** - Private by default, perfect for sharing child updates and family moments
-- **Community Circles** - Can be public or private, great for connecting with other parents
+### Branch Types
+- **Family Branches** - Private by default, perfect for sharing child updates and family moments
+- **Community Branches** - Can be public or private, great for connecting with other parents
 
 ### Privacy Levels
 - **Private** - Only invited members can see content
@@ -86,14 +86,14 @@ A modern family sharing and community platform built with Next.js and Supabase. 
 - **Invite Only** - Discoverable but requires approval
 
 ### User Roles
-- **Admin** - Can manage circle settings and members
+- **Admin** - Can manage branch settings and members
 - **Member** - Can post and interact with content
 
 ## 🧪 Testing
 
 This project includes a comprehensive testing guide in `TESTING.md` that covers:
 - Authentication flows
-- Circle creation and management
+- Branch creation and management
 - Post creation and media uploads
 - Dashboard functionality
 - Cross-browser compatibility
@@ -144,7 +144,7 @@ This project is licensed under the MIT License. See `LICENSE` for more informati
 
 ## 🐛 Issues & Support
 
-- Report bugs and request features in [GitHub Issues](https://github.com/colin-rod/tribe_app/issues)
+- Report bugs and request features in [GitHub Issues](https://github.com/colin-rod/tree_app/issues)
 - Check `TESTING.md` for troubleshooting common issues
 - Review Supabase documentation for database and auth questions
 

@@ -14,7 +14,7 @@ export default async function AcceptInvitePage({ params }: PageProps) {
     .from('invitations')
     .select(`
       *,
-      tribes (
+      trees (
         id,
         name,
         description

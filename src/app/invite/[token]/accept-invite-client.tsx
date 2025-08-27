@@ -49,38 +49,38 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
 
       if (updateError) throw updateError
 
-      // Add user to tribe
+      // Add user to tree
       const { error: memberError } = await supabase
-        .from('tribe_members')
+        .from('tree_members')
         .insert({
-          tribe_id: invitation.tribe_id,
+          tree_id: invitation.tree_id,
           user_id: user.id,
           role: invitation.role
         })
 
       if (memberError) throw memberError
 
-      // For MVP, add user to all circles in the tribe
-      // In a full implementation, you'd store specific circle selections
-      const { data: circles, error: circlesError } = await supabase
-        .from('circles')
+      // For MVP, add user to all branches in the tree
+      // In a full implementation, you'd store specific branch selections
+      const { data: branches, error: branchesError } = await supabase
+        .from('branches')
         .select('id')
-        .eq('tribe_id', invitation.tribe_id)
+        .eq('tree_id', invitation.tree_id)
 
-      if (circlesError) throw circlesError
+      if (branchesError) throw branchesError
 
-      if (circles && circles.length > 0) {
-        const circleMemberInserts = circles.map(circle => ({
-          circle_id: circle.id,
+      if (branches && branches.length > 0) {
+        const branchMemberInserts = branches.map(branch => ({
+          branch_id: branch.id,
           user_id: user.id,
           role: invitation.role
         }))
 
-        const { error: circleMemberError } = await supabase
-          .from('circle_members')
-          .insert(circleMemberInserts)
+        const { error: branchMemberError } = await supabase
+          .from('branch_members')
+          .insert(branchMemberInserts)
 
-        if (circleMemberError) throw circleMemberError
+        if (branchMemberError) throw branchMemberError
       }
 
       // Success! Redirect to dashboard
@@ -139,9 +139,9 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow p-8 text-center max-w-md w-full mx-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Joining Your Tribe</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Joining Your Tree</h2>
           <p className="text-gray-600">
-            Please wait while we add you to {invitation.tribes.name}...
+            Please wait while we add you to {invitation.trees.name}...
           </p>
         </div>
       </div>
@@ -169,11 +169,11 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
               </strong> has invited you to join
             </p>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {invitation.tribes.name}
+              {invitation.trees.name}
             </h3>
-            {invitation.tribes.description && (
+            {invitation.trees.description && (
               <p className="text-sm text-gray-600 mb-4">
-                {invitation.tribes.description}
+                {invitation.trees.description}
               </p>
             )}
             <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -210,7 +210,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-gray-600 text-center">
-                Create an account to join this tribe
+                Create an account to join this tree
               </p>
               
               <form onSubmit={handleSignUp} className="space-y-4">

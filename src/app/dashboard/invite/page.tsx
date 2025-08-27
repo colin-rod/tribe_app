@@ -11,32 +11,32 @@ export default async function InvitePage() {
     redirect('/auth/login')
   }
 
-  // Get user's tribes where they are admin or have permission to invite
-  const { data: tribes, error: tribesError } = await supabase
-    .from('tribes')
+  // Get user's trees where they are admin or have permission to invite
+  const { data: trees, error: treesError } = await supabase
+    .from('trees')
     .select(`
       *,
-      tribe_members!inner (
+      tree_members!inner (
         role,
         user_id
       ),
-      circles (
+      branches (
         id,
         name,
         color
       )
     `)
-    .eq('tribe_members.user_id', user.id)
-    .in('tribe_members.role', ['admin', 'member'])
+    .eq('tree_members.user_id', user.id)
+    .in('tree_members.role', ['admin', 'member'])
 
-  if (tribesError || !tribes || tribes.length === 0) {
+  if (treesError || !trees || trees.length === 0) {
     redirect('/dashboard')
   }
 
   return (
     <InviteClient 
       user={user} 
-      tribes={tribes}
+      trees={trees}
     />
   )
 }

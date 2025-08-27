@@ -43,7 +43,7 @@ export default function ProfilePage() {
 
         // Get user's circles
         const { data: circles, error: circlesError } = await supabase
-          .from('circle_members')
+          .from('branch_members')
           .select(`
             circle_id,
             role,

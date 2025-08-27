@@ -5,18 +5,18 @@ import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, TreeWithMembers, BranchPermissions } from '@/types/database'
-import { getUserBranchPermissions, getUserCirclePermissions } from '@/lib/rbac'
+import { getUserBranchPermissions } from '@/lib/rbac'
 import { getUserTrees } from '@/lib/trees'
 
 interface DashboardClientProps {
   user: User
   profile: Profile
-  userCircles: any[]
+  userBranches: any[]
   trees: any[]
 }
 
-export default function DashboardClient({ user, profile, userCircles, trees }: DashboardClientProps) {
-  const [selectedBranch, setSelectedBranch] = useState(userCircles && userCircles.length > 0 ? userCircles[0]?.branches : null)
+export default function DashboardClient({ user, profile, userBranches, trees }: DashboardClientProps) {
+  const [selectedBranch, setSelectedBranch] = useState(userBranches && userBranches.length > 0 ? userBranches[0]?.branches : null)
   // Removed branch filter since we now organize by tree
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -24,7 +24,6 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
   const [newComment, setNewComment] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
   const [branchPermissions, setBranchPermissions] = useState<BranchPermissions | null>(null)
-  const [circlePermissions, setCirclePermissions] = useState<BranchPermissions | null>(null)
   const [realtimeNotifications, setRealtimeNotifications] = useState<any[]>([])
   const router = useRouter()
 
@@ -48,11 +47,11 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
     }, 5000)
   }
 
-  // Load posts and permissions for selected circle
+  // Load posts and permissions for selected branch
   useEffect(() => {
     if (selectedBranch) {
       loadPosts()
-      loadCirclePermissions()
+      loadBranchPermissions()
     }
   }, [selectedBranch])
 
@@ -60,9 +59,9 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
   useEffect(() => {
     if (!selectedBranch) return
 
-    console.log('Setting up real-time subscription for circle:', selectedBranch.id)
+    console.log('Setting up real-time subscription for branch:', selectedBranch.id)
 
-    // Subscribe to posts table changes for this circle
+    // Subscribe to posts table changes for this branch
     const postsChannel = supabase
       .channel(`posts-${selectedBranch.id}`)
       .on(
@@ -71,7 +70,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
           event: '*',
           schema: 'public',
           table: 'posts',
-          filter: `circle_id=eq.${selectedBranch.id}`
+          filter: `branch_id=eq.${selectedBranch.id}`
         },
         async (payload) => {
           console.log('Real-time posts update:', payload)
@@ -129,7 +128,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
       )
       .subscribe()
 
-    // Subscribe to comments for posts in this circle
+    // Subscribe to comments for posts in this branch
     const commentsChannel = supabase
       .channel(`comments-${selectedBranch.id}`)
       .on(
@@ -154,7 +153,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
               .single()
             
             if (!error && newComment) {
-              // Check if this comment belongs to a post in current circle
+              // Check if this comment belongs to a post in current branch
               setPosts(prevPosts => prevPosts.map(post => {
                 if (post.id === newComment.post_id) {
                   return {
@@ -176,7 +175,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
       )
       .subscribe()
 
-    // Subscribe to likes for posts in this circle  
+    // Subscribe to likes for posts in this branch  
     const likesChannel = supabase
       .channel(`likes-${selectedBranch.id}`)
       .on(
@@ -216,7 +215,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
       )
       .subscribe()
 
-    // Cleanup subscriptions when component unmounts or circle changes
+    // Cleanup subscriptions when component unmounts or branch changes
     return () => {
       console.log('Cleaning up real-time subscriptions')
       supabase.removeChannel(postsChannel)
@@ -225,14 +224,14 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
     }
   }, [selectedBranch, user.id])
 
-  const loadCirclePermissions = async () => {
+  const loadBranchPermissions = async () => {
     if (!selectedBranch || !user) return
     
     try {
       const permissions = await getUserCirclePermissions(user.id, selectedBranch.id)
-      setCirclePermissions(permissions)
+      setBranchPermissions(permissions)
     } catch (error) {
-      console.error('Error loading circle permissions:', error)
+      console.error('Error loading branch permissions:', error)
     }
   }
 
@@ -367,10 +366,10 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
     router.push('/')
   }
 
-  // No longer need to filter circles since they're organized by tribe
+  // No longer need to filter branches since they're organized by tree
 
   // Group branches by tree for display
-  const branchesByTree = userCircles ? userCircles.reduce((acc, uc) => {
+  const branchesByTree = userBranches ? userBranches.reduce((acc, uc) => {
     const treeId = uc.circles.tree_id
     const treeName = trees.find(t => t.tree_id === treeId)?.trees?.name || 'Unknown Tree'
     
@@ -385,7 +384,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
   }, {} as Record<string, { tree: any, circles: any[] }>) : {}
 
   // Separate community branches (if they don't belong to any tree)
-  const communityBranches = userCircles ? userCircles.filter(uc => 
+  const communityBranches = userBranches ? userBranches.filter(uc => 
     uc.circles.type === 'community' && !uc.circles.tree_id
   ) : []
 
@@ -396,7 +395,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">Tribe</h1>
+              <h1 className="text-xl font-semibold text-gray-900">Tree</h1>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -435,7 +434,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                 <button
                   onClick={() => router.push('/trees')}
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50"
-                  title="Manage Tribes"
+                  title="Manage Trees"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -522,23 +521,23 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Your Tribes & Circles</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Your Trees & Branches</h2>
               
-              {/* Tribes and their circles */}
+              {/* Trees and their branches */}
               <div className="space-y-6">
                 {Object.entries(branchesByTree).map(([treeId, treeData]) => (
                   <div key={treeId} className="space-y-3">
-                    {/* Tribe Header */}
+                    {/* Tree Header */}
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
                         {treeData.tree.name}
                       </h3>
                       <span className="text-xs text-gray-400">
-                        {treeData.circles.length} circle{treeData.circles.length !== 1 ? 's' : ''}
+                        {treeData.circles.length} branch{treeData.circles.length !== 1 ? 'es' : ''}
                       </span>
                     </div>
                     
-                    {/* Circles in this tribe */}
+                    {/* Branches in this tree */}
                     <div className="space-y-2 ml-2">
                       {treeData.circles.map((userCircle: any) => (
                         <button
@@ -568,15 +567,15 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                   </div>
                 ))}
 
-                {/* Community Circles (if any) */}
+                {/* Community Branches (if any) */}
                 {communityBranches.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                        Community Circles
+                        Community Branches
                       </h3>
                       <span className="text-xs text-gray-400">
-                        {communityBranches.length} circle{communityBranches.length !== 1 ? 's' : ''}
+                        {communityBranches.length} branch{communityBranches.length !== 1 ? 'es' : ''}
                       </span>
                     </div>
                     
@@ -610,7 +609,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                 )}
               </div>
 
-              {/* Create Circle Button */}
+              {/* Create Branch Button */}
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => router.push('/branches/create')}
@@ -619,11 +618,11 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  Create Circle
+                  Create Branch
                 </button>
               </div>
 
-              {/* No circles state */}
+              {/* No branches state */}
               {Object.keys(branchesByTree).length === 0 && communityBranches.length === 0 && (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -631,9 +630,9 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   </div>
-                  <p className="text-gray-500 text-sm mb-2">No circles yet</p>
+                  <p className="text-gray-500 text-sm mb-2">No branches yet</p>
                   <p className="text-gray-400 text-xs mb-4">
-                    Create your first circle to start sharing with your tribe!
+                    Create your first branch to start sharing with your tree!
                   </p>
                 </div>
               )}
@@ -645,7 +644,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
           <div className="lg:col-span-3">
             {selectedBranch ? (
               <div>
-                {/* Circle Header */}
+                {/* Branch Header */}
                 <div className="bg-white rounded-lg shadow p-6 mb-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -658,17 +657,17 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                           <h2 className="text-xl font-semibold text-gray-900">
                             {selectedBranch.name}
                           </h2>
-                          {circlePermissions && circlePermissions.userRole !== 'none' && (
+                          {branchPermissions && branchPermissions.userRole !== 'none' && (
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              circlePermissions.isOwner 
+                              branchPermissions.isOwner 
                                 ? 'bg-purple-100 text-purple-700'
-                                : circlePermissions.isAdmin
+                                : branchPermissions.isAdmin
                                 ? 'bg-blue-100 text-blue-700' 
-                                : circlePermissions.isModerator
+                                : branchPermissions.isModerator
                                 ? 'bg-green-100 text-green-700'
                                 : 'bg-gray-100 text-gray-700'
                             }`}>
-                              {circlePermissions.userRole}
+                              {branchPermissions.userRole}
                             </span>
                           )}
                         </div>
@@ -685,10 +684,10 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                         onClick={() => router.push('/branches/create')}
                         className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                       >
-                        Create Circle
+                        Create Branch
                       </button>
                       
-                      {circlePermissions?.canInviteMembers && (
+                      {branchPermissions?.canInviteMembers && (
                         <button
                           onClick={() => router.push('/dashboard/invite')}
                           className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -697,7 +696,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                         </button>
                       )}
                       
-                      {circlePermissions?.canCreatePosts && selectedBranch && (
+                      {branchPermissions?.canCreatePosts && selectedBranch && (
                         <button
                           onClick={() => router.push(`/branches/${selectedBranch.id}/post`)}
                           className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -706,12 +705,12 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                         </button>
                       )}
                       
-                      {circlePermissions?.canUpdate && (
+                      {branchPermissions?.canUpdate && (
                         <button
                           onClick={() => router.push(`/branches/${selectedBranch.id}/edit`)}
                           className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                         >
-                          Circle Settings
+                          Branch Settings
                         </button>
                       )}
                     </div>
@@ -733,7 +732,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                         </svg>
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
-                      <p className="text-gray-500 mb-4">Start sharing memories with your circle!</p>
+                      <p className="text-gray-500 mb-4">Start sharing memories with your branch!</p>
                       <button
                         onClick={() => router.push(`/branches/${selectedBranch.id}/post`)}
                         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
@@ -877,7 +876,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                             {/* Post Management Actions */}
                             <div className="flex items-center space-x-2">
                               {/* Edit - only post author or moderators+ */}
-                              {(post.author_id === user.id || circlePermissions?.canModerate) && (
+                              {(post.author_id === user.id || branchPermissions?.canModerate) && (
                                 <button
                                   onClick={() => router.push(`/branches/${selectedBranch.id}/post/${post.id}/edit`)}
                                   className="p-1 text-gray-500 hover:text-blue-500"
@@ -890,7 +889,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                               )}
                               
                               {/* Delete - only post author or moderators+ */}
-                              {(post.author_id === user.id || circlePermissions?.canModerate) && (
+                              {(post.author_id === user.id || branchPermissions?.canModerate) && (
                                 <button
                                   onClick={() => handleDeletePost(post.id)}
                                   className="p-1 text-gray-500 hover:text-red-500"
@@ -950,7 +949,7 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
                             )}
                             
                             {/* Add Comment Form - only if user can create comments */}
-                            {circlePermissions?.canRead && (
+                            {branchPermissions?.canRead && (
                               <form onSubmit={(e) => handleAddComment(e, post.id)} className="flex space-x-3">
                               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                                 <span className="text-xs font-medium text-gray-600">
@@ -985,8 +984,8 @@ export default function DashboardClient({ user, profile, userCircles, trees }: D
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow p-8 text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a circle</h3>
-                <p className="text-gray-500">Choose a circle from the sidebar to view posts and memories.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a branch</h3>
+                <p className="text-gray-500">Choose a branch from the sidebar to view posts and memories.</p>
               </div>
             )}
           </div>

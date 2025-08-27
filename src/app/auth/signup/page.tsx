@@ -73,7 +73,7 @@ export default function SignUpPage() {
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Join Tribe and start connecting with family
+            Join Tree and start connecting with family
           </p>
         </div>
         
