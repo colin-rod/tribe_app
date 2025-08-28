@@ -9,6 +9,21 @@ export type JoinMethod = 'invited' | 'requested' | 'auto_approved' | 'admin_adde
 export type FamilyRole = 'parent' | 'child' | 'grandparent' | 'grandchild' | 'sibling' | 'spouse' | 'partner' | 'other'
 export type ProfileVisibility = 'circles' | 'private'
 
+// AI Enhancement types for Leaf Creator
+export interface LeafEnhancementRequest {
+  content: string
+  mediaUrls: string[]
+  leafType: LeafType
+  context?: string
+}
+
+export interface LeafEnhancementResult {
+  aiCaption: string
+  aiTags: string[]
+  milestoneType?: string
+  season?: string
+}
+
 export interface Profile {
   id: string
   email: string

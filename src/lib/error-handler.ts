@@ -1,4 +1,8 @@
 
+import { createComponentLogger } from '@/lib/logger'
+
+const errorLogger = createComponentLogger('ErrorHandler')
+
 export class AppError extends Error {
   public readonly code: string
   public readonly context: Record<string, unknown>
@@ -119,7 +123,7 @@ class ErrorHandler {
       try {
         callback(appError)
       } catch (callbackError) {
-        console.error('Error in error callback:', callbackError)
+        errorLogger.error('Error callback failed', callbackError, { action: 'errorCallbackExecution' })
       }
     })
 
@@ -130,7 +134,10 @@ class ErrorHandler {
         handleErrorToast(appError)
       }).catch(() => {
         // Fallback to console error if toast service fails
-        console.error('Failed to show error toast:', appError.message)
+        errorLogger.error('Failed to show error toast', null, { 
+          action: 'showErrorToast', 
+          metadata: { message: appError.message }
+        })
       })
     }
 
@@ -171,7 +178,10 @@ class ErrorHandler {
 
     // Only log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.error('Application Error:', errorInfo)
+      errorLogger.error('Application Error Details', null, {
+        action: 'logError',
+        metadata: errorInfo
+      })
     }
 
     // In production, you might want to send to an error reporting service

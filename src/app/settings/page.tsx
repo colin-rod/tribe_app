@@ -57,9 +57,9 @@ export default function SettingsPage() {
         setProfile(profile)
         setFirstName(profile.first_name || '')
         setLastName(profile.last_name || '')
+        setBio(profile.bio || '')
+        setFamilyRole(profile.family_role || '')
         setPreviewUrl(profile.avatar_url || '')
-        
-        // TODO: Load bio and family_role once we add them to the schema
 
       } catch (error) {
         console.error('Error loading user data:', error)
@@ -142,6 +142,8 @@ export default function SettingsPage() {
         .update({
           first_name: firstName,
           last_name: lastName,
+          bio: bio,
+          family_role: familyRole || null,
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString()
         })

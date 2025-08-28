@@ -5,37 +5,24 @@ import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, BranchPermissions } from '@/types/database'
+import { TreeWithMembers, BranchWithMembers } from '@/types/common'
 import { getUserBranchPermissions } from '@/lib/rbac'
 import TreeExplorer from '@/components/dashboard/TreeExplorer'
-
-interface Branch {
-  id: string
-  name: string
-  description?: string
-  color: string
-}
-
-interface UserBranch {
-  branches: Branch
-  role: string
-  status: string
-}
-
-interface Tree {
-  id: string
-  name: string
-  description?: string
-}
 
 interface DashboardClientProps {
   user: User
   profile: Profile
-  userBranches: UserBranch[]
-  trees: Tree[]
+  userBranches: BranchWithMembers[]
+  trees: TreeWithMembers[]
+}
+
+interface TreeGroup {
+  tree: TreeWithMembers['trees']
+  branches: BranchWithMembers[]
 }
 
 export default function DashboardClient({ user, profile, userBranches, trees }: DashboardClientProps) {
-  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(
+  const [selectedBranch, setSelectedBranch] = useState<BranchWithMembers['branches'] | null>(
     userBranches && userBranches.length > 0 ? userBranches[0]?.branches : null
   )
   const [branchPermissions, setBranchPermissions] = useState<BranchPermissions | null>(null)
@@ -69,19 +56,21 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
   // No longer need to filter branches since they're organized by tree
 
   // Group branches by tree for display
-  const branchesByTree = userBranches ? userBranches.reduce((acc, uc) => {
-    const treeId = uc.circles.tree_id
+  const branchesByTree = userBranches ? userBranches.reduce((acc, ub) => {
+    const treeId = ub.branches?.tree_id
+    if (!treeId) return acc
+    
     const treeName = trees.find(t => t.tree_id === treeId)?.trees?.name || 'Unknown Tree'
     
     if (!acc[treeId]) {
       acc[treeId] = {
-        tree: trees.find(t => t.tree_id === treeId)?.trees || { name: treeName },
-        circles: []
+        tree: trees.find(t => t.tree_id === treeId)?.trees || { name: treeName, id: treeId },
+        branches: []
       }
     }
-    acc[treeId].circles.push(uc)
+    acc[treeId].branches.push(ub)
     return acc
-  }, {} as Record<string, { tree: any, circles: any[] }>) : {}
+  }, {} as Record<string, TreeGroup>) : {}
 
   // All branches now belong to trees (family branches only)
 
@@ -187,18 +176,18 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                         {treeData.tree.name}
                       </h3>
                       <span className="text-xs text-gray-400">
-                        {treeData.circles.length} branch{treeData.circles.length !== 1 ? 'es' : ''}
+                        {treeData.branches.length} branch{treeData.branches.length !== 1 ? 'es' : ''}
                       </span>
                     </div>
                     
                     {/* Branches in this tree */}
                     <div className="space-y-2 ml-2">
-                      {treeData.circles.map((userCircle: any) => (
+                      {treeData.branches.map((userBranch: BranchWithMembers) => (
                         <button
-                          key={userCircle.circles.id}
-                          onClick={() => setSelectedBranch(userCircle.circles)}
+                          key={userBranch.branches?.id}
+                          onClick={() => setSelectedBranch(userBranch.branches)}
                           className={`w-full text-left p-3 rounded-lg transition-colors ${
-                            selectedBranch?.id === userCircle.circles.id
+                            selectedBranch?.id === userBranch.branches?.id
                               ? 'bg-blue-50 text-blue-700 border border-blue-200'
                               : 'hover:bg-gray-50'
                           }`}
@@ -206,12 +195,12 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                           <div className="flex items-center">
                             <div 
                               className="w-3 h-3 rounded-full mr-3"
-                              style={{ backgroundColor: userCircle.circles.color }}
+                              style={{ backgroundColor: userBranch.branches?.color }}
                             />
                             <div>
-                              <div className="font-medium text-sm">{userCircle.circles.name}</div>
+                              <div className="font-medium text-sm">{userBranch.branches?.name}</div>
                               <div className="text-xs text-gray-500">
-                                {userCircle.circles.member_count} members
+                                {userBranch.member_count} members
                               </div>
                             </div>
                           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo, memo } from 'react'
 import Image from 'next/image'
 import { LeafWithDetails, ReactionType } from '@/types/database'
 import { formatDistanceToNow } from 'date-fns'
@@ -22,25 +22,33 @@ const REACTION_EMOJIS: Record<ReactionType, string> = {
   love: '💕'
 }
 
-export default function LeafCard({ leaf, onReaction, onShare, onComment, className = '' }: LeafCardProps) {
+const LeafCard = memo(function LeafCard({ leaf, onReaction, onShare, onComment, className = '' }: LeafCardProps) {
   const [showComments, setShowComments] = useState(false)
   const [newComment, setNewComment] = useState('')
   const [showReactions, setShowReactions] = useState(false)
 
-  const handleReaction = (reactionType: ReactionType) => {
+  const handleReaction = useCallback((reactionType: ReactionType) => {
     onReaction(leaf.id, reactionType)
     setShowReactions(false)
-  }
+  }, [leaf.id, onReaction])
 
-  const handleComment = (e: React.FormEvent) => {
+  const handleComment = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     if (newComment.trim()) {
       onComment(leaf.id, newComment.trim())
       setNewComment('')
     }
-  }
+  }, [leaf.id, newComment, onComment])
 
-  const getLeafTypeIcon = () => {
+  const handleToggleComments = useCallback(() => {
+    setShowComments(prev => !prev)
+  }, [])
+
+  const handleToggleReactions = useCallback(() => {
+    setShowReactions(prev => !prev)
+  }, [])
+
+  const leafTypeIcon = useMemo(() => {
     switch (leaf.leaf_type) {
       case 'photo': return '📸'
       case 'video': return '🎥'
@@ -50,9 +58,25 @@ export default function LeafCard({ leaf, onReaction, onShare, onComment, classNa
       case 'text': return '📝'
       default: return '🌿'
     }
-  }
+  }, [leaf.leaf_type, leaf.milestone_icon])
 
-  const totalReactions = leaf.heart_count + leaf.smile_count + leaf.laugh_count
+  const totalReactions = useMemo(() => 
+    leaf.heart_count + leaf.smile_count + leaf.laugh_count, 
+    [leaf.heart_count, leaf.smile_count, leaf.laugh_count]
+  )
+
+  const formattedDate = useMemo(() => 
+    formatDistanceToNow(new Date(leaf.created_at), { addSuffix: true }),
+    [leaf.created_at]
+  )
+
+  const allTags = useMemo(() => {
+    const userTags = leaf.tags.map(tag => ({ tag, isAI: false }))
+    const aiTags = leaf.ai_tags
+      .filter(tag => !leaf.tags.includes(tag))
+      .map(tag => ({ tag, isAI: true }))
+    return [...userTags, ...aiTags]
+  }, [leaf.tags, leaf.ai_tags])
 
   return (
     <div className={`leaf-card bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 ${className}`}>
@@ -72,8 +96,8 @@ export default function LeafCard({ leaf, onReaction, onShare, onComment, classNa
             <div>
               <h3 className="font-semibold text-gray-900">{leaf.author_name}</h3>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <span>{getLeafTypeIcon()}</span>
-                <span>{formatDistanceToNow(new Date(leaf.created_at), { addSuffix: true })}</span>
+                <span>{leafTypeIcon}</span>
+                <span>{formattedDate}</span>
                 {leaf.season && (
                   <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
                     {leaf.season}
@@ -149,15 +173,17 @@ export default function LeafCard({ leaf, onReaction, onShare, onComment, classNa
         )}
 
         {/* Tags */}
-        {(leaf.tags.length > 0 || leaf.ai_tags.length > 0) && (
+        {allTags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {leaf.tags.map((tag, index) => (
-              <span key={`tag-${index}`} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                #{tag}
-              </span>
-            ))}
-            {leaf.ai_tags.filter(tag => !leaf.tags.includes(tag)).map((tag, index) => (
-              <span key={`ai-tag-${index}`} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs opacity-75">
+            {allTags.map(({ tag, isAI }, index) => (
+              <span 
+                key={`${isAI ? 'ai' : 'user'}-tag-${index}`} 
+                className={`px-2 py-1 rounded-full text-xs ${
+                  isAI 
+                    ? 'bg-gray-100 text-gray-600 opacity-75' 
+                    : 'bg-blue-100 text-blue-700'
+                }`}
+              >
                 #{tag}
               </span>
             ))}
@@ -172,7 +198,7 @@ export default function LeafCard({ leaf, onReaction, onShare, onComment, classNa
             {/* Reactions */}
             <div className="relative">
               <button
-                onClick={() => setShowReactions(!showReactions)}
+                onClick={handleToggleReactions}
                 className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-colors"
               >
                 <span className="text-lg">{leaf.user_reaction ? REACTION_EMOJIS[leaf.user_reaction] : '❤️'}</span>
@@ -198,7 +224,7 @@ export default function LeafCard({ leaf, onReaction, onShare, onComment, classNa
 
             {/* Comments */}
             <button
-              onClick={() => setShowComments(!showComments)}
+              onClick={handleToggleComments}
               className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors"
             >
               <span className="text-lg">💬</span>
@@ -262,4 +288,6 @@ export default function LeafCard({ leaf, onReaction, onShare, onComment, classNa
       )}
     </div>
   )
-}
+})
+
+export default LeafCard

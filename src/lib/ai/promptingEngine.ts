@@ -706,12 +706,9 @@ class SmartPromptingEngine {
         }
       }
 
-      // TODO: Implement actual AI analysis
-      return {
-        contentQuality: 'medium',
-        suggestions: [],
-        missingElements: []
-      }
+      // Implement basic content analysis based on content patterns
+      const analysis = this.analyzeContentPatterns(content, mediaUrls)
+      return analysis
     } catch (error) {
       console.error('Error analyzing leaf content:', error)
       return {
@@ -719,6 +716,78 @@ class SmartPromptingEngine {
         suggestions: ['Unable to analyze content'],
         missingElements: []
       }
+    }
+  }
+
+  private analyzeContentPatterns(content: string, mediaUrls?: string[]): {
+    contentQuality: 'high' | 'medium' | 'low'
+    suggestions: string[]
+    missingElements: string[]
+  } {
+    const suggestions: string[] = []
+    const missingElements: string[] = []
+    
+    // Analyze content length and depth
+    const wordCount = content.split(/\s+/).length
+    const hasEmotionalWords = /\b(happy|sad|excited|proud|worried|love|joy|surprised|amazed|grateful)\b/i.test(content)
+    const hasContextWords = /\b(today|yesterday|morning|evening|while|when|after|during|first time|finally)\b/i.test(content)
+    const hasPeopleWords = /\b(dad|mom|mama|papa|grandma|grandpa|brother|sister|family|together|with)\b/i.test(content)
+    const hasActionWords = /\b(walking|talking|playing|laughing|smiling|crawling|running|eating|sleeping)\b/i.test(content)
+    
+    let quality: 'high' | 'medium' | 'low' = 'medium'
+    
+    // Determine quality based on content richness
+    if (wordCount < 5) {
+      quality = 'low'
+      suggestions.push('Add more details about what happened')
+      suggestions.push('Describe how you felt in this moment')
+    } else if (wordCount > 20 && hasEmotionalWords && hasContextWords) {
+      quality = 'high'
+    }
+    
+    // Check for missing elements
+    if (!hasEmotionalWords) {
+      missingElements.push('emotions')
+      suggestions.push('Add how this moment made you feel')
+    }
+    
+    if (!hasContextWords) {
+      missingElements.push('context')
+      suggestions.push('Include when or where this happened')
+    }
+    
+    if (!hasPeopleWords && !content.toLowerCase().includes('alone')) {
+      missingElements.push('people')
+      suggestions.push('Mention who was involved or who witnessed this')
+    }
+    
+    if (!hasActionWords) {
+      missingElements.push('actions')
+      suggestions.push('Describe what was happening in more detail')
+    }
+    
+    // Media analysis
+    if (mediaUrls && mediaUrls.length > 0) {
+      if (wordCount < 10) {
+        suggestions.push('The photos/videos are great! Add a description to make this memory even more special')
+      }
+    } else {
+      if (content.toLowerCase().includes('photo') || content.toLowerCase().includes('picture') || content.toLowerCase().includes('video')) {
+        suggestions.push('Consider adding the photo or video you mentioned')
+      }
+    }
+    
+    // Length-specific suggestions
+    if (wordCount > 50) {
+      suggestions.push('This is a wonderfully detailed memory!')
+    } else if (wordCount < 15) {
+      suggestions.push('Try adding a bit more detail to make this memory even richer')
+    }
+    
+    return {
+      contentQuality: quality,
+      suggestions: suggestions.slice(0, 4), // Limit to top 4 suggestions
+      missingElements
     }
   }
 

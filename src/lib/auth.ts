@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('AuthService')
 
 export async function getUser() {
   const supabase = await createClient()
@@ -35,7 +38,10 @@ export async function getUserProfile() {
     .single()
   
   if (error) {
-    console.error('Error fetching profile:', error)
+    logger.error('Failed to fetch user profile', error, { 
+      action: 'getUserProfile', 
+      metadata: { userId: user.id }
+    })
     return null
   }
   

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { LeafWithDetails, Milestone } from '@/types/database'
+import { LeafWithDetails, Milestone, ReactionType } from '@/types/database'
 import LeafCard from './LeafCard'
 import { formatDistanceToNow, format, isThisYear } from 'date-fns'
 
@@ -10,7 +10,7 @@ interface TreeTimelineProps {
   treeName: string
   leaves: LeafWithDetails[]
   milestones: Milestone[]
-  onReaction: (leafId: string, reactionType: any) => void
+  onReaction: (leafId: string, reactionType: ReactionType) => void
   onShare: (leafId: string, branchIds: string[]) => void
   onComment: (leafId: string, comment: string) => void
   onLoadMore?: () => void
@@ -186,7 +186,7 @@ export default function TreeTimeline({
         ].map(({ mode, label, icon }) => (
           <button
             key={mode}
-            onClick={() => setViewMode(mode as any)}
+            onClick={() => setViewMode(mode as 'timeline' | 'seasons' | 'milestones')}
             className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               viewMode === mode
                 ? 'bg-blue-100 text-blue-700'

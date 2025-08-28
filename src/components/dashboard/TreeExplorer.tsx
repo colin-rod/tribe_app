@@ -1,15 +1,18 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { LeafWithDetails, Branch, ReactionType } from '@/types/database'
-import { getTreeLeaves, getTreeStats, addLeafReaction, addLeafComment, shareLeafWithBranches } from '@/lib/leaves'
+import { TreeWithMembers, BranchWithMembers, FilterOption } from '@/types/common'
 import LeafCard from '@/components/leaves/LeafCard'
+import useTreeData from '@/hooks/useTreeData'
+import useLeafInteractions from '@/hooks/useLeafInteractions'
+import { getTreeLeaves, getTreeStats, addLeafReaction, addLeafComment, shareLeafWithBranches } from '@/lib/leaves'
 
 interface TreeExplorerProps {
   selectedBranch: Branch | null
-  trees: any[]
-  userBranches: any[]
+  trees: TreeWithMembers[]
+  userBranches: BranchWithMembers[]
   userId: string
 }
 
@@ -21,7 +24,7 @@ interface TreeStats {
   seasonBreakdown: { [key: string]: number }
 }
 
-export default function TreeExplorer({ 
+const TreeExplorer = memo(function TreeExplorer({ 
   selectedBranch, 
   trees, 
   userBranches, 
@@ -29,7 +32,7 @@ export default function TreeExplorer({
 }: TreeExplorerProps) {
   const [leaves, setLeaves] = useState<LeafWithDetails[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedTree, setSelectedTree] = useState<any>(null)
+  const [selectedTree, setSelectedTree] = useState<TreeWithMembers | null>(null)
   const [treeStats, setTreeStats] = useState<TreeStats>({
     totalLeaves: 0,
     milestoneCount: 0,
@@ -58,22 +61,22 @@ export default function TreeExplorer({
     }
   }, [selectedTree])
 
-  const loadTreeData = async (treeId: string) => {
+  const loadTreeData = useCallback(async (treeId: string) => {
     setLoading(true)
     try {
-      // Load leaves for the tree
-      const treeLeaves = await getTreeLeaves(treeId, 50, 0)
+      // Load leaves and stats in parallel for better performance
+      const [treeLeaves, stats] = await Promise.all([
+        getTreeLeaves(treeId, 50, 0),
+        getTreeStats(treeId)
+      ])
       setLeaves(treeLeaves)
-
-      // Load tree stats
-      const stats = await getTreeStats(treeId)
       setTreeStats(stats)
     } catch (error) {
       console.error('Error loading tree data:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const handleReaction = async (leafId: string, reactionType: ReactionType) => {
     const success = await addLeafReaction(leafId, reactionType)
@@ -201,7 +204,7 @@ export default function TreeExplorer({
             ].map(({ key, label, icon }) => (
               <button
                 key={key}
-                onClick={() => setFilter(key as any)}
+                onClick={() => setFilter(key as 'all' | 'milestones' | 'recent')}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === key
                     ? 'bg-green-100 text-green-700'
@@ -272,4 +275,6 @@ export default function TreeExplorer({
       </div>
     </div>
   )
-}
+})
+
+export default TreeExplorer

@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { rbac } from '@/lib/rbac'
 import { getUserPrimaryTree, getUserTrees } from '@/lib/trees'
+import { TreeWithMembers } from '@/types/common'
 import { showSuccess, showErrorWithRetry, showLoading } from '@/lib/toast-service'
 import { handleError } from '@/lib/error-handler'
 import type { User } from '@supabase/supabase-js'
 
 export default function CreateBranchPage() {
   const [user, setUser] = useState<User | null>(null)
-  const [userTrees, setUserTrees] = useState<any[]>([])
+  const [userTrees, setUserTrees] = useState<TreeWithMembers[]>([])
   const [primaryTreeId, setPrimaryTreeId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)

@@ -1,13 +1,17 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { LeafType, Milestone, LeafEnhancementRequest, LeafEnhancementResult } from '@/types/database'
 import { getPromptingEngine } from '@/lib/ai/promptingEngine'
+import { supabase } from '@/lib/supabase/client'
+import { uploadLeafMedia } from '@/lib/leaves'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('LeafCreator')
 
 interface LeafCreatorProps {
-  branchId: string
-  branchName: string
+  branches: { id: string; name: string; description?: string | null }[]
   treeName: string
   childAge?: number
   milestones: Milestone[]
@@ -16,6 +20,7 @@ interface LeafCreatorProps {
 }
 
 interface LeafData {
+  branch_id: string
   leaf_type: LeafType
   content: string
   media_urls: string[]
@@ -28,8 +33,7 @@ interface LeafData {
 }
 
 export default function LeafCreator({ 
-  branchId, 
-  branchName, 
+  branches, 
   treeName, 
   childAge,
   milestones,
@@ -38,6 +42,7 @@ export default function LeafCreator({
 }: LeafCreatorProps) {
   const [step, setStep] = useState<'capture' | 'enhance' | 'save'>('capture')
   const [leafType, setLeafType] = useState<LeafType>('memory')
+  const [selectedBranch, setSelectedBranch] = useState<string>(branches[0]?.id || '')
   const [content, setContent] = useState('')
   const [mediaFiles, setMediaFiles] = useState<File[]>([])
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
@@ -48,10 +53,35 @@ export default function LeafCreator({
   const [isEnhancing, setIsEnhancing] = useState(false)
   const [enhancement, setEnhancement] = useState<LeafEnhancementResult | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [userProfile, setUserProfile] = useState<{ first_name: string; last_name: string } | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Load user profile on mount
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', user.id)
+            .single()
+          
+          if (profile) {
+            setUserProfile(profile)
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to load user profile for leaf creation', error, { action: 'loadUserProfile' })
+      }
+    }
+
+    loadUserProfile()
+  }, [])
 
   const leafTypeOptions: { type: LeafType; icon: string; label: string; description: string }[] = [
     { type: 'photo', icon: '📸', label: 'Photo', description: 'Capture a special moment' },
@@ -88,7 +118,10 @@ export default function LeafCreator({
         videoRef.current.play()
       }
     } catch (error) {
-      console.error('Error accessing camera:', error)
+      logger.warn('Camera access failed, falling back to file input', { 
+        action: 'startCameraCapture',
+        metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
+      })
       // Fallback to file input
       fileInputRef.current?.click()
     }
@@ -128,8 +161,8 @@ export default function LeafCreator({
         content,
         mediaUrls,
         context: {
-          authorName: 'Parent', // TODO: Get from user context
-          branchName,
+          authorName: userProfile ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || 'Parent' : 'Parent',
+          branchName: branches.find(b => b.id === selectedBranch)?.name || '',
           treeName,
           childAge,
           existingTags: tags
@@ -154,7 +187,10 @@ export default function LeafCreator({
       }
       
     } catch (error) {
-      console.error('Error enhancing leaf:', error)
+      logger.error('Failed to enhance leaf with AI', error, { 
+        action: 'handleAIEnhance',
+        metadata: { contentLength: content.length, mediaCount: mediaUrls.length }
+      })
     } finally {
       setIsEnhancing(false)
     }
@@ -163,10 +199,16 @@ export default function LeafCreator({
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // TODO: Upload media files to storage and get URLs
-      const uploadedUrls = mediaUrls // Placeholder - implement actual upload
+      // Upload media files to storage and get URLs
+      let uploadedUrls: string[] = []
+      if (mediaFiles.length > 0) {
+        // Generate a unique leaf ID for file organization
+        const tempLeafId = crypto.randomUUID()
+        uploadedUrls = await uploadLeafMedia(mediaFiles, tempLeafId)
+      }
       
       const leafData: LeafData = {
+        branch_id: selectedBranch,
         leaf_type: leafType,
         content,
         media_urls: uploadedUrls,
@@ -179,8 +221,20 @@ export default function LeafCreator({
       }
 
       await onSave(leafData)
+      logger.info('Leaf saved successfully', {
+        action: 'handleSave',
+        metadata: { 
+          branchId: selectedBranch, 
+          leafType, 
+          hasMedia: uploadedUrls.length > 0,
+          tagCount: tags.length
+        }
+      })
     } catch (error) {
-      console.error('Error saving leaf:', error)
+      logger.error('Failed to save leaf', error, { 
+        action: 'handleSave',
+        metadata: { branchId: selectedBranch, leafType }
+      })
     } finally {
       setIsSaving(false)
     }
@@ -199,6 +253,22 @@ export default function LeafCreator({
   const renderCaptureStep = () => (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-900">Create a New Leaf 🌿</h2>
+      
+      {/* Branch Selection */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Which branch?</label>
+        <select
+          value={selectedBranch}
+          onChange={(e) => setSelectedBranch(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {branches.map((branch) => (
+            <option key={branch.id} value={branch.id}>
+              {branch.name} {branch.description && `- ${branch.description}`}
+            </option>
+          ))}
+        </select>
+      </div>
       
       {/* Leaf Type Selection */}
       <div>

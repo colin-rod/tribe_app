@@ -5,6 +5,9 @@
 
 import { supabase } from '@/lib/supabase/client'
 import { Leaf, LeafWithDetails, LeafReaction, LeafShare, Milestone, ReactionType } from '@/types/database'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('LeafService')
 
 export interface CreateLeafData {
   branch_id: string
@@ -36,13 +39,17 @@ export async function createLeaf(leafData: CreateLeafData): Promise<Leaf | null>
       .single()
 
     if (error) {
-      console.error('Error creating leaf:', error)
+      logger.error('Failed to create leaf in database', error, { action: 'createLeaf' })
       return null
     }
 
+    logger.info('Leaf created successfully', { 
+      action: 'createLeaf', 
+      metadata: { leafId: data.id, branchId: leafData.branch_id }
+    })
     return data
   } catch (error) {
-    console.error('Error creating leaf:', error)
+    logger.error('Unexpected error creating leaf', error, { action: 'createLeaf' })
     return null
   }
 }
@@ -60,13 +67,23 @@ export async function getTreeLeaves(treeId: string, limit = 20, offset = 0): Pro
       .range(offset, offset + limit - 1)
 
     if (error) {
-      console.error('Error fetching tree leaves:', error)
+      logger.error('Failed to fetch tree leaves', error, { 
+        action: 'getTreeLeaves', 
+        metadata: { treeId, limit, offset }
+      })
       return []
     }
 
+    logger.debug('Tree leaves fetched successfully', {
+      action: 'getTreeLeaves',
+      metadata: { treeId, count: data?.length || 0, limit, offset }
+    })
     return data || []
   } catch (error) {
-    console.error('Error fetching tree leaves:', error)
+    logger.error('Unexpected error fetching tree leaves', error, { 
+      action: 'getTreeLeaves', 
+      metadata: { treeId }
+    })
     return []
   }
 }

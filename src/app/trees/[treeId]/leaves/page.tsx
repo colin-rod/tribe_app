@@ -18,6 +18,36 @@ import {
 } from '@/lib/leaves'
 import { supabase } from '@/lib/supabase/client'
 
+/**
+ * Calculate child age in months from tree data
+ */
+function calculateChildAge(tree: Tree): number | undefined {
+  try {
+    // Check if there's a birth date in tree settings
+    if (tree.settings?.child_birth_date) {
+      const birthDate = new Date(tree.settings.child_birth_date)
+      const now = new Date()
+      const diffTime = Math.abs(now.getTime() - birthDate.getTime())
+      const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)) // Average month length
+      return diffMonths
+    }
+    
+    // Fallback: use tree creation as rough estimate
+    if (tree.created_at) {
+      const createdDate = new Date(tree.created_at)
+      const now = new Date()
+      const diffTime = Math.abs(now.getTime() - createdDate.getTime())
+      const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44))
+      return diffMonths
+    }
+    
+    return undefined
+  } catch (error) {
+    console.error('Error calculating child age:', error)
+    return undefined
+  }
+}
+
 interface TreeLeavesPageProps {
   params: { treeId: string }
 }
@@ -168,8 +198,8 @@ export default function TreeLeavesPage() {
   const handleCreateLeaf = async (leafData: any) => {
     try {
       const newLeaf = await createLeaf({
-        ...leafData,
-        branch_id: branches[0]?.id // TODO: Let user select branch
+        ...leafData
+        // branch_id is now selected by user in LeafCreator
       })
 
       if (newLeaf) {
@@ -264,10 +294,9 @@ export default function TreeLeavesPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-2xl">
             <LeafCreator
-              branchId={branches[0]?.id || ''}
-              branchName={branches[0]?.name || ''}
+              branches={branches}
               treeName={tree.name}
-              childAge={undefined} // TODO: Calculate from tree/child data
+              childAge={calculateChildAge(tree)}
               milestones={milestones}
               onSave={handleCreateLeaf}
               onCancel={() => setShowCreator(false)}

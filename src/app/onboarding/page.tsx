@@ -1,22 +1,31 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 import { rbac } from '@/lib/rbac'
 import { useRouter } from 'next/navigation'
 
+interface BranchForm {
+  name: string
+  description: string
+  color: string
+  type: 'family'
+  privacy: 'private'
+}
+
 export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   
   // Tree creation form
   const [treeName, setTreeName] = useState('')
   const [treeDescription, setTreeDescription] = useState('')
   
   // Branch creation form - family branches only
-  const [branches, setBranches] = useState([
-    { name: '', description: '', color: '#3B82F6', type: 'family' as const, privacy: 'private' as const }
+  const [branches, setBranches] = useState<BranchForm[]>([
+    { name: '', description: '', color: '#3B82F6', type: 'family', privacy: 'private' }
   ])
   
   const router = useRouter()
@@ -148,7 +157,7 @@ export default function OnboardingPage() {
       }
 
       router.push('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating branches:', error)
       alert('Failed to create your branches. Please try again.')
     } finally {
