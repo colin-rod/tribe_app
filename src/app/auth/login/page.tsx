@@ -17,21 +17,17 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      console.log('Attempting sign in with:', email)
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      console.log('Sign in response:', { data, error })
-
       if (error) throw error
 
-      console.log('Sign in successful, redirecting to dashboard')
       router.push('/dashboard')
-    } catch (error: any) {
-      console.error('Sign in error:', error)
-      setError(error.message)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred during sign in'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -42,7 +38,7 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
@@ -50,8 +46,9 @@ export default function LoginPage() {
       })
 
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred with Google sign in'
+      setError(errorMessage)
       setLoading(false)
     }
   }
@@ -145,7 +142,7 @@ export default function LoginPage() {
           
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <a href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
                 Sign up
               </a>

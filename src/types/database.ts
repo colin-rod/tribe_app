@@ -134,6 +134,12 @@ export interface Post {
   media_urls: string[] | null
   milestone_type: string | null
   milestone_date: string | null
+  thread_id: string | null
+  reply_to_id: string | null
+  conversation_context: Record<string, any> | null
+  message_type: 'post' | 'message' | 'reply' | 'system'
+  is_pinned: boolean
+  edited_at: string | null
   created_at: string
   updated_at: string
 }
@@ -278,6 +284,68 @@ export interface BranchPermissions {
   isModerator: boolean
   userRole: UserRole | 'none'
 }
+
+// Chat and Conversation Types
+export interface Conversation {
+  id: string
+  branch_id: string
+  title: string | null
+  description: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  is_active: boolean
+  conversation_type: 'general' | 'announcement' | 'milestone' | 'topic'
+  metadata: Record<string, any>
+  last_message_at: string
+  message_count: number
+  participant_count: number
+}
+
+export interface ConversationParticipant {
+  id: string
+  conversation_id: string
+  user_id: string
+  joined_at: string
+  last_read_at: string | null
+  is_muted: boolean
+  notification_level: 'all' | 'mentions' | 'none'
+}
+
+export interface AIPrompt {
+  id: string
+  user_id: string
+  branch_id: string
+  conversation_id: string | null
+  prompt_text: string
+  response_text: string | null
+  prompt_type: 'journal' | 'milestone' | 'memory' | 'checkin' | 'custom'
+  context_data: Record<string, any>
+  completed: boolean
+  created_at: string
+  completed_at: string | null
+}
+
+// Enhanced message types with conversation context
+export interface MessageWithContext extends Post {
+  conversation_title?: string | null
+  conversation_type?: string | null
+  reply_to_content?: string | null
+  reply_to_author_id?: string | null
+  reply_to_first_name?: string | null
+  reply_to_last_name?: string | null
+}
+
+export interface ConversationWithMessages extends Conversation {
+  messages: (Post & { profiles: Profile })[]
+  participants: (ConversationParticipant & { profiles: Profile })[]
+}
+
+// Message type guards and utilities
+export type MessageType = Post['message_type']
+export type NotificationLevel = ConversationParticipant['notification_level']
+export type PromptType = AIPrompt['prompt_type']
+export type ConversationType = Conversation['conversation_type']
 
 // Backward compatibility type aliases (to be removed after full migration)
 export type Tribe = Tree

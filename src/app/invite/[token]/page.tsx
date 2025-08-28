@@ -3,10 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import AcceptInviteClient from './accept-invite-client'
 
 interface PageProps {
-  params: { token: string }
+  params: Promise<{ token: string }>
 }
 
 export default async function AcceptInvitePage({ params }: PageProps) {
+  const { token } = await params
   const supabase = await createClient()
   
   // Get invitation by token
@@ -24,7 +25,7 @@ export default async function AcceptInvitePage({ params }: PageProps) {
         last_name
       )
     `)
-    .eq('token', params.token)
+    .eq('token', token)
     .eq('status', 'pending')
     .gt('expires_at', new Date().toISOString())
     .single()
