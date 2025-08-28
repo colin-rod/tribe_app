@@ -30,9 +30,7 @@ export default function BranchEditPage({ params }: PageProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [color, setColor] = useState('#3B82F6')
-  const [privacy, setPrivacy] = useState<'private' | 'public' | 'invite_only'>('private')
-  const [isDiscoverable, setIsDiscoverable] = useState(false)
-  const [autoApproveMembers, setAutoApproveMembers] = useState(false)
+  const [privacy, setPrivacy] = useState<'private' | 'invite_only'>('private')
 
   useEffect(() => {
     const loadBranchData = async () => {
@@ -75,8 +73,6 @@ export default function BranchEditPage({ params }: PageProps) {
         setDescription(branchData.description || '')
         setColor(branchData.color || '#3B82F6')
         setPrivacy(branchData.privacy || 'private')
-        setIsDiscoverable(branchData.is_discoverable || false)
-        setAutoApproveMembers(branchData.auto_approve_members || false)
 
         // Load branch members
         const { data: membersData, error: membersError } = await supabase
@@ -140,8 +136,6 @@ export default function BranchEditPage({ params }: PageProps) {
           description: description.trim() || null,
           color,
           privacy,
-          is_discoverable: isDiscoverable,
-          auto_approve_members: autoApproveMembers,
           updated_at: new Date().toISOString()
         })
         .eq('id', branchId)
@@ -156,8 +150,6 @@ export default function BranchEditPage({ params }: PageProps) {
         description: description.trim() || null,
         color,
         privacy,
-        is_discoverable: isDiscoverable,
-        auto_approve_members: autoApproveMembers
       })
 
       alert('Branch settings updated successfully!')
@@ -481,58 +473,9 @@ export default function BranchEditPage({ params }: PageProps) {
                           </div>
                         </label>
 
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            value="public"
-                            checked={privacy === 'public'}
-                            onChange={(e) => setPrivacy(e.target.value as any)}
-                            className="mr-3 text-blue-600"
-                          />
-                          <div>
-                            <div className="font-medium text-gray-900">Public</div>
-                            <div className="text-sm text-gray-500">Anyone can find and join this circle</div>
-                          </div>
-                        </label>
                       </div>
                     </div>
 
-                    {/* Discovery Settings */}
-                    {privacy !== 'private' && (
-                      <div className="space-y-4">
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="discoverable"
-                            checked={isDiscoverable}
-                            onChange={(e) => setIsDiscoverable(e.target.checked)}
-                            className="mr-3 text-blue-600"
-                          />
-                          <div>
-                            <label htmlFor="discoverable" className="font-medium text-gray-900">
-                              Show in directory
-                            </label>
-                            <p className="text-sm text-gray-500">Let others discover this circle</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="autoApprove"
-                            checked={autoApproveMembers}
-                            onChange={(e) => setAutoApproveMembers(e.target.checked)}
-                            className="mr-3 text-blue-600"
-                          />
-                          <div>
-                            <label htmlFor="autoApprove" className="font-medium text-gray-900">
-                              Auto-approve new members
-                            </label>
-                            <p className="text-sm text-gray-500">New members join immediately without approval</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     <div className="flex justify-end">
                       <button

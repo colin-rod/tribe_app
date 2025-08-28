@@ -3,11 +3,11 @@
 // but the RBAC system is the source of truth for permissions
 export type UserRole = 'owner' | 'admin' | 'moderator' | 'member' | 'viewer'
 export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'expired'
-export type BranchType = 'family' | 'community' | 'topic' | 'local'
-export type BranchPrivacy = 'private' | 'public' | 'invite_only'
+export type BranchType = 'family'
+export type BranchPrivacy = 'private' | 'invite_only'
 export type JoinMethod = 'invited' | 'requested' | 'auto_approved' | 'admin_added'
 export type FamilyRole = 'parent' | 'child' | 'grandparent' | 'grandchild' | 'sibling' | 'spouse' | 'partner' | 'other'
-export type ProfileVisibility = 'public' | 'circles' | 'private'
+export type ProfileVisibility = 'circles' | 'private'
 
 export interface Profile {
   id: string
@@ -27,7 +27,6 @@ export interface UserSettings {
   profile_visibility: ProfileVisibility
   show_email: boolean
   show_join_date: boolean
-  allow_circle_discovery: boolean
   email_new_posts: boolean
   email_comments: boolean
   email_mentions: boolean
@@ -70,8 +69,6 @@ export interface Branch {
   category: string | null
   location: string | null
   member_count: number
-  is_discoverable: boolean
-  auto_approve_members: boolean
 }
 
 export interface BranchMember {
@@ -200,14 +197,7 @@ export interface TreeWithMembers extends Tree {
   branches: Branch[]
 }
 
-// New types for branch discovery and management
-export interface BranchDiscovery {
-  featured_branches: Branch[]
-  categories: BranchCategory[]
-  user_branches: BranchWithMembers[]
-  suggested_branches: Branch[]
-}
-
+// Branch management types for family branches
 export interface BranchJoinRequest {
   id: string
   branch_id: string
@@ -358,7 +348,6 @@ export type CircleType = BranchType
 export type CirclePrivacy = BranchPrivacy
 export type CircleWithMembers = BranchWithMembers
 export type CircleWithDetails = BranchWithDetails
-export type CircleDiscovery = BranchDiscovery
 export type CircleJoinRequest = BranchJoinRequest
 export type CirclePermissions = BranchPermissions
 export type CrossTribeAccess = CrossTreeAccess

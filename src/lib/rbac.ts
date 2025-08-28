@@ -4,9 +4,6 @@ import type {
   BranchPermissions, 
   RBACContext, 
   UserPermissions,
-  UserRoleAssignment,
-  Role,
-  Permission,
   CrossTreeAccess
 } from '@/types/database'
 
@@ -197,17 +194,8 @@ export class RBACService {
         userRole
       }
 
-      // If no role in the branch's tree, check for cross-tree access or public branch
+      // If no role in the branch's tree, check for cross-tree access only (no public branches)
       if (userRole === 'none') {
-        const { data: branch } = await supabase
-          .from('branches')
-          .select('privacy')
-          .eq('id', branchId)
-          .single()
-        
-        // Check for public access
-        permissions.canRead = branch?.privacy === 'public'
-        
         // Check for cross-tree access
         const hasCrossTreeAccess = await hasUserCrossTreeAccess(userId, branchId)
         if (hasCrossTreeAccess) {

@@ -3,7 +3,7 @@ import { getPromptingEngine } from '@/lib/ai/promptingEngine'
 import { initializeAIService } from '@/lib/ai/config'
 import type { SmartPrompt } from '@/lib/ai/promptingEngine'
 import type { Message } from './useMessages'
-import { handleError, ErrorCodes } from '@/lib/error-handler'
+import { handleError } from '@/lib/error-handler'
 
 interface UseAIPromptsProps {
   userId: string

@@ -13,8 +13,8 @@ export default function Home() {
             in branches of love
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg tracking-tight text-slate-700">
-            Share precious moments, milestones, and memories with the people who matter most. 
-            Create private branches for different parts of your family journey.
+            Share precious moments, milestones, and memories in completely private family spaces. 
+            Every branch is invite-only, keeping your family memories safe and intimate.
           </p>
           <div className="mt-10 flex justify-center gap-x-6">
             <Link
@@ -40,8 +40,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Private Family Branches</h3>
-              <p className="text-slate-600">Create separate branches for different children, topics, or family groups. Control exactly who sees what.</p>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Always Private & Secure</h3>
+              <p className="text-slate-600">Create separate branches for different children, topics, or family groups. Only invited family members can see your content.</p>
             </div>
             
             <div className="bg-white rounded-2xl shadow-sm p-8">
@@ -50,8 +50,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Rich Memories</h3>
-              <p className="text-slate-600">Share photos, videos, voice notes, and milestone moments. Every precious memory in one beautiful timeline.</p>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Rich Memories & Milestones</h3>
+              <p className="text-slate-600">Share photos, videos, voice notes, and milestone moments with AI-powered prompts to help capture every precious memory.</p>
             </div>
             
             <div className="bg-white rounded-2xl shadow-sm p-8">
@@ -60,8 +60,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Grandparent Friendly</h3>
-              <p className="text-slate-600">Easy web viewing for grandparents and family members who prefer not to download apps. No barriers to love.</p>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Family Friendly Design</h3>
+              <p className="text-slate-600">Easy web access for all family members including grandparents. Real-time chat and simple invitation system.</p>
             </div>
           </div>
         </div>

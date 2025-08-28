@@ -1,15 +1,16 @@
 # Tree App
 
-A modern family sharing and community platform built with Next.js and Supabase. Create private family branches to share memories and milestones, or join community branches to connect with other parents.
+A private family sharing platform built with Next.js and Supabase. Create intimate family branches to share precious memories, milestones, and moments with only your closest loved ones.
 
 ## ✨ Features
 
-- 👨‍👩‍👧‍👦 **Private Family Branches** - Share updates, photos, and memories with specific family members
-- 🌍 **Community Branches** - Connect with other parents around shared interests and local communities
-- 📸 **Rich Media Support** - Share photos, videos, and milestone moments
-- 💬 **Comments & Reactions** - Engage with posts through likes and comments
-- 🔒 **Granular Privacy** - Control exactly who sees what content
-- 📱 **Responsive Design** - Works beautifully on desktop and mobile
+- 👨‍👩‍👧‍👦 **Private Family Branches** - Create dedicated spaces for different children, topics, or family groups
+- 📸 **Rich Media Support** - Share photos, videos, voice notes, and milestone moments
+- 💬 **Real-time Chat** - Engage with posts through comments, likes, and instant messaging
+- 🎉 **Milestone Tracking** - Capture and celebrate important family moments with special milestone posts
+- 🔒 **Complete Privacy** - Only family members you invite can see your content - no public posts, ever
+- 🤖 **AI Family Assistant** - Get personalized prompts and suggestions for sharing family memories
+- 📱 **Responsive Design** - Works beautifully on desktop and mobile devices
 
 ## 🚀 Quick Start
 
@@ -76,14 +77,10 @@ A modern family sharing and community platform built with Next.js and Supabase. 
 
 ## 🎯 Core Concepts
 
-### Branch Types
-- **Family Branches** - Private by default, perfect for sharing child updates and family moments
-- **Community Branches** - Can be public or private, great for connecting with other parents
-
-### Privacy Levels
-- **Private** - Only invited members can see content
-- **Public** - Anyone can discover and join
-- **Invite Only** - Discoverable but requires approval
+### Family Branches
+- **Always Private** - Every branch is completely private by default
+- **Invite-Only Access** - Only family members you personally invite can join
+- **Organized by Topic** - Create separate branches for each child, family events, or shared interests
 
 ### User Roles
 - **Admin** - Can manage branch settings and members
@@ -109,10 +106,12 @@ This project includes a comprehensive testing guide in `TESTING.md` that covers:
 
 ## 🔐 Security Features
 
+- **Complete Privacy by Design** - No public content, ever
 - Row Level Security (RLS) policies for data protection
 - Server-side authentication checks
 - Secure file upload with user isolation
 - Protected API routes
+- Family-only access controls
 
 ## 🚀 Deployment
 

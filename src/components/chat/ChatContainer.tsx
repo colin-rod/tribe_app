@@ -8,7 +8,7 @@ import { useMessages } from '@/hooks/useMessages'
 import { useRealTimeSubscription } from '@/hooks/useRealTimeSubscription'
 import { useAIPrompts } from '@/hooks/useAIPrompts'
 import { useScrollToBottom } from '@/hooks/useScrollToBottom'
-import { handleError, getUserFriendlyMessage } from '@/lib/error-handler'
+import { handleError } from '@/lib/error-handler'
 
 interface ChatContainerProps {
   user: User

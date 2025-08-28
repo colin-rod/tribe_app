@@ -83,10 +83,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
     return acc
   }, {} as Record<string, { tree: any, circles: any[] }>) : {}
 
-  // Separate community branches (if they don't belong to any tree)
-  const communityBranches = userBranches ? userBranches.filter(uc => 
-    uc.circles.type === 'community' && !uc.circles.tree_id
-  ) : []
+  // All branches now belong to trees (family branches only)
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
@@ -211,7 +208,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                             <div>
                               <div className="font-medium text-sm">{userCircle.circles.name}</div>
                               <div className="text-xs text-gray-500">
-                                {userCircle.circles.type} • {userCircle.circles.member_count} members
+                                {userCircle.circles.member_count} members
                               </div>
                             </div>
                           </div>
@@ -220,47 +217,6 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                     </div>
                   </div>
                 ))}
-
-                {/* Community Branches (if any) */}
-                {communityBranches.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                        Community Branches
-                      </h3>
-                      <span className="text-xs text-gray-400">
-                        {communityBranches.length} branch{communityBranches.length !== 1 ? 'es' : ''}
-                      </span>
-                    </div>
-                    
-                    <div className="space-y-2 ml-2">
-                      {communityBranches.map((userCircle: any) => (
-                        <button
-                          key={userCircle.circles.id}
-                          onClick={() => setSelectedBranch(userCircle.circles)}
-                          className={`w-full text-left p-3 rounded-lg transition-colors ${
-                            selectedBranch?.id === userCircle.circles.id
-                              ? 'bg-green-50 text-green-700 border border-green-200'
-                              : 'hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <div 
-                              className="w-3 h-3 rounded-full mr-3"
-                              style={{ backgroundColor: userCircle.circles.color }}
-                            />
-                            <div>
-                              <div className="font-medium text-sm">{userCircle.circles.name}</div>
-                              <div className="text-xs text-gray-500">
-                                {userCircle.circles.type} • {userCircle.circles.member_count} members
-                              </div>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Create Branch Button */}
@@ -277,7 +233,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
               </div>
 
               {/* No branches state */}
-              {Object.keys(branchesByTree).length === 0 && communityBranches.length === 0 && (
+              {Object.keys(branchesByTree).length === 0 && (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

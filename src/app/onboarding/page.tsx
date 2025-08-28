@@ -14,7 +14,7 @@ export default function OnboardingPage() {
   const [treeName, setTreeName] = useState('')
   const [treeDescription, setTreeDescription] = useState('')
   
-  // Branch creation form - now supporting different types
+  // Branch creation form - family branches only
   const [branches, setBranches] = useState([
     { name: '', description: '', color: '#3B82F6', type: 'family' as const, privacy: 'private' as const }
   ])
@@ -113,8 +113,7 @@ export default function OnboardingPage() {
               type: branch.type,
               privacy: branch.privacy,
               created_by: user.id,
-              is_discoverable: branch.type === 'community', // Community branches are discoverable
-              auto_approve_members: branch.type === 'community' && branch.privacy === 'public'
+              // Family branches are always private and not discoverable
             })
             .select()
             .single()
@@ -233,7 +232,7 @@ export default function OnboardingPage() {
               <div>
                 <h3 className="text-lg font-medium text-gray-900">Create Your Branches</h3>
                 <p className="mt-1 text-sm text-gray-600">
-                  Branches are groups within your tree (e.g., one per child, or by topic)
+                  Create private family branches for different topics like individual children, family events, or shared interests
                 </p>
               </div>
               
@@ -255,7 +254,7 @@ export default function OnboardingPage() {
                     <div>
                       <input
                         type="text"
-                        placeholder="Branch name (e.g., Emma's Branch, New Dads NYC)"
+                        placeholder="Branch name (e.g., Emma's Updates, Weekly Check-ins)"
                         value={branch.name}
                         onChange={(e) => updateBranch(index, 'name', e.target.value)}
                         className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -272,67 +271,15 @@ export default function OnboardingPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Branch Type
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => updateBranch(index, 'type', 'family')}
-                          className={`p-2 text-sm rounded-lg border-2 transition-colors ${
-                            branch.type === 'family' 
-                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          👨‍👩‍👧‍👦 Family
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateBranch(index, 'type', 'community')}
-                          className={`p-2 text-sm rounded-lg border-2 transition-colors ${
-                            branch.type === 'community' 
-                              ? 'border-green-500 bg-green-50 text-green-700' 
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          🌍 Community
-                        </button>
-                      </div>
-                    </div>
-
-                    {branch.type === 'community' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Privacy
-                        </label>
-                        <div className="space-y-2">
-                          <label className="flex items-center">
-                            <input
-                              type="radio"
-                              name={`privacy-${index}`}
-                              value="public"
-                              checked={branch.privacy === 'public'}
-                              onChange={(e) => updateBranch(index, 'privacy', e.target.value)}
-                              className="mr-2"
-                            />
-                            <span className="text-sm">Public - Anyone can join</span>
-                          </label>
-                          <label className="flex items-center">
-                            <input
-                              type="radio"
-                              name={`privacy-${index}`}
-                              value="invite_only"
-                              checked={branch.privacy === 'invite_only'}
-                              onChange={(e) => updateBranch(index, 'privacy', e.target.value)}
-                              className="mr-2"
-                            />
-                            <span className="text-sm">Invite Only - Members must be invited</span>
-                          </label>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="flex items-center">
+                        <span className="text-lg mr-2">👨‍👩‍👧‍👦</span>
+                        <div>
+                          <p className="text-sm font-medium text-blue-900">Private Family Branch</p>
+                          <p className="text-xs text-blue-700">Only family members you invite can see this branch</p>
                         </div>
                       </div>
-                    )}
+                    </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
