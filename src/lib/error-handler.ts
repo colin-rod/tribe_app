@@ -1,8 +1,3 @@
-interface ErrorDetails {
-  code?: string
-  context?: Record<string, unknown>
-  timestamp?: Date
-}
 
 export class AppError extends Error {
   public readonly code: string
@@ -64,6 +59,7 @@ export enum ErrorCodes {
 interface ErrorHandlerOptions {
   logError?: boolean
   showToUser?: boolean
+  showToast?: boolean
   fallbackMessage?: string
 }
 
@@ -92,7 +88,7 @@ class ErrorHandler {
   ): AppError {
     const {
       logError = true,
-      showToUser = false,
+      showToast = false,
       fallbackMessage = 'An unexpected error occurred'
     } = options
 
@@ -126,6 +122,17 @@ class ErrorHandler {
         console.error('Error in error callback:', callbackError)
       }
     })
+
+    // Auto-show toast if requested
+    if (showToast && typeof window !== 'undefined') {
+      // Dynamically import toast service to avoid SSR issues
+      import('./toast-service').then(({ handleErrorToast }) => {
+        handleErrorToast(appError)
+      }).catch(() => {
+        // Fallback to console error if toast service fails
+        console.error('Failed to show error toast:', appError.message)
+      })
+    }
 
     return appError
   }

@@ -59,7 +59,48 @@ export function isAIConfigured(): boolean {
   const openAIKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY || process.env.OPENAI_API_KEY
   const anthropicKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY
   
-  return !!(openAIKey || anthropicKey)
+  const configured = !!(openAIKey || anthropicKey)
+  console.log('AI Configuration Check:', { 
+    configured, 
+    hasOpenAI: !!openAIKey,
+    hasAnthropic: !!anthropicKey 
+  })
+  
+  return configured
+}
+
+/**
+ * Test AI API connection (temporary debug function)
+ */
+export async function testAIConnection() {
+  if (!isAIConfigured()) {
+    console.log('AI not configured, skipping test')
+    return false
+  }
+  
+  try {
+    const openAIKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY
+    if (openAIKey) {
+      const response = await fetch('https://api.openai.com/v1/models', {
+        headers: {
+          'Authorization': `Bearer ${openAIKey}`,
+        },
+      })
+      
+      if (response.ok) {
+        console.log('✅ OpenAI API connection successful')
+        return true
+      } else {
+        console.log('❌ OpenAI API error:', response.status, response.statusText)
+        return false
+      }
+    }
+  } catch (error) {
+    console.log('❌ OpenAI API connection failed:', error)
+    return false
+  }
+  
+  return false
 }
 
 /**

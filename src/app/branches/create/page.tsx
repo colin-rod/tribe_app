@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { rbac } from '@/lib/rbac'
 import { getUserPrimaryTree, getUserTrees } from '@/lib/trees'
+import { showSuccess, showErrorWithRetry, showLoading } from '@/lib/toast-service'
+import { handleError } from '@/lib/error-handler'
 import type { User } from '@supabase/supabase-js'
 
 export default function CreateBranchPage() {
@@ -72,6 +74,7 @@ export default function CreateBranchPage() {
     if (!user || !name.trim() || !selectedTreeId) return
 
     setSubmitting(true)
+    const loadingToast = showLoading('Creating your branch...')
 
     try {
       // Create the branch within the selected tree
@@ -116,14 +119,28 @@ export default function CreateBranchPage() {
 
       if (memberError) throw memberError
 
-      // Redirect to dashboard
+      // Success!
+      showSuccess(`"${name}" branch created successfully!`)
       router.push('/dashboard')
       
-    } catch (error: any) {
-      console.error('Error creating branch:', error)
-      alert(`Failed to create branch: ${error.message}`)
+    } catch (error: unknown) {
+      handleError(error, { 
+        logError: true,
+        fallbackMessage: 'Failed to create branch' 
+      })
+      showErrorWithRetry(
+        `Failed to create "${name}" branch`,
+        () => handleSubmit(e),
+        'Try Again'
+      )
     } finally {
       setSubmitting(false)
+      // Remove loading toast (will be replaced by success/error)
+      setTimeout(() => {
+        import('react-hot-toast').then(({ default: toast }) => {
+          toast.dismiss(loadingToast)
+        })
+      }, 100)
     }
   }
 

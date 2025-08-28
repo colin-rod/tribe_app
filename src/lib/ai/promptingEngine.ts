@@ -18,7 +18,7 @@ export interface SmartPrompt {
   branchId: string
   userId: string
   content: string
-  promptType: 'checkin' | 'milestone' | 'memory' | 'followup' | 'celebration'
+  promptType: 'checkin' | 'milestone' | 'memory' | 'followup' | 'celebration' | 'leaf_caption' | 'leaf_tags'
   suggestedResponses: string[]
   aiMetadata: {
     provider: string
@@ -29,6 +29,31 @@ export interface SmartPrompt {
   createdAt: Date
   expiresAt: Date
   status: 'pending' | 'responded' | 'dismissed' | 'expired'
+}
+
+export interface LeafEnhancementRequest {
+  leafId: string
+  mediaUrls?: string[]
+  content?: string
+  context: {
+    authorName: string
+    branchName: string
+    treeName: string
+    childAge?: number
+    existingTags?: string[]
+  }
+}
+
+export interface LeafEnhancementResult {
+  suggestedCaption?: string
+  suggestedTags: string[]
+  detectedMilestone?: {
+    type: string
+    confidence: number
+    description: string
+  }
+  suggestedSeason?: string
+  confidence: number
 }
 
 export interface PromptEngineConfig {
@@ -76,6 +101,8 @@ class SmartPromptingEngine {
       
       // Try to generate personalized prompt first
       let aiResponse: AIResponse
+      let template: any = null
+      
       try {
         const personalizedPrompt = await personalizedSystem.generatePersonalizedPrompt(
           userId,
@@ -96,7 +123,7 @@ class SmartPromptingEngine {
         }
       } catch (error) {
         // Fallback to template-based approach
-        const template = getRandomPromptTemplate({
+        template = getRandomPromptTemplate({
           timeOfDay: aiContext.timeContext.timeOfDay,
           dayOfWeek: aiContext.timeContext.dayOfWeek,
           recentKeywords: this.extractKeywordsFromMessages(aiContext.recentMessages)
@@ -132,7 +159,7 @@ class SmartPromptingEngine {
           provider: isAIConfigured() ? 'configured' : 'demo',
           model: isAIConfigured() ? 'ai-model' : 'demo',
           confidence: aiResponse.confidenceScore,
-          template: template.id
+          template: template?.id
         },
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + this.config.responseTimeout * 60 * 60 * 1000),
@@ -615,6 +642,186 @@ class SmartPromptingEngine {
   refreshUserPatterns(): void {
     const personalizedSystem = getPersonalizedPromptingSystem()
     personalizedSystem.clearCache()
+  }
+
+  /**
+   * Enhance a leaf with AI-generated caption, tags, and milestone detection
+   */
+  async enhanceLeaf(request: LeafEnhancementRequest): Promise<LeafEnhancementResult> {
+    try {
+      if (!isAIConfigured()) {
+        return this.generateDemoLeafEnhancement(request)
+      }
+
+      const aiService = getAIService()
+      const contextManager = getContextManager()
+
+      // Build enhanced context for leaf analysis
+      const enhancementPrompt = this.buildLeafEnhancementPrompt(request)
+      
+      // Get AI analysis
+      const aiResponse = await aiService.generateLeafEnhancement(enhancementPrompt)
+      
+      return {
+        suggestedCaption: aiResponse.caption,
+        suggestedTags: aiResponse.tags || [],
+        detectedMilestone: aiResponse.milestone,
+        suggestedSeason: aiResponse.season,
+        confidence: aiResponse.confidence
+      }
+    } catch (error) {
+      console.error('Error enhancing leaf:', error)
+      return this.generateDemoLeafEnhancement(request)
+    }
+  }
+
+  /**
+   * Generate captions for multiple leaves in batch
+   */
+  async enhanceLeavesBatch(requests: LeafEnhancementRequest[]): Promise<LeafEnhancementResult[]> {
+    const results = await Promise.all(
+      requests.map(request => this.enhanceLeaf(request))
+    )
+    return results
+  }
+
+  /**
+   * Analyze leaf content and suggest improvements
+   */
+  async analyzeLeafContent(leafId: string, content: string, mediaUrls?: string[]): Promise<{
+    contentQuality: 'high' | 'medium' | 'low'
+    suggestions: string[]
+    missingElements: string[]
+  }> {
+    try {
+      if (!isAIConfigured()) {
+        return {
+          contentQuality: 'medium',
+          suggestions: [
+            'Consider adding more context about the moment',
+            'Add emotional details about how this felt',
+            'Include who else was involved in this memory'
+          ],
+          missingElements: ['emotions', 'context', 'people']
+        }
+      }
+
+      // TODO: Implement actual AI analysis
+      return {
+        contentQuality: 'medium',
+        suggestions: [],
+        missingElements: []
+      }
+    } catch (error) {
+      console.error('Error analyzing leaf content:', error)
+      return {
+        contentQuality: 'low',
+        suggestions: ['Unable to analyze content'],
+        missingElements: []
+      }
+    }
+  }
+
+  private buildLeafEnhancementPrompt(request: LeafEnhancementRequest): string {
+    const { context } = request
+    
+    let prompt = `You are helping parents capture precious memories of their children. Analyze this memory and provide helpful suggestions.
+
+Context:
+- Parent: ${context.authorName}
+- Child's Tree: ${context.treeName}
+- Branch: ${context.branchName}
+${context.childAge ? `- Child's age: ${context.childAge} months` : ''}
+
+Memory Content:
+${request.content || 'No text content provided'}
+
+${request.mediaUrls ? `Media: ${request.mediaUrls.length} file(s) attached` : 'No media attached'}
+
+${context.existingTags?.length ? `Existing tags: ${context.existingTags.join(', ')}` : ''}
+
+Please provide:
+1. A warm, engaging caption that captures the emotion and significance (if content needs enhancement)
+2. 3-5 relevant tags for organization and search
+3. Detect if this represents a milestone (first_word, first_steps, etc.)
+4. Suggest a season/period classification if appropriate (first_year, toddler, preschool, etc.)
+
+Response format:
+{
+  "caption": "suggested caption (only if needed)",
+  "tags": ["tag1", "tag2", "tag3"],
+  "milestone": {
+    "type": "milestone_type",
+    "confidence": 0.8,
+    "description": "why this is a milestone"
+  },
+  "season": "suggested_season",
+  "confidence": 0.9
+}`
+
+    return prompt
+  }
+
+  private generateDemoLeafEnhancement(request: LeafEnhancementRequest): LeafEnhancementResult {
+    const { context } = request
+    
+    // Simple keyword-based demo enhancement
+    const content = request.content?.toLowerCase() || ''
+    const demoTags: string[] = []
+    const demoMilestones: { [key: string]: { type: string; description: string } } = {
+      'first step': { type: 'first_steps', description: 'Child took their first independent steps!' },
+      'first word': { type: 'first_word', description: 'Child said their first recognizable word!' },
+      'first tooth': { type: 'first_tooth', description: 'First tooth has emerged!' },
+      'birthday': { type: 'birthday', description: 'Special birthday celebration!' },
+      'crawling': { type: 'crawling', description: 'Child has started crawling!' }
+    }
+
+    // Extract demo tags from content
+    const tagKeywords = {
+      'play': ['play', 'playing', 'toys', 'games'],
+      'family': ['mom', 'dad', 'grandma', 'grandpa', 'family'],
+      'food': ['eat', 'eating', 'food', 'meal', 'dinner', 'lunch'],
+      'sleep': ['sleep', 'nap', 'bedtime', 'tired'],
+      'outside': ['park', 'outside', 'playground', 'walk'],
+      'learning': ['book', 'read', 'learn', 'school'],
+      'cute': ['cute', 'adorable', 'sweet', 'precious'],
+      'happy': ['happy', 'smile', 'laugh', 'joy', 'fun']
+    }
+
+    for (const [tag, keywords] of Object.entries(tagKeywords)) {
+      if (keywords.some(keyword => content.includes(keyword))) {
+        demoTags.push(tag)
+      }
+    }
+
+    // Check for milestone
+    let detectedMilestone
+    for (const [phrase, milestone] of Object.entries(demoMilestones)) {
+      if (content.includes(phrase)) {
+        detectedMilestone = {
+          type: milestone.type,
+          confidence: 0.8,
+          description: milestone.description
+        }
+        break
+      }
+    }
+
+    // Suggest season based on child age
+    let suggestedSeason
+    if (context.childAge !== undefined) {
+      if (context.childAge <= 12) suggestedSeason = 'first_year'
+      else if (context.childAge <= 36) suggestedSeason = 'toddler'
+      else if (context.childAge <= 60) suggestedSeason = 'preschool'
+      else suggestedSeason = 'school_age'
+    }
+
+    return {
+      suggestedTags: demoTags.length > 0 ? demoTags : ['memory', 'precious'],
+      detectedMilestone,
+      suggestedSeason,
+      confidence: 0.7
+    }
   }
 }
 

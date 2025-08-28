@@ -27,7 +27,7 @@ interface AnalysisRecord {
   created_at: string
 }
 
-interface PostRecord {
+interface LeafRecord {
   id: string
   content: string
   created_at: string
@@ -118,16 +118,16 @@ class PersonalizedPromptingSystem {
       return this.generateDefaultPattern(userId, branchId)
     }
 
-    // Also fetch recent posts for additional context
-    const { data: recentPosts } = await supabase
-      .from('posts')
+    // Also fetch recent leaves for additional context
+    const { data: recentLeaves } = await supabase
+      .from('leaves_with_details')
       .select('*, profiles(first_name, last_name)')
       .eq('author_id', userId)
       .eq('branch_id', branchId)
       .order('created_at', { ascending: false })
       .limit(50)
 
-    const pattern = this.computeUserPattern(userId, branchId, analyses, recentPosts || [])
+    const pattern = this.computeUserPattern(userId, branchId, analyses, recentLeaves || [])
     
     // Cache the result
     this.patterns.set(cacheKey, pattern)
@@ -171,7 +171,7 @@ class PersonalizedPromptingSystem {
     userId: string,
     branchId: string,
     analyses: AnalysisRecord[],
-    _posts: PostRecord[]
+    _leaves: LeafRecord[]
   ): UserPattern {
     // Analyze response patterns
     const avgResponseLength = analyses.reduce((sum, a) => sum + (a.response_text?.length || 0), 0) / analyses.length

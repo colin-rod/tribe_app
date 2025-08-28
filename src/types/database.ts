@@ -123,14 +123,24 @@ export interface CrossTreeAccess {
   created_at: string
 }
 
-export interface Post {
+// Leaf types for the memory card system
+export type LeafType = 'photo' | 'video' | 'audio' | 'text' | 'milestone' | 'memory'
+export type ReactionType = 'heart' | 'smile' | 'laugh' | 'wow' | 'care' | 'love'
+export type MilestoneCategory = 'physical' | 'communication' | 'social' | 'academic' | 'celebration' | 'experience' | 'family' | 'general'
+
+export interface Leaf {
   id: string
   branch_id: string
   author_id: string
   content: string | null
   media_urls: string[] | null
+  leaf_type: LeafType
   milestone_type: string | null
   milestone_date: string | null
+  tags: string[]
+  season: string | null
+  ai_caption: string | null
+  ai_tags: string[]
   thread_id: string | null
   reply_to_id: string | null
   conversation_context: Record<string, any> | null
@@ -139,6 +149,58 @@ export interface Post {
   edited_at: string | null
   created_at: string
   updated_at: string
+}
+
+export interface LeafReaction {
+  id: string
+  leaf_id: string
+  user_id: string
+  reaction_type: ReactionType
+  created_at: string
+  updated_at: string
+}
+
+export interface LeafShare {
+  id: string
+  leaf_id: string
+  branch_id: string
+  shared_by: string
+  created_at: string
+}
+
+export interface Milestone {
+  id: string
+  name: string
+  display_name: string
+  description: string | null
+  category: MilestoneCategory
+  typical_age_months: number | null
+  icon: string | null
+  color: string
+  created_at: string
+}
+
+// Keep Post as alias for backward compatibility during migration
+export interface Post extends Leaf {}
+
+export interface LeafWithDetails extends Leaf {
+  profiles: Profile
+  branch: Branch
+  tree_name: string | null
+  milestone_display_name: string | null
+  milestone_category: MilestoneCategory | null
+  milestone_icon: string | null
+  author_name: string | null
+  author_avatar: string | null
+  heart_count: number
+  smile_count: number
+  laugh_count: number
+  user_reaction: ReactionType | null
+  share_count: number
+  comment_count: number
+  reactions: LeafReaction[]
+  shares: LeafShare[]
+  comments: (Comment & { profiles: Profile })[]
 }
 
 export interface Comment {
@@ -184,11 +246,8 @@ export interface BranchWithDetails extends Branch {
   user_membership?: BranchMember | null  // Current user's membership in this branch
 }
 
-export interface PostWithDetails extends Post {
-  profiles: Profile
-  comments: (Comment & { profiles: Profile })[]
-  likes: Like[]
-  branch: Branch
+export interface PostWithDetails extends LeafWithDetails {
+  likes: Like[]  // Keep for backward compatibility
 }
 
 // Keep tree-related types for backward compatibility

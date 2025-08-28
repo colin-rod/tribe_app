@@ -448,6 +448,104 @@ Keep responses concise (2-3 sentences) and conversational. Focus on drawing out 
     const conversationKey = `${branchName}-${userName}`
     return this.conversationHistory.get(conversationKey) || []
   }
+
+  /**
+   * Generate leaf enhancement (caption, tags, milestone detection)
+   */
+  async generateLeafEnhancement(prompt: string): Promise<{
+    caption?: string
+    tags: string[]
+    milestone?: {
+      type: string
+      confidence: number
+      description: string
+    }
+    season?: string
+    confidence: number
+  }> {
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: 'You are an AI assistant helping parents capture and organize precious family memories. Analyze the provided content and return a JSON response with suggested enhancements.'
+      },
+      {
+        role: 'user',
+        content: prompt
+      }
+    ]
+
+    try {
+      const response = await this.callAI(messages)
+      
+      // Try to parse JSON response
+      try {
+        const parsed = JSON.parse(response)
+        return {
+          caption: parsed.caption,
+          tags: parsed.tags || [],
+          milestone: parsed.milestone,
+          season: parsed.season,
+          confidence: parsed.confidence || 0.7
+        }
+      } catch (parseError) {
+        // Fallback: extract information from plain text response
+        const tags = this.extractTagsFromText(response)
+        const milestone = this.extractMilestoneFromText(response)
+        
+        return {
+          tags: tags.length > 0 ? tags : ['memory'],
+          milestone,
+          confidence: 0.6
+        }
+      }
+    } catch (error) {
+      console.error('Error generating leaf enhancement:', error)
+      throw error
+    }
+  }
+
+  private extractTagsFromText(text: string): string[] {
+    const tagPatterns = [
+      /tags?:\s*\[([^\]]+)\]/i,
+      /tags?:\s*([^.\n]+)/i
+    ]
+    
+    for (const pattern of tagPatterns) {
+      const match = text.match(pattern)
+      if (match) {
+        return match[1]
+          .split(',')
+          .map(tag => tag.trim().toLowerCase().replace(/['"]/g, ''))
+          .filter(tag => tag.length > 0)
+      }
+    }
+    
+    return []
+  }
+
+  private extractMilestoneFromText(text: string): { type: string; confidence: number; description: string } | undefined {
+    const milestoneKeywords = {
+      'first_steps': ['first step', 'walking', 'walked'],
+      'first_word': ['first word', 'said', 'talking', 'spoke'],
+      'first_tooth': ['tooth', 'teeth', 'teething'],
+      'crawling': ['crawl', 'crawling'],
+      'birthday': ['birthday', 'birth day', 'born']
+    }
+
+    const lowerText = text.toLowerCase()
+    
+    for (const [type, keywords] of Object.entries(milestoneKeywords)) {
+      if (keywords.some(keyword => lowerText.includes(keyword))) {
+        return {
+          type,
+          confidence: 0.8,
+          description: `Detected ${type.replace('_', ' ')} milestone`
+        }
+      }
+    }
+
+    return undefined
+  }
 }
 
 // Singleton instance

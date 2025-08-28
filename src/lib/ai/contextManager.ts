@@ -75,7 +75,11 @@ class ConversationContextManager {
         timestamp: new Date(msg.created_at),
         milestoneType: msg.milestone_type || undefined
       })),
-      userPreferences: userState?.preferences,
+      userPreferences: userState?.preferences ? {
+        promptStyle: userState.preferences.promptStyle,
+        reminderFrequency: userState.preferences.reminderFrequency,
+        topicsOfInterest: userState.preferences.preferredTopics
+      } : undefined,
       timeContext
     }
   }
@@ -249,13 +253,18 @@ class ConversationContextManager {
 
   private async initializeUserState(userId: string, branchId: string): Promise<UserConversationState> {
     // Try to load from database first
-    const { data: existingState } = await supabase
+    const { data: existingStates, error } = await supabase
       .from('user_conversation_states')
       .select('*')
       .eq('user_id', userId)
       .eq('branch_id', branchId)
-      .single()
+      .limit(1)
 
+    if (error) {
+      console.error('Error fetching user conversation state:', error)
+    }
+
+    const existingState = existingStates?.[0]
     if (existingState) {
       return {
         userId,
@@ -305,6 +314,8 @@ class ConversationContextManager {
         pending_prompts: state.pendingPrompts,
         preferences: state.preferences,
         response_history: state.responseHistory
+      }, {
+        onConflict: 'user_id,branch_id'
       })
 
     if (error) {

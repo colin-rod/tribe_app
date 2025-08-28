@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { showSuccess, showError } from '@/lib/toast-service'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -24,10 +25,12 @@ export default function LoginPage() {
 
       if (error) throw error
 
+      showSuccess('Welcome back!')
       router.push('/dashboard')
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred during sign in'
       setError(errorMessage)
+      showError('Sign in failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }
