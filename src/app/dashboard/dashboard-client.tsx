@@ -9,6 +9,9 @@ import { TreeWithMembers, BranchWithMembers } from '@/types/common'
 import { getUserBranchPermissions } from '@/lib/rbac'
 import TreeExplorer from '@/components/dashboard/TreeExplorer'
 import GlobalLeafCreator from '@/components/leaves/GlobalLeafCreator'
+import { UnassignedLeavesPanel } from '@/components/leaves/UnassignedLeavesPanel'
+import { DragDropLeafAssignment } from '@/components/leaves/DragDropLeafAssignment'
+import { AllLeavesView } from '@/components/leaves/AllLeavesView'
 
 interface DashboardClientProps {
   user: User
@@ -29,6 +32,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
   const [branchPermissions, setBranchPermissions] = useState<BranchPermissions | null>(null)
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
   const [viewMode, setViewMode] = useState<'branch' | 'all' | 'unassigned'>('branch')
+  const [dragDropMode, setDragDropMode] = useState(false)
   const router = useRouter()
 
   // Load branch permissions when branch is selected
@@ -210,10 +214,28 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
             </button>
           </div>
           
-          <div className="text-sm text-gray-600">
-            {viewMode === 'branch' && selectedBranch && `Viewing: ${selectedBranch.name}`}
-            {viewMode === 'all' && 'Showing all your leaves'}
-            {viewMode === 'unassigned' && 'Leaves waiting for assignment'}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600">
+              {viewMode === 'branch' && selectedBranch && `Viewing: ${selectedBranch.name}`}
+              {viewMode === 'all' && 'Showing all your leaves'}
+              {viewMode === 'unassigned' && 'Leaves waiting for assignment'}
+            </div>
+            
+            {viewMode === 'unassigned' && (
+              <button
+                onClick={() => setDragDropMode(!dragDropMode)}
+                className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  dragDropMode 
+                    ? 'bg-purple-100 text-purple-700' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+                {dragDropMode ? 'List View' : 'Drag & Drop'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -359,29 +381,34 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
               )}
               
               {viewMode === 'all' && (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4">🌿</div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">All Leaves View</h3>
-                    <p className="text-gray-600 mb-6">This will show all your leaves across all branches.</p>
-                    <p className="text-sm text-gray-500">Coming soon in the next update!</p>
+                <div className="h-full overflow-auto">
+                  <div className="p-6">
+                    <AllLeavesView 
+                      userId={user.id}
+                      userBranches={userBranches?.map(ub => ub.branches).filter(Boolean) || []}
+                    />
                   </div>
                 </div>
               )}
               
               {viewMode === 'unassigned' && (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4">📋</div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Unassigned Leaves</h3>
-                    <p className="text-gray-600 mb-6">Leaves waiting to be organized into branches.</p>
-                    <button
-                      onClick={() => setShowGlobalCreator(true)}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <span className="mr-2">🌿</span>
-                      Create Your First Leaf
-                    </button>
+                <div className="h-full overflow-auto">
+                  <div className="p-6">
+                    {dragDropMode ? (
+                      <DragDropLeafAssignment 
+                        userId={user.id}
+                        onLeafAssigned={(leafId, branchIds) => {
+                          console.log(`Leaf ${leafId} assigned to branches:`, branchIds)
+                        }}
+                      />
+                    ) : (
+                      <UnassignedLeavesPanel 
+                        userId={user.id}
+                        onLeafAssigned={(leafId, branchIds) => {
+                          console.log(`Leaf ${leafId} assigned to branches:`, branchIds)
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
               )}

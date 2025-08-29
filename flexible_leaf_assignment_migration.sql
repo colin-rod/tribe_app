@@ -1,19 +1,22 @@
 -- Migration: Add flexible leaf assignment support
 -- This enables leaves to be unassigned or assigned to multiple branches
+-- Run this in your database to enable the new dashboard features
 
--- Add assignment status to existing posts table (which stores leaves)
+BEGIN;
+
+-- 1. Add assignment status to existing posts table (which stores leaves)
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS assignment_status VARCHAR DEFAULT 'assigned' 
   CHECK (assignment_status IN ('assigned', 'unassigned', 'multi-assigned'));
 
--- Update leaf_type constraint to remove 'memory' type and make branch_id nullable
+-- 2. Update leaf_type constraint to remove 'memory' type
 ALTER TABLE posts DROP CONSTRAINT IF EXISTS posts_leaf_type_check;
 ALTER TABLE posts ADD CONSTRAINT posts_leaf_type_check 
   CHECK (leaf_type = ANY (ARRAY['photo'::text, 'video'::text, 'audio'::text, 'text'::text, 'milestone'::text]));
 
--- Make branch_id nullable for unassigned leaves
+-- 3. Make branch_id nullable for unassigned leaves
 ALTER TABLE posts ALTER COLUMN branch_id DROP NOT NULL;
 
--- Create leaf assignments junction table for many-to-many relationships
+-- 4. Create leaf assignments junction table for many-to-many relationships
 CREATE TABLE IF NOT EXISTS leaf_assignments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   leaf_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
@@ -28,13 +31,13 @@ CREATE TABLE IF NOT EXISTS leaf_assignments (
   UNIQUE(leaf_id, branch_id)
 );
 
--- Add indexes for performance
+-- 5. Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_leaf_assignments_leaf_id ON leaf_assignments(leaf_id);
 CREATE INDEX IF NOT EXISTS idx_leaf_assignments_branch_id ON leaf_assignments(branch_id);
 CREATE INDEX IF NOT EXISTS idx_leaf_assignments_assigned_by ON leaf_assignments(assigned_by);
 CREATE INDEX IF NOT EXISTS idx_posts_assignment_status ON posts(assignment_status);
 
--- Create updated_at trigger for leaf_assignments
+-- 6. Create updated_at trigger for leaf_assignments
 CREATE OR REPLACE FUNCTION update_leaf_assignments_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -43,12 +46,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trigger_leaf_assignments_updated_at ON leaf_assignments;
 CREATE TRIGGER trigger_leaf_assignments_updated_at
   BEFORE UPDATE ON leaf_assignments
   FOR EACH ROW EXECUTE FUNCTION update_leaf_assignments_updated_at();
 
--- Create view for posts (leaves) with assignment details
+-- 7. Create view for posts (leaves) with assignment details
 CREATE OR REPLACE VIEW leaves_with_assignments AS
 SELECT 
   p.*,
@@ -72,7 +74,7 @@ LEFT JOIN leaf_assignments la ON p.id = la.leaf_id
 LEFT JOIN branches b ON la.branch_id = b.id
 GROUP BY p.id;
 
--- Function to get unassigned leaves for a user
+-- 8. Function to get unassigned leaves for a user
 CREATE OR REPLACE FUNCTION get_user_unassigned_leaves(user_id UUID, limit_count INTEGER DEFAULT 20, offset_count INTEGER DEFAULT 0)
 RETURNS TABLE(
   id UUID,
@@ -115,7 +117,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to assign leaf to branch(es)
+-- 9. Function to assign leaf to branch(es)
 CREATE OR REPLACE FUNCTION assign_leaf_to_branches(
   p_leaf_id UUID,
   p_branch_ids UUID[],
@@ -162,14 +164,14 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- RLS Policies for leaf_assignments table
+-- 10. RLS Policies for leaf_assignments table
 ALTER TABLE leaf_assignments ENABLE ROW LEVEL SECURITY;
 
 -- Users can view assignments for branches they're members of
 CREATE POLICY "Users can view leaf assignments for their branches" ON leaf_assignments
   FOR SELECT USING (
     branch_id IN (
-      SELECT branch_id FROM user_branches WHERE user_id = auth.uid()
+      SELECT branch_id FROM branch_members WHERE user_id = auth.uid() AND status = 'active'
     )
   );
 
@@ -177,9 +179,10 @@ CREATE POLICY "Users can view leaf assignments for their branches" ON leaf_assig
 CREATE POLICY "Users can create leaf assignments for manageable branches" ON leaf_assignments
   FOR INSERT WITH CHECK (
     branch_id IN (
-      SELECT branch_id FROM user_branches 
-      WHERE user_id = auth.uid() 
-      AND ('manage_content' = ANY(permissions) OR role IN ('owner', 'admin'))
+      SELECT bm.branch_id FROM branch_members bm 
+      WHERE bm.user_id = auth.uid() 
+      AND bm.status = 'active'
+      AND bm.role IN ('owner', 'admin', 'moderator')
     )
   );
 
@@ -188,9 +191,10 @@ CREATE POLICY "Users can update their leaf assignments" ON leaf_assignments
   FOR UPDATE USING (
     assigned_by = auth.uid() 
     OR branch_id IN (
-      SELECT branch_id FROM user_branches 
-      WHERE user_id = auth.uid() 
-      AND ('manage_content' = ANY(permissions) OR role IN ('owner', 'admin'))
+      SELECT bm.branch_id FROM branch_members bm
+      WHERE bm.user_id = auth.uid() 
+      AND bm.status = 'active'
+      AND bm.role IN ('owner', 'admin', 'moderator')
     )
   );
 
@@ -199,13 +203,15 @@ CREATE POLICY "Users can delete their leaf assignments" ON leaf_assignments
   FOR DELETE USING (
     assigned_by = auth.uid()
     OR branch_id IN (
-      SELECT branch_id FROM user_branches 
-      WHERE user_id = auth.uid() 
-      AND ('manage_content' = ANY(permissions) OR role IN ('owner', 'admin'))
+      SELECT bm.branch_id FROM branch_members bm
+      WHERE bm.user_id = auth.uid() 
+      AND bm.status = 'active'
+      AND bm.role IN ('owner', 'admin', 'moderator')
     )
   );
 
--- Update existing posts (leaves) to have proper assignment status based on current branch_id
+-- 11. Migrate existing data
+-- Update existing posts to have proper assignment status based on current branch_id
 UPDATE posts 
 SET assignment_status = CASE 
   WHEN branch_id IS NOT NULL THEN 'assigned'
@@ -224,8 +230,23 @@ FROM posts p
 WHERE p.branch_id IS NOT NULL
 ON CONFLICT (leaf_id, branch_id) DO NOTHING;
 
--- Grant necessary permissions
+-- 12. Grant necessary permissions
 GRANT SELECT, INSERT, UPDATE, DELETE ON leaf_assignments TO authenticated;
-GRANT USAGE ON SEQUENCE leaf_assignments_id_seq TO authenticated;
 GRANT EXECUTE ON FUNCTION get_user_unassigned_leaves(UUID, INTEGER, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION assign_leaf_to_branches(UUID, UUID[], UUID, UUID) TO authenticated;
+
+COMMIT;
+
+-- 13. Verify the migration worked
+DO $$
+DECLARE
+    assignment_count INTEGER;
+    posts_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO assignment_count FROM leaf_assignments;
+    SELECT COUNT(*) INTO posts_count FROM posts WHERE branch_id IS NOT NULL;
+    
+    RAISE NOTICE 'Migration completed successfully!';
+    RAISE NOTICE 'Created % leaf assignments for % posts with branches', assignment_count, posts_count;
+    RAISE NOTICE 'New features enabled: flexible leaf assignment, unassigned leaves, multi-branch assignment';
+END $$;

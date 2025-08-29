@@ -106,7 +106,7 @@ export async function createUnassignedLeaf(leafData: {
 }): Promise<Leaf | null> {
   return AsyncUtils.supabaseQuery(
     () => supabase
-      .from('leaves')
+      .from('posts')
       .insert({
         ...leafData,
         branch_id: null,
@@ -167,7 +167,7 @@ export async function removeLeafFromBranch(
     if (remainingAssignments.length === 0) {
       await AsyncUtils.supabaseQuery(
         () => supabase
-          .from('leaves')
+          .from('posts')
           .update({ 
             assignment_status: 'unassigned',
             branch_id: null 
@@ -178,7 +178,7 @@ export async function removeLeafFromBranch(
     } else if (remainingAssignments.length === 1) {
       await AsyncUtils.supabaseQuery(
         () => supabase
-          .from('leaves')
+          .from('posts')
           .update({ 
             assignment_status: 'assigned',
             branch_id: remainingAssignments[0].branch_id 
@@ -259,7 +259,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
       // Total leaves
       AsyncUtils.supabaseQuery(
         () => supabase
-          .from('leaves')
+          .from('posts')
           .select('id', { count: 'exact' })
           .eq('author_id', userId),
         'Failed to count total leaves'
@@ -267,7 +267,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
       // Assigned leaves
       AsyncUtils.supabaseQuery(
         () => supabase
-          .from('leaves')
+          .from('posts')
           .select('id', { count: 'exact' })
           .eq('author_id', userId)
           .eq('assignment_status', 'assigned'),
@@ -276,7 +276,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
       // Unassigned leaves
       AsyncUtils.supabaseQuery(
         () => supabase
-          .from('leaves')
+          .from('posts')
           .select('id', { count: 'exact' })
           .eq('author_id', userId)
           .eq('assignment_status', 'unassigned'),
@@ -285,7 +285,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
       // Multi-assigned leaves
       AsyncUtils.supabaseQuery(
         () => supabase
-          .from('leaves')
+          .from('posts')
           .select('id', { count: 'exact' })
           .eq('author_id', userId)
           .eq('assignment_status', 'multi-assigned'),

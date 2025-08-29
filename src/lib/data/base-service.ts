@@ -3,7 +3,7 @@
  * Provides consistent patterns for data fetching and state management
  */
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase as supabaseClient } from '@/lib/supabase/client'
 import { withSupabaseErrorHandling, AsyncUtils } from '@/lib/errors'
 
 export interface BaseEntity {
@@ -29,7 +29,7 @@ export interface PaginatedResult<T> {
 }
 
 export abstract class BaseService<T extends BaseEntity> {
-  protected supabase = createClient()
+  protected supabase = supabaseClient
   protected abstract tableName: string
 
   /**
