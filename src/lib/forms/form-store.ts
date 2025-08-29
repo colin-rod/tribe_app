@@ -250,7 +250,7 @@ export function createFormStore<T extends Record<string, any>>(
           submitting: false,
           submitted: true
         }))
-      } catch (error: any) {
+      } catch (error: unknown) {
         setState(prev => ({
           ...prev,
           submitting: false,

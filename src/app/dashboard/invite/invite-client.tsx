@@ -4,10 +4,11 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
+import type { TreeWithMembers } from '@/types/common'
 
 interface InviteClientProps {
   user: User
-  tribes: any[]
+  tribes: TreeWithMembers[]
 }
 
 export default function InviteClient({ user, tribes }: InviteClientProps) {
@@ -75,7 +76,7 @@ export default function InviteClient({ user, tribes }: InviteClientProps) {
         router.push('/dashboard')
       }, 2000)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending invitation:', error)
       alert(`Failed to send invitation: ${error.message}`)
     } finally {
@@ -206,7 +207,7 @@ export default function InviteClient({ user, tribes }: InviteClientProps) {
                     Grant Access to Circles
                   </label>
                   <div className="space-y-2">
-                    {selectedTribeData.circles.map((circle: any) => (
+                    {selectedTribeData.circles.map((circle: {id: string, name: string}) => (
                       <label key={circle.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
                         <input
                           type="checkbox"

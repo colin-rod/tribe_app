@@ -4,7 +4,7 @@
  */
 
 import { BaseService, QueryOptions, PaginatedResult } from './base-service'
-import { Tree, TreeMember, Profile } from '@/types/database'
+import { Tree, TreeMember, Profile, TreeSettings } from '@/types/database'
 import { TreeWithMembers, TreeWithRelations } from '@/types/common'
 import { AsyncUtils } from '@/lib/errors'
 
@@ -16,13 +16,13 @@ export interface TreeQueryOptions extends QueryOptions {
 export interface CreateTreeData {
   name: string
   description?: string
-  settings?: Record<string, any>
+  settings?: Partial<TreeSettings>
 }
 
 export interface UpdateTreeData {
   name?: string
   description?: string
-  settings?: Record<string, any>
+  settings?: Partial<TreeSettings>
   is_active?: boolean
 }
 
@@ -68,7 +68,7 @@ class TreeService extends BaseService<Tree> {
       () => query,
       'Failed to fetch user trees'
     ).then(result => {
-      const data = (result.data?.data || []).map((item: any) => ({
+      const data = (result.data?.data || []).map((item: { tree_id: string; trees: Tree | null; role: string; permissions: string[] }) => ({
         tree_id: item.tree_id,
         trees: item.trees,
         role: item.role,

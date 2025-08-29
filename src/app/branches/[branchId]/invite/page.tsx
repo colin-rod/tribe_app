@@ -12,7 +12,7 @@ interface PageProps {
 
 export default function BranchInvitePage({ params }: PageProps) {
   const [user, setUser] = useState<User | null>(null)
-  const [branch, setBranch] = useState<any>(null)
+  const [branch, setBranch] = useState<{id: string, name: string, description?: string} | null>(null)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'member' | 'viewer'>('member')
   const [loading, setLoading] = useState(true)
@@ -162,7 +162,7 @@ export default function BranchInvitePage({ params }: PageProps) {
         router.push(`/branches/${branchId}/edit`)
       }, 2000)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending invitation:', error)
       alert(`Failed to send invitation: ${error.message}`)
     } finally {

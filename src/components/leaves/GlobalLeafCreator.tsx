@@ -198,7 +198,7 @@ export default function GlobalLeafCreator({
       })
 
       onSave()
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Failed to create leaf', error, { action: 'createLeaf' })
       alert(`Failed to create leaf: ${error.message}`)
       setStep('create')

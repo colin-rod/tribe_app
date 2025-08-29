@@ -41,7 +41,7 @@ export const createTreeStatsStore = (treeId: string) => createStore<{
 interface TreeFormData {
   name: string
   description: string
-  settings: Record<string, any>
+  settings: Record<string, unknown>
 }
 
 export const createTreeFormStore = (initialData?: Partial<TreeFormData>) => {
@@ -57,7 +57,7 @@ export const createTreeFormStore = (initialData?: Partial<TreeFormData>) => {
   return function useTreeForm() {
     const store = useStore()
 
-    const updateField = (field: keyof TreeFormData, value: any) => {
+    const updateField = (field: keyof TreeFormData, value: string | Record<string, unknown>) => {
       if (store.data) {
         store.setData({
           ...store.data,
@@ -66,7 +66,7 @@ export const createTreeFormStore = (initialData?: Partial<TreeFormData>) => {
       }
     }
 
-    const updateSetting = (key: string, value: any) => {
+    const updateSetting = (key: string, value: unknown) => {
       if (store.data) {
         store.setData({
           ...store.data,
@@ -113,7 +113,7 @@ export const createTreeFormStore = (initialData?: Partial<TreeFormData>) => {
 
         store.setError(null)
         return tree
-      } catch (error: any) {
+      } catch (error: unknown) {
         store.setError(error.message || 'Failed to create tree')
         return null
       } finally {
@@ -137,7 +137,7 @@ export const createTreeFormStore = (initialData?: Partial<TreeFormData>) => {
 
         store.setError(null)
         return tree
-      } catch (error: any) {
+      } catch (error: unknown) {
         store.setError(error.message || 'Failed to update tree')
         return null
       } finally {

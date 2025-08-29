@@ -14,7 +14,8 @@ import {
   shareLeafWithBranches, 
   createLeaf,
   getMilestones,
-  getTreeStats 
+  getTreeStats,
+  CreateLeafData
 } from '@/lib/leaves'
 import { supabase } from '@/lib/supabase/client'
 
@@ -195,7 +196,7 @@ export default function TreeLeavesPage() {
     }
   }
 
-  const handleCreateLeaf = async (leafData: any) => {
+  const handleCreateLeaf = async (leafData: CreateLeafData) => {
     try {
       const newLeaf = await createLeaf({
         ...leafData

@@ -106,7 +106,7 @@ export const createBranchFormStore = (initialData?: Partial<BranchFormData>) => 
 
         store.setError(null)
         return branch
-      } catch (error: any) {
+      } catch (error: unknown) {
         store.setError(error.message || 'Failed to create branch')
         return null
       } finally {

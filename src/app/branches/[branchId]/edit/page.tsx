@@ -162,7 +162,7 @@ export default function BranchEditPage({ params }: PageProps) {
 
       alert('Branch settings updated successfully!')
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating branch:', error)
       alert(`Failed to update branch: ${error.message}`)
     } finally {
@@ -199,7 +199,7 @@ export default function BranchEditPage({ params }: PageProps) {
 
       alert('Member role updated successfully!')
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating member role:', error)
       alert(`Failed to update member role: ${error.message}`)
     }
@@ -223,7 +223,7 @@ export default function BranchEditPage({ params }: PageProps) {
 
       alert(`${memberName} has been removed from the branch.`)
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error removing member:', error)
       alert(`Failed to remove member: ${error.message}`)
     }
@@ -243,7 +243,7 @@ export default function BranchEditPage({ params }: PageProps) {
 
       alert('Tree access granted successfully!')
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error granting tree access:', error)
       alert(`Failed to grant access: ${error.message}`)
     }
@@ -262,7 +262,7 @@ export default function BranchEditPage({ params }: PageProps) {
 
       alert('Access revoked successfully!')
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error revoking access:', error)
       alert(`Failed to revoke access: ${error.message}`)
     }
@@ -285,7 +285,7 @@ export default function BranchEditPage({ params }: PageProps) {
       alert('Branch deleted successfully.')
       router.push('/dashboard')
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting branch:', error)
       alert(`Failed to delete branch: ${error.message}`)
     }

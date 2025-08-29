@@ -1,13 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo, memo } from 'react'
+import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { LeafWithDetails, Branch, ReactionType } from '@/types/database'
 import { TreeWithMembers, BranchWithMembers, FilterOption } from '@/types/common'
 import LeafCard from '@/components/leaves/LeafCard'
-import useTreeData from '@/hooks/useTreeData'
-import useLeafInteractions from '@/hooks/useLeafInteractions'
-import { getTreeLeaves, getTreeStats, addLeafReaction, addLeafComment, shareLeafWithBranches } from '@/lib/leaves'
+import { useTreeLeaves, useTreeStats } from '@/hooks/use-leaves'
+import { useAddLeafReaction, useAddLeafComment, useShareLeafWithBranches } from '@/hooks/use-leaves'
 
 interface TreeExplorerProps {
   selectedBranch: Branch | null
@@ -30,18 +29,28 @@ const TreeExplorer = memo(function TreeExplorer({
   userBranches, 
   userId 
 }: TreeExplorerProps) {
-  const [leaves, setLeaves] = useState<LeafWithDetails[]>([])
-  const [loading, setLoading] = useState(true)
   const [selectedTree, setSelectedTree] = useState<TreeWithMembers | null>(null)
-  const [treeStats, setTreeStats] = useState<TreeStats>({
-    totalLeaves: 0,
-    milestoneCount: 0,
-    recentLeaves: 0,
-    leafTypeBreakdown: {},
-    seasonBreakdown: {}
-  })
   const [filter, setFilter] = useState<'all' | 'milestones' | 'recent'>('all')
   const router = useRouter()
+
+  // React Query hooks
+  const { data: leaves = [], isLoading: leavesLoading } = useTreeLeaves(
+    selectedTree?.tree_id || '', 
+    { limit: 50, offset: 0 },
+    !!selectedTree?.tree_id
+  )
+  
+  const { data: treeStats, isLoading: statsLoading } = useTreeStats(
+    selectedTree?.tree_id || '',
+    !!selectedTree?.tree_id
+  )
+
+  // Mutations
+  const addReactionMutation = useAddLeafReaction()
+  const addCommentMutation = useAddLeafComment()
+  const shareLeafMutation = useShareLeafWithBranches()
+
+  const loading = leavesLoading || statsLoading
 
   // Auto-select tree based on selected branch
   useEffect(() => {
@@ -49,60 +58,21 @@ const TreeExplorer = memo(function TreeExplorer({
       const branch = userBranches.find(ub => ub.branches?.id === selectedBranch.id)
       if (branch?.branches?.tree_id) {
         const tree = trees.find(t => t.tree_id === branch.branches.tree_id)
-        setSelectedTree(tree)
+        setSelectedTree(tree || null)
       }
     }
   }, [selectedBranch, trees, userBranches])
 
-  // Load leaves when tree is selected
-  useEffect(() => {
-    if (selectedTree?.tree_id) {
-      loadTreeData(selectedTree.tree_id)
-    }
-  }, [selectedTree])
-
-  const loadTreeData = useCallback(async (treeId: string) => {
-    setLoading(true)
-    try {
-      // Load leaves and stats in parallel for better performance
-      const [treeLeaves, stats] = await Promise.all([
-        getTreeLeaves(treeId, 50, 0),
-        getTreeStats(treeId)
-      ])
-      setLeaves(treeLeaves)
-      setTreeStats(stats)
-    } catch (error) {
-      console.error('Error loading tree data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  const handleReaction = async (leafId: string, reactionType: ReactionType) => {
-    const success = await addLeafReaction(leafId, reactionType)
-    if (success && selectedTree?.tree_id) {
-      // Refresh leaves
-      const updatedLeaves = await getTreeLeaves(selectedTree.tree_id, 50, 0)
-      setLeaves(updatedLeaves)
-    }
+  const handleReaction = (leafId: string, reactionType: ReactionType) => {
+    addReactionMutation.mutate({ leafId, reactionType })
   }
 
-  const handleComment = async (leafId: string, comment: string) => {
-    const success = await addLeafComment(leafId, comment)
-    if (success && selectedTree?.tree_id) {
-      // Refresh leaves
-      const updatedLeaves = await getTreeLeaves(selectedTree.tree_id, 50, 0)
-      setLeaves(updatedLeaves)
-    }
+  const handleComment = (leafId: string, comment: string) => {
+    addCommentMutation.mutate({ leafId, comment })
   }
 
-  const handleShare = async (leafId: string, branchIds: string[]) => {
-    const success = await shareLeafWithBranches(leafId, branchIds)
-    if (success && selectedTree?.tree_id) {
-      // Refresh leaves
-      const updatedLeaves = await getTreeLeaves(selectedTree.tree_id, 50, 0)
-      setLeaves(updatedLeaves)
-    }
+  const handleShare = (leafId: string, branchIds: string[]) => {
+    shareLeafMutation.mutate({ leafId, branchIds })
   }
 
   const filteredLeaves = leaves.filter(leaf => {
@@ -174,19 +144,19 @@ const TreeExplorer = memo(function TreeExplorer({
         {/* Stats Row */}
         <div className="grid grid-cols-4 gap-4 mt-6">
           <div className="text-center">
-            <div className="text-2xl font-bold">{treeStats.totalLeaves}</div>
+            <div className="text-2xl font-bold">{treeStats?.totalLeaves || 0}</div>
             <div className="text-sm text-green-100">Total Leaves</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold">{treeStats.milestoneCount}</div>
+            <div className="text-2xl font-bold">{treeStats?.milestoneCount || 0}</div>
             <div className="text-sm text-green-100">Milestones</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold">{treeStats.recentLeaves}</div>
+            <div className="text-2xl font-bold">{treeStats?.recentLeaves || 0}</div>
             <div className="text-sm text-green-100">This Week</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold">{Object.keys(treeStats.seasonBreakdown).length}</div>
+            <div className="text-2xl font-bold">{Object.keys(treeStats?.seasonBreakdown || {}).length}</div>
             <div className="text-sm text-green-100">Seasons</div>
           </div>
         </div>

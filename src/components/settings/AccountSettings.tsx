@@ -43,8 +43,8 @@ export default function AccountSettings({ user, onPasswordChange, onDeleteAccoun
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-    } catch (err: any) {
-      setError(err.message || 'Failed to change password')
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Failed to change password')
     } finally {
       setChangingPassword(false)
     }
@@ -58,8 +58,8 @@ export default function AccountSettings({ user, onPasswordChange, onDeleteAccoun
 
     try {
       await onDeleteAccount()
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete account')
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Failed to delete account')
     }
   }
 

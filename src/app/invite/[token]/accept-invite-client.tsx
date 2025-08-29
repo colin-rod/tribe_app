@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
+import type { BranchInvitation } from '@/types/database'
 
 interface AcceptInviteClientProps {
-  invitation: any
+  invitation: BranchInvitation & { branch_name?: string }
   currentUser: User | null
 }
 
@@ -86,7 +87,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
       // Success! Redirect to dashboard
       router.push('/dashboard')
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error accepting invitation:', error)
       setError(error.message)
       setLoading(false)
@@ -122,7 +123,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
           await acceptInvitation()
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message)
     } finally {
       setLoading(false)

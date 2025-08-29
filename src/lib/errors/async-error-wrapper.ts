@@ -221,7 +221,7 @@ export const AsyncUtils = {
    * Wraps a Supabase query with error handling
    */
   supabaseQuery: <T>(
-    query: () => Promise<{ data: T | null; error: any }>,
+    query: () => Promise<{ data: T | null; error: Error | null }>,
     fallbackMessage = 'Database query failed'
   ) => withAsyncErrorHandling(
     async () => {

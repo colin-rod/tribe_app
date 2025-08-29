@@ -1,44 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
-import { getUserTrees } from '@/lib/trees'
-import type { User } from '@supabase/supabase-js'
+import { useCurrentUser, useUserTrees } from '@/hooks'
 
 export default function TreesPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [trees, setTrees] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // React Query hooks
+  const { data: user, isLoading: userLoading, isError: userError } = useCurrentUser()
+  const { data: treesData, isLoading: treesLoading } = useUserTrees(user?.id || '', !!user)
+
+  const loading = userLoading || treesLoading
+  const trees = treesData?.data || []
+
+  // Redirect to login if no user or error
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Get authenticated user
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (!user) {
-          router.push('/auth/login')
-          return
-        }
-
-        setUser(user)
-
-        // Get user's trees
-        const userTrees = await getUserTrees(user.id)
-        setTrees(userTrees)
-
-      } catch (error) {
-        console.error('Error loading trees:', error)
-        router.push('/dashboard')
-      } finally {
-        setLoading(false)
-      }
+    if (userError || (!userLoading && !user)) {
+      router.push('/auth/login')
     }
-
-    loadData()
-  }, [router])
+  }, [user, userLoading, userError, router])
 
   if (loading) {
     return (

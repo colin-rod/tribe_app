@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
-import type { Profile } from '@/types/database'
+import type { Profile, LeafWithDetails } from '@/types/database'
+import { BranchWithMembers } from '@/types/common'
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [userCircles, setUserCircles] = useState<any[]>([])
-  const [recentPosts, setRecentPosts] = useState<any[]>([])
+  const [userCircles, setUserCircles] = useState<BranchWithMembers[]>([])
+  const [recentPosts, setRecentPosts] = useState<LeafWithDetails[]>([])
   const router = useRouter()
 
   useEffect(() => {

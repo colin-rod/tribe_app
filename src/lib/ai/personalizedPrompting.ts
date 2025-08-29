@@ -259,7 +259,7 @@ class PersonalizedPromptingSystem {
 
     // Determine preferred prompt types based on response patterns
     const categoryFrequency = this.countFrequency(
-      analyses.flatMap(a => (a.categories || []).map((cat: any) => cat.type))
+      analyses.flatMap(a => (a.categories || []).map((cat: { type: string; confidence: number; reason: string }) => cat.type))
     )
     const preferredPromptTypes = Object.entries(categoryFrequency)
       .sort(([,a], [,b]) => b - a)

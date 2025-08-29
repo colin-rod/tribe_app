@@ -144,7 +144,7 @@ export default function SettingsPage() {
 
       showMessage('success', 'Profile updated successfully!')
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating profile:', error)
       showMessage('error', error.message || 'Failed to update profile')
     } finally {
@@ -165,7 +165,7 @@ export default function SettingsPage() {
       }
 
       showMessage('success', 'Password changed successfully!')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error changing password:', error)
       throw new Error(error.message || 'Failed to change password')
     }

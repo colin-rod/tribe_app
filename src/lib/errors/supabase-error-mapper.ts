@@ -195,7 +195,7 @@ function mapByMessagePattern(
  * Convenience function to handle Supabase operations
  */
 export async function withSupabaseErrorHandling<T>(
-  operation: () => Promise<{ data: T | null; error: any }>,
+  operation: () => Promise<{ data: T | null; error: Error | null }>,
   fallbackMessage = 'Operation failed'
 ): Promise<T> {
   try {

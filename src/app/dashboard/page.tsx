@@ -5,90 +5,26 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import DashboardClient from './dashboard-client'
 import type { User } from '@supabase/supabase-js'
+import { useCurrentUser, useUserProfile, useUserTrees, useUserBranches } from '@/hooks'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [userBranches, setUserBranches] = useState<any[]>([])
-  const [trees, setTrees] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // React Query hooks
+  const { data: user, isLoading: userLoading, isError: userError } = useCurrentUser()
+  const { data: profile, isLoading: profileLoading } = useUserProfile(user?.id || '', !!user)
+  const { data: treesData, isLoading: treesLoading } = useUserTrees(user?.id || '', !!user)
+  const { data: userBranches = [], isLoading: branchesLoading } = useUserBranches(user?.id || '', undefined, !!user)
+
+  const loading = userLoading || profileLoading || treesLoading || branchesLoading
+  const trees = treesData?.data || []
+
+  // Redirect to login if no user or error
   useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        console.log('Loading dashboard data...')
-        
-        // Get current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-        
-        console.log('User check:', { user: !!user, error: !!userError })
-        
-        if (userError || !user) {
-          console.log('No user found, redirecting to login')
-          router.push('/auth/login')
-          return
-        }
-
-        setUser(user)
-
-        // Get user's branches with a simpler approach to avoid recursion
-        const { data: userMemberships, error: membershipsError } = await supabase
-          .from('branch_members')
-          .select('*, branches(*)')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-
-        if (membershipsError) {
-          console.error('Error fetching memberships:', membershipsError)
-          console.error('Full error details:', JSON.stringify(membershipsError, null, 2))
-        }
-
-        // Transform to the expected format
-        const userBranches = userMemberships?.map(membership => ({
-          ...membership,
-          circles: {
-            ...membership.branches,
-            branch_members: [] // We'll load this separately if needed
-          }
-        })) || []
-
-        console.log('Fetched user branches:', userBranches)
-
-        setUserBranches(userBranches || [])
-
-        // Get user's trees (optional)
-        const { data: userTrees } = await supabase
-          .from('tree_members')
-          .select(`
-            *,
-            trees (*)
-          `)
-          .eq('user_id', user.id)
-
-        setTrees(userTrees || [])
-
-        // Get user profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-
-        setProfile(profile)
-
-        console.log('Dashboard data loaded successfully')
-        
-      } catch (error) {
-        console.error('Error loading dashboard:', error)
-        router.push('/auth/login')
-      } finally {
-        setLoading(false)
-      }
+    if (userError || (!userLoading && !user)) {
+      router.push('/auth/login')
     }
-
-    loadDashboard()
-  }, [router])
+  }, [user, userLoading, userError, router])
 
   if (loading) {
     return (

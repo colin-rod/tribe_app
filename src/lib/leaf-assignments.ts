@@ -79,7 +79,7 @@ export async function assignLeafToBranches(
         error: 'Assignment failed'
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
       leaf_id: leafId,

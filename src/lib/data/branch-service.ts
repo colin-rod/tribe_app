@@ -86,7 +86,7 @@ class BranchService extends BaseService<Branch> {
       () => query,
       'Failed to fetch branches'
     ).then(result => {
-      const data = (result.data?.data || []).map((item: any) => ({
+      const data = (result.data?.data || []).map((item: { branch_id: string; branches: Branch | null; role: string; permissions: string[] }) => ({
         branch_id: item.branch_id,
         branches: item.branches,
         role: item.role,

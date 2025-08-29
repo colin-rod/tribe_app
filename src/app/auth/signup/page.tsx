@@ -39,7 +39,7 @@ export default function SignUpPage() {
       } else {
         router.push('/onboarding')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message)
     } finally {
       setLoading(false)
@@ -59,7 +59,7 @@ export default function SignUpPage() {
       })
 
       if (error) throw error
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message)
       setLoading(false)
     }

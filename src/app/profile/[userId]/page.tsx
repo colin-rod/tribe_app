@@ -4,7 +4,8 @@ import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
-import type { Profile } from '@/types/database'
+import type { Profile, LeafWithDetails } from '@/types/database'
+import { BranchWithMembers } from '@/types/common'
 
 interface PageProps {
   params: Promise<{ userId: string }>
@@ -14,8 +15,8 @@ export default function UserProfilePage({ params }: PageProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [sharedBranches, setSharedBranches] = useState<any[]>([])
-  const [recentPosts, setRecentPosts] = useState<any[]>([])
+  const [sharedBranches, setSharedBranches] = useState<BranchWithMembers[]>([])
+  const [recentPosts, setRecentPosts] = useState<LeafWithDetails[]>([])
   const [canViewProfile, setCanViewProfile] = useState(false)
   const router = useRouter()
   

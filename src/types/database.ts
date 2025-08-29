@@ -51,6 +51,16 @@ export interface UserSettings {
   updated_at: string
 }
 
+export interface TreeSettings {
+  privacy_level: 'public' | 'private' | 'family_only'
+  allow_public_discovery: boolean
+  require_approval: boolean
+  auto_accept_family: boolean
+  email_notifications: boolean
+  member_limit?: number
+  custom_fields?: Record<string, string | number | boolean>
+}
+
 export interface Tree {
   id: string
   name: string
@@ -59,7 +69,7 @@ export interface Tree {
   created_at: string
   updated_at: string
   is_active: boolean
-  settings: Record<string, any>
+  settings: TreeSettings
 }
 
 export interface TreeMember {
@@ -143,6 +153,17 @@ export type LeafType = 'photo' | 'video' | 'audio' | 'text' | 'milestone'
 export type ReactionType = 'heart' | 'smile' | 'laugh' | 'wow' | 'care' | 'love'
 export type MilestoneCategory = 'physical' | 'communication' | 'social' | 'academic' | 'celebration' | 'experience' | 'family' | 'general'
 
+export interface ConversationContext {
+  thread_title?: string
+  participants: string[]
+  reply_count: number
+  last_activity: string
+  mentioned_users?: string[]
+  referenced_leaves?: string[]
+  conversation_type: 'thread' | 'direct' | 'group'
+  metadata?: Record<string, string | number | boolean>
+}
+
 export interface Leaf {
   id: string
   branch_id: string | null
@@ -158,7 +179,7 @@ export interface Leaf {
   ai_tags: string[]
   thread_id: string | null
   reply_to_id: string | null
-  conversation_context: Record<string, any> | null
+  conversation_context: ConversationContext | null
   message_type: 'post' | 'message' | 'reply' | 'system'
   is_pinned: boolean
   edited_at: string | null
@@ -362,6 +383,14 @@ export interface BranchPermissions {
 }
 
 // Chat and Conversation Types
+export interface ConversationMetadata {
+  pinned_message_id?: string
+  topic_tags?: string[]
+  reminder_date?: string
+  milestone_date?: string
+  custom_properties?: Record<string, string | number | boolean>
+}
+
 export interface Conversation {
   id: string
   branch_id: string
@@ -372,7 +401,7 @@ export interface Conversation {
   updated_at: string
   is_active: boolean
   conversation_type: 'general' | 'announcement' | 'milestone' | 'topic'
-  metadata: Record<string, any>
+  metadata: ConversationMetadata
   last_message_at: string
   message_count: number
   participant_count: number
@@ -388,6 +417,30 @@ export interface ConversationParticipant {
   notification_level: 'all' | 'mentions' | 'none'
 }
 
+export interface AIPromptContext {
+  user_preferences?: {
+    preferred_tone: 'casual' | 'formal' | 'friendly'
+    topics_of_interest: string[]
+    frequency: 'daily' | 'weekly' | 'occasional'
+  }
+  previous_responses?: {
+    response_id: string
+    sentiment: 'positive' | 'neutral' | 'negative'
+    engagement_level: number
+  }[]
+  branch_context?: {
+    recent_activity: string[]
+    active_members: string[]
+    trending_topics: string[]
+  }
+  timing_context?: {
+    time_zone: string
+    preferred_hours: number[]
+    seasonal_preferences: string[]
+  }
+  custom_data?: Record<string, string | number | boolean>
+}
+
 export interface AIPrompt {
   id: string
   user_id: string
@@ -396,7 +449,7 @@ export interface AIPrompt {
   prompt_text: string
   response_text: string | null
   prompt_type: 'journal' | 'milestone' | 'memory' | 'checkin' | 'custom'
-  context_data: Record<string, any>
+  context_data: AIPromptContext
   completed: boolean
   created_at: string
   completed_at: string | null
