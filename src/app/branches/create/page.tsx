@@ -1,60 +1,48 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
-import { rbac } from '@/lib/rbac'
-import { getUserPrimaryTree, getUserTrees } from '@/lib/trees'
-import { TreeWithMembers } from '@/types/common'
 import { showSuccess, showErrorWithRetry, showLoading } from '@/lib/toast-service'
 import { handleError } from '@/lib/error-handler'
-import type { User } from '@supabase/supabase-js'
+import { useCurrentUser, useUserTrees } from '@/hooks'
+import { useCreateBranch } from '@/hooks/use-branches'
 
 export default function CreateBranchPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [userTrees, setUserTrees] = useState<TreeWithMembers[]>([])
-  const [primaryTreeId, setPrimaryTreeId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
-
+  
+  // React Query hooks
+  const { data: user, isLoading: userLoading, isError: userError } = useCurrentUser()
+  const { data: treesData, isLoading: treesLoading } = useUserTrees(user?.id || '', !!user)
+  const createBranchMutation = useCreateBranch()
+  
   // Form state - family branches only
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [color, setColor] = useState('#3B82F6')
   const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null)
-
-
+  
+  const loading = userLoading || treesLoading
+  const userTrees = useMemo(() => treesData?.data || [], [treesData?.data])
+  const primaryTreeId = userTrees.find(t => t.role === 'owner')?.tree_id || null
+  
+  // Redirect to login if no user or error
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-      
-      setUser(user)
-
-      // Get user's trees
-      const trees = await getUserTrees(user.id)
-      setUserTrees(trees)
-
-      // Get user's primary tree
-      const primaryTree = await getUserPrimaryTree(user.id)
-      setPrimaryTreeId(primaryTree)
-      setSelectedTreeId(primaryTree) // Default to primary tree
-
-      // If user has no trees, redirect to onboarding
-      if (!trees.length || !primaryTree) {
-        router.push('/onboarding')
-        return
-      }
-
-      setLoading(false)
+    if (userError || (!userLoading && !user)) {
+      router.push('/auth/login')
+      return
     }
-
-    checkAuth()
-  }, [router])
+    
+    // If user has no trees, redirect to onboarding
+    if (!loading && (!userTrees.length || !primaryTreeId)) {
+      router.push('/onboarding')
+      return
+    }
+    
+    // Set default selected tree to primary tree
+    if (primaryTreeId && !selectedTreeId) {
+      setSelectedTreeId(primaryTreeId)
+    }
+  }, [user, userLoading, userError, router, loading, userTrees, primaryTreeId, selectedTreeId])
 
   const colorOptions = [
     '#3B82F6', // Blue
@@ -74,51 +62,21 @@ export default function CreateBranchPage() {
     
     if (!user || !name.trim() || !selectedTreeId) return
 
-    setSubmitting(true)
     const loadingToast = showLoading('Creating your branch...')
 
     try {
-      // Create the branch within the selected tree
-      const { data: branch, error: branchError } = await supabase
-        .from('branches')
-        .insert({
-          tree_id: selectedTreeId, // Required tree association
+      await createBranchMutation.mutateAsync({
+        data: {
+          tree_id: selectedTreeId,
           name: name.trim(),
-          description: description.trim() || null,
+          description: description.trim() || undefined,
           type: 'family',
           privacy: 'private',
           color,
           created_by: user.id
-        })
-        .select()
-        .single()
-
-      if (branchError) throw branchError
-
-      // Assign owner role using RBAC system (branch creator automatically gets owner role)
-      const ownerAssigned = await rbac.assignRole(
-        user.id,
-        'owner',
-        { type: 'branch', id: branch.id },
-        user.id
-      )
-
-      if (!ownerAssigned) {
-        throw new Error('Failed to assign owner role')
-      }
-
-      // Add creator as member with basic member entry
-      const { error: memberError } = await supabase
-        .from('branch_members')
-        .insert({
-          branch_id: branch.id,
-          user_id: user.id,
-          role: 'owner', // Keep for backward compatibility, but RBAC is source of truth
-          join_method: 'admin_added',
-          status: 'active'
-        })
-
-      if (memberError) throw memberError
+        },
+        userId: user.id
+      })
 
       // Success!
       showSuccess(`"${name}" branch created successfully!`)
@@ -135,7 +93,6 @@ export default function CreateBranchPage() {
         'Try Again'
       )
     } finally {
-      setSubmitting(false)
       // Remove loading toast (will be replaced by success/error)
       setTimeout(() => {
         import('react-hot-toast').then(({ default: toast }) => {
@@ -294,16 +251,16 @@ export default function CreateBranchPage() {
                 type="button"
                 onClick={() => router.back()}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                disabled={submitting}
+                disabled={createBranchMutation.isPending}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={submitting || !name.trim() || !selectedTreeId}
+                disabled={createBranchMutation.isPending || !name.trim() || !selectedTreeId}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Creating Branch...' : 'Create Branch'}
+                {createBranchMutation.isPending ? 'Creating Branch...' : 'Create Branch'}
               </button>
             </div>
           </div>

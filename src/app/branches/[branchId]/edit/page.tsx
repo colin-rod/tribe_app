@@ -91,7 +91,21 @@ export default function BranchEditPage({ params }: PageProps) {
           .order('added_at', { ascending: false })
 
         if (!membersError && membersData) {
-          setMembers(membersData)
+          const formattedMembers = membersData.map(member => ({
+            id: member.id,
+            user_id: member.user_id,
+            role: member.role,
+            joined_at: member.joined_at,
+            added_at: member.added_at,
+            status: member.status,
+            profiles: {
+              first_name: member.profiles?.[0]?.first_name || null,
+              last_name: member.profiles?.[0]?.last_name || null,
+              email: member.profiles?.[0]?.email || '',
+              avatar_url: member.profiles?.[0]?.avatar_url || null
+            }
+          }))
+          setMembers(formattedMembers)
         }
 
         // Load cross-tree access
@@ -112,12 +126,11 @@ export default function BranchEditPage({ params }: PageProps) {
 
         if (!treesError && treesData) {
           const trees = treesData
-            .map(tm => tm.trees)
-            .filter((tree): tree is TreeInfo => tree !== null)
-            .map(tree => ({
-              id: tree.id,
-              name: tree.name,
-              description: tree.description
+            .filter(tm => tm.trees !== null && tm.trees[0] !== null)
+            .map(tm => ({
+              id: tm.trees![0].id,
+              name: tm.trees![0].name,
+              description: tm.trees![0].description
             }))
           setAvailableTrees(trees)
         }
@@ -164,7 +177,7 @@ export default function BranchEditPage({ params }: PageProps) {
       
     } catch (error: unknown) {
       console.error('Error updating branch:', error)
-      alert(`Failed to update branch: ${error.message}`)
+      alert(`Failed to update branch: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSaving(false)
     }
@@ -201,7 +214,7 @@ export default function BranchEditPage({ params }: PageProps) {
       
     } catch (error: unknown) {
       console.error('Error updating member role:', error)
-      alert(`Failed to update member role: ${error.message}`)
+      alert(`Failed to update member role: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -225,13 +238,13 @@ export default function BranchEditPage({ params }: PageProps) {
       
     } catch (error: unknown) {
       console.error('Error removing member:', error)
-      alert(`Failed to remove member: ${error.message}`)
+      alert(`Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
   const handleInviteTree = async (treeId: string) => {
     try {
-      const accessGranted = await createCrossTreeAccess(treeId, branchId, ['read', 'comment'], user!.id)
+      const accessGranted = await createCrossTreeAccess(treeId, branchId, user!.id, { can_read: true, can_comment: true, can_like: false })
       
       if (!accessGranted) {
         throw new Error('Failed to grant cross-tree access')
@@ -245,7 +258,7 @@ export default function BranchEditPage({ params }: PageProps) {
       
     } catch (error: unknown) {
       console.error('Error granting tree access:', error)
-      alert(`Failed to grant access: ${error.message}`)
+      alert(`Failed to grant access: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -264,7 +277,7 @@ export default function BranchEditPage({ params }: PageProps) {
       
     } catch (error: unknown) {
       console.error('Error revoking access:', error)
-      alert(`Failed to revoke access: ${error.message}`)
+      alert(`Failed to revoke access: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -287,7 +300,7 @@ export default function BranchEditPage({ params }: PageProps) {
       
     } catch (error: unknown) {
       console.error('Error deleting branch:', error)
-      alert(`Failed to delete branch: ${error.message}`)
+      alert(`Failed to delete branch: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -308,7 +321,7 @@ export default function BranchEditPage({ params }: PageProps) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Branch not found</h1>
-          <p className="text-gray-600 mb-4">The branch you're looking for doesn't exist or you don't have permission to edit it.</p>
+          <p className="text-gray-600 mb-4">The branch you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to edit it.</p>
           <button
             onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

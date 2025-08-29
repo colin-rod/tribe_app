@@ -229,7 +229,7 @@ export interface Milestone {
 }
 
 // Keep Post as alias for backward compatibility during migration
-export interface Post extends Leaf {}
+export type Post = Leaf
 
 export interface LeafWithDetails extends Leaf {
   profiles: Profile

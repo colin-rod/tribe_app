@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import type { Profile, BranchPermissions } from '@/types/database'
+import type { Profile } from '@/types/database'
 import { TreeWithMembers, BranchWithMembers } from '@/types/common'
-import { getUserBranchPermissions } from '@/lib/rbac'
+import { useBranchPermissions } from '@/hooks/use-branches'
 import TreeExplorer from '@/components/dashboard/TreeExplorer'
 import GlobalLeafCreator from '@/components/leaves/GlobalLeafCreator'
 import { UnassignedLeavesPanel } from '@/components/leaves/UnassignedLeavesPanel'
@@ -29,29 +29,17 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
   const [selectedBranch, setSelectedBranch] = useState<BranchWithMembers['branches'] | null>(
     userBranches && userBranches.length > 0 ? userBranches[0]?.branches : null
   )
-  const [branchPermissions, setBranchPermissions] = useState<BranchPermissions | null>(null)
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
   const [viewMode, setViewMode] = useState<'branch' | 'all' | 'unassigned'>('branch')
   const [dragDropMode, setDragDropMode] = useState(false)
   const router = useRouter()
 
-  // Load branch permissions when branch is selected
-  useEffect(() => {
-    if (selectedBranch) {
-      loadBranchPermissions()
-    }
-  }, [selectedBranch])
-
-  const loadBranchPermissions = async () => {
-    if (!selectedBranch || !user) return
-    
-    try {
-      const permissions = await getUserBranchPermissions(user.id, selectedBranch.id)
-      setBranchPermissions(permissions)
-    } catch (error) {
-      console.error('Error loading branch permissions:', error)
-    }
-  }
+  // Use React Query for branch permissions
+  useBranchPermissions(
+    user.id,
+    selectedBranch?.id || '',
+    !!selectedBranch?.id
+  )
 
   // Memory explorer will handle all leaf/memory interactions
 

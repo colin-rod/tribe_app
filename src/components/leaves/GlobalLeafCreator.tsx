@@ -10,10 +10,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { LeafType, Milestone } from '@/types/database'
 import { BranchWithMembers } from '@/types/common'
-import { createUnassignedLeaf, assignLeafToBranches } from '@/lib/leaf-assignments'
 import { uploadLeafMedia } from '@/lib/leaves'
-import { supabase } from '@/lib/supabase/client'
 import { createComponentLogger } from '@/lib/logger'
+import { useMilestones, useCreateUnassignedLeaf, useAssignLeafToBranches } from '@/hooks/use-leaves'
 
 const logger = createComponentLogger('GlobalLeafCreator')
 
@@ -50,32 +49,17 @@ export default function GlobalLeafCreator({
     assignment_choice: 'none',
     selected_branches: []
   })
-  const [milestones, setMilestones] = useState<Milestone[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  
+  // React Query hooks
+  const { data: milestones = [] } = useMilestones()
+  const createLeafMutation = useCreateUnassignedLeaf()
+  const assignLeafMutation = useAssignLeafToBranches()
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [newTag, setNewTag] = useState('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Load milestones on mount
-  useEffect(() => {
-    const loadMilestones = async () => {
-      try {
-        const { data } = await supabase
-          .from('milestones')
-          .select('*')
-          .order('name')
-
-        if (data) {
-          setMilestones(data)
-        }
-      } catch (error) {
-        logger.error('Failed to load milestones', error, { action: 'loadMilestones' })
-      }
-    }
-
-    loadMilestones()
-  }, [])
 
   // Cleanup preview URLs on unmount
   useEffect(() => {
@@ -172,19 +156,16 @@ export default function GlobalLeafCreator({
         milestone_date: formData.milestone_date || null
       }
 
-      const createdLeaf = await createUnassignedLeaf(leafData)
-      if (!createdLeaf) {
-        throw new Error('Failed to create leaf')
-      }
+      const createdLeaf = await createLeafMutation.mutateAsync(leafData)
 
       // Handle assignment if specified
       if (formData.assignment_choice !== 'none' && formData.selected_branches.length > 0) {
-        await assignLeafToBranches(
-          createdLeaf.id,
-          formData.selected_branches,
-          userId,
-          formData.selected_branches[0] // First branch as primary
-        )
+        await assignLeafMutation.mutateAsync({
+          leafId: createdLeaf.id,
+          branchIds: formData.selected_branches,
+          assignedBy: userId,
+          primaryBranchId: formData.selected_branches[0] // First branch as primary
+        })
       }
 
       logger.info('Leaf created successfully', {
@@ -200,7 +181,7 @@ export default function GlobalLeafCreator({
       onSave()
     } catch (error: unknown) {
       logger.error('Failed to create leaf', error, { action: 'createLeaf' })
-      alert(`Failed to create leaf: ${error.message}`)
+      alert(`Failed to create leaf: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setStep('create')
     } finally {
       setIsLoading(false)

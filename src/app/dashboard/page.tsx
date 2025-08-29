@@ -1,10 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
 import DashboardClient from './dashboard-client'
-import type { User } from '@supabase/supabase-js'
 import { useCurrentUser, useUserProfile, useUserTrees, useUserBranches } from '@/hooks'
 
 export default function DashboardPage() {

@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { LeafWithDetails, Branch, ReactionType } from '@/types/database'
 import { TreeWithMembers, BranchWithMembers, FilterOption } from '@/types/common'
 import LeafCard from '@/components/leaves/LeafCard'
-import { useTreeLeaves, useTreeStats } from '@/hooks/use-leaves'
-import { useAddLeafReaction, useAddLeafComment, useShareLeafWithBranches } from '@/hooks/use-leaves'
+import { useTreeLeaves, useAddLeafReaction, useAddLeafComment, useShareLeafWithBranches } from '@/hooks/use-leaves'
+import { useTreeStats } from '@/hooks/use-trees'
 
 interface TreeExplorerProps {
   selectedBranch: Branch | null

@@ -12,7 +12,7 @@ interface PageProps {
 
 export default function BranchInvitePage({ params }: PageProps) {
   const [user, setUser] = useState<User | null>(null)
-  const [branch, setBranch] = useState<{id: string, name: string, description?: string} | null>(null)
+  const [branch, setBranch] = useState<{id: string, name: string, description?: string, color?: string, trees?: {id: string, name: string}} | null>(null)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'member' | 'viewer'>('member')
   const [loading, setLoading] = useState(true)
@@ -52,6 +52,17 @@ export default function BranchInvitePage({ params }: PageProps) {
           `)
           .eq('id', branchId)
           .single()
+          
+        // Transform the data to match our expected type
+        const transformedBranch = branchData ? {
+          id: branchData.id,
+          name: branchData.name,
+          color: branchData.color,
+          trees: branchData.trees && branchData.trees[0] ? {
+            id: branchData.trees[0].id,
+            name: branchData.trees[0].name
+          } : undefined
+        } : null
 
         if (branchError || !branchData) {
           console.error('Error loading branch:', branchError)
@@ -67,7 +78,7 @@ export default function BranchInvitePage({ params }: PageProps) {
           return
         }
 
-        setBranch(branchData)
+        setBranch(transformedBranch)
 
       } catch (error) {
         console.error('Error loading data:', error)
@@ -164,7 +175,7 @@ export default function BranchInvitePage({ params }: PageProps) {
 
     } catch (error: unknown) {
       console.error('Error sending invitation:', error)
-      alert(`Failed to send invitation: ${error.message}`)
+      alert(`Failed to send invitation: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSending(false)
     }
@@ -225,7 +236,7 @@ export default function BranchInvitePage({ params }: PageProps) {
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Invitation Sent!</h2>
             <p className="text-gray-600 mb-4">
-              We've sent an invitation to <strong>{email}</strong> to join <strong>{branch.name}</strong>.
+              We&apos;ve sent an invitation to <strong>{email}</strong> to join <strong>{branch.name}</strong>.
             </p>
             <p className="text-sm text-gray-500">
               Redirecting you back to branch settings...

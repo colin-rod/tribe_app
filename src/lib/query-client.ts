@@ -16,9 +16,10 @@ const queryClientConfig: QueryClientConfig = {
       // Keep data in cache for 10 minutes
       gcTime: 10 * 60 * 1000,
       // Retry failed requests 3 times with exponential backoff
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error: unknown) => {
         // Don't retry on 4xx errors (client errors)
-        if (error?.status >= 400 && error?.status < 500) {
+        const errorWithStatus = error as { status?: number }
+        if (errorWithStatus?.status && errorWithStatus.status >= 400 && errorWithStatus.status < 500) {
           return false
         }
         return failureCount < 3
@@ -29,17 +30,16 @@ const queryClientConfig: QueryClientConfig = {
       // Refetch on reconnect
       refetchOnReconnect: true,
       // Refetch on mount if data is stale
-      refetchOnMount: 'if-stale',
+      refetchOnMount: true,
     },
     mutations: {
       // Retry mutations once
       retry: 1,
       // Global error handling for mutations
-      onError: (error: any) => {
+      onError: (error: unknown) => {
+        const errorWithDetails = error as { status?: number; message?: string }
         logger.error('Mutation error', error, {
           action: 'mutation_error',
-          status: error?.status,
-          message: error?.message
         })
       },
     },
