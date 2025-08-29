@@ -138,14 +138,14 @@ export interface CrossTreeAccess {
   created_at: string
 }
 
-// Leaf types for the memory card system
-export type LeafType = 'photo' | 'video' | 'audio' | 'text' | 'milestone' | 'memory'
+// Leaf types for the family tree system
+export type LeafType = 'photo' | 'video' | 'audio' | 'text' | 'milestone'
 export type ReactionType = 'heart' | 'smile' | 'laugh' | 'wow' | 'care' | 'love'
 export type MilestoneCategory = 'physical' | 'communication' | 'social' | 'academic' | 'celebration' | 'experience' | 'family' | 'general'
 
 export interface Leaf {
   id: string
-  branch_id: string
+  branch_id: string | null
   author_id: string
   content: string | null
   media_urls: string[] | null
@@ -162,6 +162,7 @@ export interface Leaf {
   message_type: 'post' | 'message' | 'reply' | 'system'
   is_pinned: boolean
   edited_at: string | null
+  assignment_status: 'assigned' | 'unassigned' | 'multi-assigned'
   created_at: string
   updated_at: string
 }
@@ -181,6 +182,17 @@ export interface LeafShare {
   branch_id: string
   shared_by: string
   created_at: string
+}
+
+export interface LeafAssignment {
+  id: string
+  leaf_id: string
+  branch_id: string
+  assigned_by: string
+  assigned_at: string
+  is_primary: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface Milestone {

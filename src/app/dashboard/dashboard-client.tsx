@@ -8,6 +8,7 @@ import type { Profile, BranchPermissions } from '@/types/database'
 import { TreeWithMembers, BranchWithMembers } from '@/types/common'
 import { getUserBranchPermissions } from '@/lib/rbac'
 import TreeExplorer from '@/components/dashboard/TreeExplorer'
+import GlobalLeafCreator from '@/components/leaves/GlobalLeafCreator'
 
 interface DashboardClientProps {
   user: User
@@ -26,6 +27,8 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
     userBranches && userBranches.length > 0 ? userBranches[0]?.branches : null
   )
   const [branchPermissions, setBranchPermissions] = useState<BranchPermissions | null>(null)
+  const [showGlobalCreator, setShowGlobalCreator] = useState(false)
+  const [viewMode, setViewMode] = useState<'branch' | 'all' | 'unassigned'>('branch')
   const router = useRouter()
 
   // Load branch permissions when branch is selected
@@ -83,11 +86,20 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
             <div className="flex items-center">
               <h1 className="text-xl font-semibold text-gray-900 flex items-center">
                 <span className="mr-2">🌳</span>
-                Memory Trees
+                Family Trees
               </h1>
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* Global Create Leaf Button */}
+              <button
+                onClick={() => setShowGlobalCreator(true)}
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <span className="mr-2">🌿</span>
+                Create Leaf
+              </button>
+
               {/* User Profile Info with Dropdown */}
               <div className="relative">
                 <button
@@ -160,11 +172,103 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
 
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 flex flex-col">
+        {/* View Mode Switcher */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4 bg-white rounded-lg shadow p-1">
+            <button
+              onClick={() => setViewMode('branch')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'branch' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <span className="mr-2">🌳</span>
+              Branch View
+            </button>
+            <button
+              onClick={() => setViewMode('all')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'all' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <span className="mr-2">🌿</span>
+              All Leaves
+            </button>
+            <button
+              onClick={() => setViewMode('unassigned')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'unassigned' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <span className="mr-2">📋</span>
+              Unassigned
+            </button>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            {viewMode === 'branch' && selectedBranch && `Viewing: ${selectedBranch.name}`}
+            {viewMode === 'all' && 'Showing all your leaves'}
+            {viewMode === 'unassigned' && 'Leaves waiting for assignment'}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-full">
-          {/* Sidebar */}
+          {/* Quick Actions Panel */}
           <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowGlobalCreator(true)}
+                  className="w-full flex items-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <span className="mr-3">🌿</span>
+                  <div className="text-left">
+                    <div className="font-medium">Create Leaf</div>
+                    <div className="text-xs opacity-80">Add new content</div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => setViewMode('all')}
+                  className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
+                    viewMode === 'all' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="mr-3">📚</span>
+                  <div className="text-left">
+                    <div className="font-medium">All Leaves</div>
+                    <div className="text-xs text-gray-500">View everything</div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => setViewMode('unassigned')}
+                  className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
+                    viewMode === 'unassigned' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="mr-3">📋</span>
+                  <div className="text-left">
+                    <div className="font-medium">Unassigned</div>
+                    <div className="text-xs text-gray-500">Organize later</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Trees & Branches Navigation */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Memory Trees & Branches</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Family Trees & Branches</h2>
               
               {/* Trees and their branches */}
               <div className="space-y-6">
@@ -234,7 +338,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                   </div>
                   <p className="text-gray-500 text-sm mb-2">No branches yet</p>
                   <p className="text-gray-400 text-xs mb-4">
-                    Create your first branch to start sharing memories with your family!
+                    Create your first branch to start sharing leaves with your family!
                   </p>
                 </div>
               )}
@@ -242,18 +346,64 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
             </div>
           </div>
 
-          {/* Memory Explorer */}
+          {/* Main Content Area */}
           <div className="lg:col-span-3 h-full">
             <div className="bg-white rounded-lg shadow h-full">
-              <TreeExplorer
-                selectedBranch={selectedBranch}
-                trees={trees}
-                userBranches={userBranches}
-                userId={user.id}
-              />
+              {viewMode === 'branch' && (
+                <TreeExplorer
+                  selectedBranch={selectedBranch}
+                  trees={trees}
+                  userBranches={userBranches}
+                  userId={user.id}
+                />
+              )}
+              
+              {viewMode === 'all' && (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4">🌿</div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">All Leaves View</h3>
+                    <p className="text-gray-600 mb-6">This will show all your leaves across all branches.</p>
+                    <p className="text-sm text-gray-500">Coming soon in the next update!</p>
+                  </div>
+                </div>
+              )}
+              
+              {viewMode === 'unassigned' && (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4">📋</div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Unassigned Leaves</h3>
+                    <p className="text-gray-600 mb-6">Leaves waiting to be organized into branches.</p>
+                    <button
+                      onClick={() => setShowGlobalCreator(true)}
+                      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <span className="mr-2">🌿</span>
+                      Create Your First Leaf
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
+        
+        {/* Global Leaf Creator Modal */}
+        {showGlobalCreator && (
+          <GlobalLeafCreator
+            onSave={() => {
+              setShowGlobalCreator(false)
+              // Optionally refresh the current view
+              if (viewMode === 'unassigned') {
+                // Refresh unassigned leaves view
+              }
+            }}
+            onCancel={() => setShowGlobalCreator(false)}
+            userBranches={userBranches}
+            userId={user.id}
+          />
+        )}
       </div>
     </div>
   )

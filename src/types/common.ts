@@ -2,7 +2,7 @@
  * Common TypeScript interfaces and types
  */
 
-import { Tree, Branch, Profile, LeafWithDetails } from './database'
+import { Tree, Branch, Profile, LeafWithDetails, Leaf, LeafType, LeafAssignment } from './database'
 
 // User-related types
 export interface UserProfile extends Profile {
@@ -271,3 +271,42 @@ export type AsyncEventHandler<T = void> = (event?: React.SyntheticEvent) => Prom
 
 export type ChangeHandler<T = string> = (value: T) => void
 export type AsyncChangeHandler<T = string> = (value: T) => Promise<void>
+
+// Leaf assignment types
+export interface LeafWithAssignments extends Leaf {
+  assignments: {
+    assignment_id: string
+    branch_id: string
+    branch_name: string
+    branch_color: string
+    is_primary: boolean
+    assigned_at: string
+    assigned_by: string
+  }[]
+  assignment_count: number
+}
+
+// Unassigned leaf for user dashboard
+export interface UnassignedLeaf {
+  id: string
+  content: string | null
+  media_urls: string[] | null
+  leaf_type: LeafType
+  milestone_type: string | null
+  tags: string[]
+  ai_caption: string | null
+  ai_tags: string[]
+  created_at: string
+  updated_at: string
+  author_first_name: string | null
+  author_last_name: string | null
+  author_avatar_url: string | null
+}
+
+// Leaf assignment operation result
+export interface LeafAssignmentResult {
+  success: boolean
+  leaf_id: string
+  assignments: string[] // branch IDs
+  error?: string
+}

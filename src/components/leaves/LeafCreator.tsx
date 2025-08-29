@@ -41,7 +41,7 @@ export default function LeafCreator({
   onCancel 
 }: LeafCreatorProps) {
   const [step, setStep] = useState<'capture' | 'enhance' | 'save'>('capture')
-  const [leafType, setLeafType] = useState<LeafType>('memory')
+  const [leafType, setLeafType] = useState<LeafType>('photo')
   const [selectedBranch, setSelectedBranch] = useState<string>(branches[0]?.id || '')
   const [content, setContent] = useState('')
   const [mediaFiles, setMediaFiles] = useState<File[]>([])
@@ -85,11 +85,10 @@ export default function LeafCreator({
 
   const leafTypeOptions: { type: LeafType; icon: string; label: string; description: string }[] = [
     { type: 'photo', icon: '📸', label: 'Photo', description: 'Capture a special moment' },
-    { type: 'video', icon: '🎥', label: 'Video', description: 'Record a memory in motion' },
+    { type: 'video', icon: '🎥', label: 'Video', description: 'Record a moment in motion' },
     { type: 'audio', icon: '🎵', label: 'Voice Note', description: 'Record thoughts or sounds' },
-    { type: 'text', icon: '📝', label: 'Written Memory', description: 'Write about a moment' },
-    { type: 'milestone', icon: '⭐', label: 'Milestone', description: 'Mark a special achievement' },
-    { type: 'memory', icon: '💭', label: 'General Memory', description: 'Any precious memory' }
+    { type: 'text', icon: '📝', label: 'Written Leaf', description: 'Write about a moment' },
+    { type: 'milestone', icon: '⭐', label: 'Milestone', description: 'Mark a special achievement' }
   ]
 
   const handleMediaCapture = (files: File[]) => {

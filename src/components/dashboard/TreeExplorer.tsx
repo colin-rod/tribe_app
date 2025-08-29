@@ -124,8 +124,8 @@ const TreeExplorer = memo(function TreeExplorer({
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">🌳</span>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Welcome to your Memory Trees</h3>
-          <p className="text-gray-600 mb-4">Select a branch from the sidebar to explore your family memories.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Welcome to your Family Trees</h3>
+          <p className="text-gray-600 mb-4">Select a branch from the sidebar to explore your family leaves.</p>
           <button
             onClick={() => router.push('/trees')}
             className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -143,7 +143,7 @@ const TreeExplorer = memo(function TreeExplorer({
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin text-4xl mb-4">🌿</div>
-          <p className="text-gray-600">Loading memories...</p>
+          <p className="text-gray-600">Loading leaves...</p>
         </div>
       </div>
     )
@@ -157,10 +157,10 @@ const TreeExplorer = memo(function TreeExplorer({
           <div>
             <h1 className="text-2xl font-bold flex items-center">
               <span className="mr-3">🌳</span>
-              {selectedTree.trees?.name || 'Memory Tree'}
+              {selectedTree.trees?.name || 'Family Tree'}
             </h1>
             <p className="text-green-100 mt-1">
-              {selectedTree.trees?.description || 'A collection of precious family memories'}
+              {selectedTree.trees?.description || 'A collection of precious family leaves'}
             </p>
           </div>
           <button
@@ -198,7 +198,7 @@ const TreeExplorer = memo(function TreeExplorer({
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">Filter by:</span>
             {[
-              { key: 'all', label: 'All Memories', icon: '🌿' },
+              { key: 'all', label: 'All Leaves', icon: '🌿' },
               { key: 'recent', label: 'This Week', icon: '✨' },
               { key: 'milestones', label: 'Milestones', icon: '⭐' }
             ].map(({ key, label, icon }) => (
@@ -222,12 +222,12 @@ const TreeExplorer = memo(function TreeExplorer({
             className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
           >
             <span>+</span>
-            <span>New Memory</span>
+            <span>New Leaf</span>
           </button>
         </div>
       </div>
 
-      {/* Memories Grid */}
+      {/* Leaves Grid */}
       <div className="flex-1 overflow-auto bg-gray-50">
         {filteredLeaves.length > 0 ? (
           <div className="p-6">
@@ -254,20 +254,20 @@ const TreeExplorer = memo(function TreeExplorer({
                 {filter === 'milestones' 
                   ? 'No milestones yet' 
                   : filter === 'recent' 
-                  ? 'No memories this week' 
-                  : 'No memories yet'}
+                  ? 'No leaves this week' 
+                  : 'No leaves yet'}
               </h3>
               <p className="text-gray-600 mb-6">
                 {filter === 'all' 
-                  ? 'Start capturing precious memories to grow this tree!' 
-                  : 'Try a different filter or create your first memory.'}
+                  ? 'Start capturing precious leaves to grow this tree!' 
+                  : 'Try a different filter or create your first leaf.'}
               </p>
               <button
                 onClick={() => router.push(`/trees/${selectedTree.tree_id}/leaves`)}
                 className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center mx-auto"
               >
                 <span className="mr-2">🌿</span>
-                Create First Memory
+                Create First Leaf
               </button>
             </div>
           </div>
