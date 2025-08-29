@@ -10,22 +10,60 @@ export interface UserProfile extends Profile {
   joined_at?: string
 }
 
-// Tree-related types - extending database types with additional computed fields
+// API response types with computed user-specific fields
+// These represent data as returned from API endpoints, including user permissions and aggregated counts
+
 export interface TreeWithMembers {
   tree_id: string
   trees: Tree | null
   member_count: number
-  role: string
-  permissions: string[]
+  role: string  // Current user's role in this tree
+  permissions: string[]  // Current user's permissions for this tree
 }
 
 export interface BranchWithMembers {
   branch_id: string
   branches: Branch | null
   member_count: number
+  role: string  // Current user's role in this branch
+  permissions: string[]  // Current user's permissions for this branch
+  tree?: TreeWithMembers  // Associated tree info if needed
+}
+
+// Member data with profile information (commonly used in UI components)
+export interface BranchMemberWithProfile {
+  id: string
+  user_id: string
   role: string
-  permissions: string[]
-  tree?: TreeWithMembers
+  joined_at: string
+  added_at: string
+  status: string
+  profiles: {
+    first_name: string | null
+    last_name: string | null
+    email: string
+    avatar_url: string | null
+  }
+}
+
+export interface TreeMemberWithProfile {
+  id: string
+  user_id: string
+  role: string
+  joined_at: string
+  profiles: {
+    first_name: string | null
+    last_name: string | null
+    email: string
+    avatar_url: string | null
+  }
+}
+
+// Simplified tree info for UI components (subset of full Tree entity)
+export interface TreeInfo {
+  id: string
+  name: string
+  description?: string | null
 }
 
 // Navigation and UI types
@@ -191,8 +229,8 @@ export interface BranchStats {
   leafTypeBreakdown: Record<string, number>
 }
 
-// Settings and preferences
-export interface UserSettings {
+// UI Settings and preferences (client-side only)
+export interface UserPreferences {
   theme: 'light' | 'dark' | 'system'
   notifications: {
     email: boolean

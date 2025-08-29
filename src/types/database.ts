@@ -247,8 +247,8 @@ export interface Invitation {
   accepted_at: string | null
 }
 
-// Extended types with relations for branches-first architecture
-export interface BranchWithMembers extends Branch {
+// Database relation types (for direct DB operations with joined data)
+export interface BranchWithRelations extends Branch {
   branch_members: (BranchMember & { profiles: Profile })[]
   tree?: Tree  // Optional relation data, but tree_id is required
   category_info?: BranchCategory | null
@@ -265,8 +265,8 @@ export interface PostWithDetails extends LeafWithDetails {
   likes: Like[]  // Keep for backward compatibility
 }
 
-// Keep tree-related types for backward compatibility
-export interface TreeWithMembers extends Tree {
+// Database relation types (for direct DB operations with joined data)
+export interface TreeWithRelations extends Tree {
   tree_members: (TreeMember & { profiles: Profile })[]
   branches: Branch[]
 }
@@ -420,9 +420,9 @@ export type CircleCategory = BranchCategory
 export type CircleInvitation = BranchInvitation
 export type CircleType = BranchType
 export type CirclePrivacy = BranchPrivacy
-export type CircleWithMembers = BranchWithMembers
+export type CircleWithMembers = BranchWithRelations
 export type CircleWithDetails = BranchWithDetails
 export type CircleJoinRequest = BranchJoinRequest
 export type CirclePermissions = BranchPermissions
 export type CrossTribeAccess = CrossTreeAccess
-export type TribeWithMembers = TreeWithMembers
+export type TribeWithMembers = TreeWithRelations
