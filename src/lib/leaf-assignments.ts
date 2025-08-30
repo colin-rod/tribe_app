@@ -7,6 +7,9 @@ import { supabase } from '@/lib/supabase/client'
 import { LeafWithAssignments, UnassignedLeaf, LeafAssignmentResult } from '@/types/common'
 import { Leaf, LeafAssignment } from '@/types/database'
 import { AsyncUtils } from '@/lib/errors/async-error-wrapper'
+import { createComponentLogger } from './logger'
+
+const logger = createComponentLogger('LeafAssignmentService')
 
 /**
  * Get unassigned leaves for a user
@@ -190,7 +193,7 @@ export async function removeLeafFromBranch(
 
     return true
   } catch (error) {
-    console.error('Error removing leaf from branch:', error)
+    logger.error('Error removing leaf from branch', error, { leafId, branchId })
     return false
   }
 }
@@ -240,7 +243,7 @@ export async function canUserAssignTosBranch(
       (permissions && permissions.includes('manage_content'))
     )
   } catch (error) {
-    console.error('Error checking assignment permissions:', error)
+    logger.error('Error checking assignment permissions', error, { userId, branchId })
     return false
   }
 }
@@ -300,7 +303,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
       multiAssignedLeaves: results[3].data?.count || 0
     }
   } catch (error) {
-    console.error('Error getting assignment stats:', error)
+    logger.error('Error getting assignment stats', error, { userId })
     return {
       totalLeaves: 0,
       assignedLeaves: 0,

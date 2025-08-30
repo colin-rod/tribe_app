@@ -6,6 +6,9 @@ import type {
   UserPermissions,
   CrossTreeAccess
 } from '@/types/database'
+import { createComponentLogger } from './logger'
+
+const logger = createComponentLogger('RBACService')
 
 export class RBACService {
   private static instance: RBACService
@@ -93,7 +96,7 @@ export class RBACService {
       return role
 
     } catch (error) {
-      console.error('Error getting user role:', error)
+      logger.error('Error getting user role', error, { userId, context })
       return 'none'
     }
   }
@@ -116,7 +119,7 @@ export class RBACService {
       return data === true
 
     } catch (error) {
-      console.error('Error checking permission:', error)
+      logger.error('Error checking permission', error, { userId, context, permissionName })
       return false
     }
   }
@@ -165,7 +168,7 @@ export class RBACService {
       return permissions
 
     } catch (error) {
-      console.error('Error getting user permissions:', error)
+      logger.error('Error getting user permissions', error, { userId, context })
       return {}
     }
   }
@@ -264,7 +267,7 @@ export class RBACService {
       return permissions
 
     } catch (error) {
-      console.error('Error getting branch permissions:', error)
+      logger.error('Error getting branch permissions', error, { userId, branchId })
       return {
         canRead: false,
         canUpdate: false,
@@ -316,7 +319,7 @@ export class RBACService {
       return true
 
     } catch (error) {
-      console.error('Error assigning role:', error)
+      logger.error('Error assigning role', error, { userId, roleName, context, grantedBy })
       return false
     }
   }
@@ -341,7 +344,7 @@ export class RBACService {
       return true
 
     } catch (error) {
-      console.error('Error removing role:', error)
+      logger.error('Error removing role', error, { userId, context })
       return false
     }
   }
@@ -398,7 +401,7 @@ export async function createCrossTreeAccess(
 
     return !error
   } catch (error) {
-    console.error('Error creating cross-tree access:', error)
+    logger.error('Error creating cross-tree access', error, { branchId, treeId, invitedBy })
     return false
   }
 }
@@ -419,13 +422,13 @@ export async function getCrossTreeAccess(branchId: string): Promise<CrossTreeAcc
       .eq('status', 'active')
 
     if (error) {
-      console.error('Error fetching cross-tree access:', error)
+      logger.error('Error fetching cross-tree access', error, { branchId })
       return []
     }
 
     return data || []
   } catch (error) {
-    console.error('Error getting cross-tree access:', error)
+    logger.error('Error getting cross-tree access', error, { branchId })
     return []
   }
 }
@@ -439,7 +442,7 @@ export async function revokeCrossTreeAccess(crossTreeAccessId: string): Promise<
 
     return !error
   } catch (error) {
-    console.error('Error revoking cross-tree access:', error)
+    logger.error('Error revoking cross-tree access', error, { crossTreeAccessId })
     return false
   }
 }
@@ -466,17 +469,8 @@ export async function hasUserCrossTreeAccess(userId: string, branchId: string): 
 
     return !accessError && crossTreeAccess && crossTreeAccess.length > 0
   } catch (error) {
-    console.error('Error checking cross-tree access:', error)
+    logger.error('Error checking cross-tree access', error, { userId, branchId })
     return false
   }
 }
 
-// Backward compatibility aliases (to be removed after full migration)
-export const getUserCircleRole = getUserBranchRole
-export const getUserCirclePermissions = getUserBranchPermissions
-export const isUserCircleAdmin = isUserBranchAdmin
-export const isUserCircleOwner = isUserBranchOwner
-export const createCrossTribeAccess = createCrossTreeAccess
-export const getCrossTribeAccess = getCrossTreeAccess
-export const revokeCrossTribeAccess = revokeCrossTreeAccess
-export const hasUserCrossTribeAccess = hasUserCrossTreeAccess

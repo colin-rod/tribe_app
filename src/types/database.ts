@@ -7,7 +7,7 @@ export type BranchType = 'family'
 export type BranchPrivacy = 'private' | 'invite_only'
 export type JoinMethod = 'invited' | 'requested' | 'auto_approved' | 'admin_added'
 export type FamilyRole = 'parent' | 'child' | 'grandparent' | 'grandchild' | 'sibling' | 'spouse' | 'partner' | 'other'
-export type ProfileVisibility = 'circles' | 'private'
+export type ProfileVisibility = 'branches' | 'private'
 
 // AI Enhancement types for Leaf Creator
 export interface LeafEnhancementRequest {
@@ -476,18 +476,3 @@ export type NotificationLevel = ConversationParticipant['notification_level']
 export type PromptType = AIPrompt['prompt_type']
 export type ConversationType = Conversation['conversation_type']
 
-// Backward compatibility type aliases (to be removed after full migration)
-export type Tribe = Tree
-export type TribeMember = TreeMember
-export type Circle = Branch
-export type CircleMember = BranchMember
-export type CircleCategory = BranchCategory
-export type CircleInvitation = BranchInvitation
-export type CircleType = BranchType
-export type CirclePrivacy = BranchPrivacy
-export type CircleWithMembers = BranchWithRelations
-export type CircleWithDetails = BranchWithDetails
-export type CircleJoinRequest = BranchJoinRequest
-export type CirclePermissions = BranchPermissions
-export type CrossTribeAccess = CrossTreeAccess
-export type TribeWithMembers = TreeWithRelations

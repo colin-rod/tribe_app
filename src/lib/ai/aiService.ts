@@ -3,6 +3,10 @@
  * Provides intelligent conversation capabilities for family data collection
  */
 
+import { createComponentLogger } from '../logger'
+
+const logger = createComponentLogger('AIService')
+
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
@@ -116,7 +120,7 @@ class AIService {
         confidenceScore: this.calculateConfidenceScore(response)
       }
     } catch (error) {
-      console.error('AI Service Error:', error)
+      logger.error('AI Service Error', error, { promptType, contextType: context?.branchType })
       throw new Error('Failed to generate AI response')
     }
   }
@@ -167,7 +171,7 @@ class AIService {
         confidenceScore: this.calculateConfidenceScore(response)
       }
     } catch (error) {
-      console.error('AI Follow-up Error:', error)
+      logger.error('AI Follow-up Error', error, { userResponse: userResponse.length + ' chars' })
       throw new Error('Failed to process user response')
     }
   }
@@ -499,7 +503,7 @@ Keep responses concise (2-3 sentences) and conversational. Focus on drawing out 
         }
       }
     } catch (error) {
-      console.error('Error generating leaf enhancement:', error)
+      logger.error('Error generating leaf enhancement', error, { request })
       throw error
     }
   }

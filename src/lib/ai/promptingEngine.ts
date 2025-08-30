@@ -12,6 +12,9 @@ import { getResponseAnalyzer } from './responseAnalyzer'
 import { getPersonalizedPromptingSystem } from './personalizedPrompting'
 import type { AIResponse } from './aiService'
 import type { MessageAnalysis } from './responseAnalyzer'
+import { createComponentLogger } from '../logger'
+
+const logger = createComponentLogger('PromptingEngine')
 
 export interface SmartPrompt {
   id: string
@@ -178,7 +181,7 @@ class SmartPromptingEngine {
 
       return smartPrompt
     } catch (error) {
-      console.error('Error generating proactive prompt:', error)
+      logger.error('Error generating proactive prompt', error, { userId, branchId })
       return null
     }
   }
@@ -276,7 +279,7 @@ class SmartPromptingEngine {
 
       return null
     } catch (error) {
-      console.error('Error processing user response:', error)
+      logger.error('Error processing user response', error, { userId, promptId, response: response.length + ' chars' })
       return null
     }
   }
@@ -352,7 +355,7 @@ class SmartPromptingEngine {
 
       return prompts
     } catch (error) {
-      console.error('Error checking for milestones:', error)
+      logger.error('Error checking for milestones', error, { userId, branchId })
       return []
     }
   }
@@ -384,7 +387,7 @@ class SmartPromptingEngine {
         status: 'pending'
       })) || []
     } catch (error) {
-      console.error('Error getting pending prompts:', error)
+      logger.error('Error getting pending prompts', error, { userId, branchId })
       return []
     }
   }
@@ -420,7 +423,7 @@ class SmartPromptingEngine {
         }
       }
     } catch (error) {
-      console.error('Error scheduling proactive prompts:', error)
+      logger.error('Error scheduling proactive prompts', error)
     }
   }
 
@@ -522,10 +525,10 @@ class SmartPromptingEngine {
         })
 
       if (error && error.code !== '42P01') { // Ignore table doesn't exist error for now
-        console.error('Error storing response analysis:', error)
+        logger.error('Error storing response analysis', error, { responseId, userId, branchId })
       }
     } catch (error) {
-      console.error('Error in storeResponseAnalysis:', error)
+      logger.error('Error in storeResponseAnalysis', error, { responseId, userId, branchId })
     }
   }
 
@@ -547,7 +550,7 @@ class SmartPromptingEngine {
       })
 
     if (error) {
-      console.error('Error saving smart prompt:', error)
+      logger.error('Error saving smart prompt', error, { promptId: prompt.id, branchId: prompt.branchId, promptType: prompt.promptType })
       throw error
     }
   }
@@ -584,7 +587,7 @@ class SmartPromptingEngine {
       .eq('id', promptId)
 
     if (error) {
-      console.error('Error updating prompt status:', error)
+      logger.error('Error updating prompt status', error, { promptId, status })
     }
   }
 
@@ -599,10 +602,10 @@ class SmartPromptingEngine {
         .lt('expires_at', new Date().toISOString())
 
       if (error) {
-        console.error('Error cleaning up expired prompts:', error)
+        logger.error('Error cleaning up expired prompts', error)
       }
     } catch (error) {
-      console.error('Error in cleanup:', error)
+      logger.error('Error in cleanup', error)
     }
   }
 
@@ -670,7 +673,7 @@ class SmartPromptingEngine {
         confidence: aiResponse.confidence
       }
     } catch (error) {
-      console.error('Error enhancing leaf:', error)
+      logger.error('Error enhancing leaf', error, { leafId: request.leafId, leafType: request.leafType })
       return this.generateDemoLeafEnhancement(request)
     }
   }
@@ -710,7 +713,7 @@ class SmartPromptingEngine {
       const analysis = this.analyzeContentPatterns(content, mediaUrls)
       return analysis
     } catch (error) {
-      console.error('Error analyzing leaf content:', error)
+      logger.error('Error analyzing leaf content', error, { contentLength: content?.length || 0, mediaCount: mediaUrls?.length || 0 })
       return {
         contentQuality: 'low',
         suggestions: ['Unable to analyze content'],

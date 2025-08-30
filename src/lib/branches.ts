@@ -2,6 +2,9 @@
 export * from './data/branch-service'
 import { branchService } from './data/branch-service'
 import { BranchWithDetails } from '@/types/database'
+import { createComponentLogger } from './logger'
+
+const logger = createComponentLogger('BranchService')
 
 // Convenience function for getting user branches
 export async function getUserBranches(userId: string): Promise<BranchWithDetails[]> {
@@ -20,7 +23,7 @@ export async function getUserBranches(userId: string): Promise<BranchWithDetails
       member_count: item.member_count || 0
     })).filter(Boolean) as BranchWithDetails[]
   } catch (error) {
-    console.error('Error fetching user branches:', error)
+    logger.error('Error fetching user branches', error, { userId })
     return []
   }
 }

@@ -4,6 +4,9 @@
  */
 
 import { createAIService, type AIServiceConfig } from './aiService'
+import { createComponentLogger } from '../logger'
+
+const logger = createComponentLogger('AIConfig')
 
 /**
  * Get AI service configuration from environment variables
@@ -34,7 +37,7 @@ export function getAIConfig(): AIServiceConfig {
   }
 
   // Fallback to demo mode with mock responses
-  console.warn('No AI API keys found. Running in demo mode with mock responses.')
+  logger.warn('No AI API keys found. Running in demo mode with mock responses.')
   return {
     provider: 'openai', // Doesn't matter in demo mode
     apiKey: 'demo',
@@ -60,10 +63,12 @@ export function isAIConfigured(): boolean {
   const anthropicKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY
   
   const configured = !!(openAIKey || anthropicKey)
-  console.log('AI Configuration Check:', { 
-    configured, 
-    hasOpenAI: !!openAIKey,
-    hasAnthropic: !!anthropicKey 
+  logger.info('AI Configuration Check', { 
+    metadata: {
+      configured, 
+      hasOpenAI: !!openAIKey,
+      hasAnthropic: !!anthropicKey
+    }
   })
   
   return configured
@@ -74,7 +79,7 @@ export function isAIConfigured(): boolean {
  */
 export async function testAIConnection() {
   if (!isAIConfigured()) {
-    console.log('AI not configured, skipping test')
+    logger.info('AI not configured, skipping test')
     return false
   }
   
@@ -88,15 +93,15 @@ export async function testAIConnection() {
       })
       
       if (response.ok) {
-        console.log('✅ OpenAI API connection successful')
+        logger.info('OpenAI API connection successful')
         return true
       } else {
-        console.log('❌ OpenAI API error:', response.status, response.statusText)
+        logger.error('OpenAI API error', null, { status: response.status, statusText: response.statusText })
         return false
       }
     }
   } catch (error) {
-    console.log('❌ OpenAI API connection failed:', error)
+    logger.error('OpenAI API connection failed', error)
     return false
   }
   

@@ -6,6 +6,9 @@ import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, LeafWithDetails } from '@/types/database'
 import { BranchWithMembers } from '@/types/common'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('UserProfilePage')
 
 interface PageProps {
   params: Promise<{ userId: string }>
@@ -50,7 +53,7 @@ export default function UserProfilePage({ params }: PageProps) {
           .single()
 
         if (profileError || !profile) {
-          console.error('Error loading profile:', profileError)
+          logger.error('Error loading profile', profileError, { userId })
           return
         }
 
@@ -119,7 +122,7 @@ export default function UserProfilePage({ params }: PageProps) {
         }
 
       } catch (error) {
-        console.error('Error loading user profile:', error)
+        logger.error('Error loading user profile', error, { userId })
       } finally {
         setLoading(false)
       }
@@ -311,7 +314,7 @@ export default function UserProfilePage({ params }: PageProps) {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-blue-600">
-                          {post.circles.name}
+                          {post.branches.name}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(post.created_at)}

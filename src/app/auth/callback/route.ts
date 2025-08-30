@@ -1,27 +1,30 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('AuthCallback')
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const origin = requestUrl.origin
 
-  console.log('Auth callback called with code:', !!code)
+  logger.info('Auth callback called', { hasCode: !!code })
 
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
-    console.log('Auth session exchange result:', error ? 'Error' : 'Success')
+    logger.info('Auth session exchange result', { success: !error })
     
     if (!error) {
-      console.log('Redirecting to dashboard from callback')
+      logger.info('Redirecting to dashboard from callback')
       return NextResponse.redirect(`${origin}/dashboard`)
     } else {
-      console.error('Session exchange error:', error)
+      logger.error('Session exchange error', error)
     }
   }
 
-  console.log('No code or error, redirecting to error page')
+  logger.warn('No code provided, redirecting to error page')
   return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }

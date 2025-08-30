@@ -3,6 +3,19 @@
  * Provides structured logging with levels, context, and proper error handling
  */
 
+// Global type declarations for external services
+declare global {
+  interface Window {
+    Sentry?: {
+      captureMessage: (message: string, options?: {
+        level?: 'debug' | 'info' | 'warning' | 'error' | 'fatal'
+        contexts?: Record<string, unknown>
+        extra?: Record<string, unknown>
+      }) => void
+    }
+  }
+}
+
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -36,9 +49,28 @@ class Logger {
   private maxBufferSize = 100
 
   private constructor() {
-    this.logLevel = process.env.NODE_ENV === 'production' ? LogLevel.WARN : LogLevel.DEBUG
-    this.enableConsole = process.env.NODE_ENV !== 'production'
-    this.enableRemote = process.env.NODE_ENV === 'production'
+    // Enhanced production log filtering with environment variable override
+    const configLogLevel = process.env.NEXT_PUBLIC_LOG_LEVEL || process.env.LOG_LEVEL
+    
+    if (configLogLevel) {
+      // Allow explicit log level configuration
+      const levelMap: Record<string, LogLevel> = {
+        'DEBUG': LogLevel.DEBUG,
+        'INFO': LogLevel.INFO,
+        'WARN': LogLevel.WARN, 
+        'ERROR': LogLevel.ERROR,
+        'FATAL': LogLevel.FATAL
+      }
+      this.logLevel = levelMap[configLogLevel.toUpperCase()] || LogLevel.INFO
+    } else {
+      // Default: DEBUG in development, WARN in production
+      this.logLevel = process.env.NODE_ENV === 'production' ? LogLevel.WARN : LogLevel.DEBUG
+    }
+    
+    this.enableConsole = process.env.NODE_ENV !== 'production' || 
+                        process.env.ENABLE_CONSOLE_LOGS === 'true'
+    this.enableRemote = process.env.NODE_ENV === 'production' || 
+                       process.env.ENABLE_REMOTE_LOGS === 'true'
   }
 
   static getInstance(): Logger {
@@ -112,21 +144,58 @@ class Logger {
     if (!this.enableRemote) return
 
     try {
-      // In production, you might want to send logs to a service like:
-      // - Sentry for error tracking
-      // - LogRocket for session replay
-      // - DataDog for monitoring
-      // - Or your own logging endpoint
+      // Multiple external service integrations
+      const promises: Promise<void>[] = []
       
-      // Example implementation:
-      // await fetch('/api/logs', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(entry)
-      // })
+      // Custom logging endpoint
+      const logEndpoint = process.env.NEXT_PUBLIC_LOG_ENDPOINT || process.env.LOG_ENDPOINT
+      if (logEndpoint) {
+        promises.push(
+          fetch(logEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...entry,
+              timestamp: entry.timestamp.toISOString(),
+              service: 'tribe-app',
+              version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'
+            })
+          }).then(response => {
+            if (!response.ok) {
+              throw new Error(`Log endpoint responded with ${response.status}`)
+            }
+          })
+        )
+      }
+      
+      // Sentry integration (if SENTRY_DSN is configured)
+      if (typeof window !== 'undefined' && window.Sentry && entry.level >= LogLevel.ERROR) {
+        promises.push(
+          Promise.resolve().then(() => {
+            window.Sentry.captureMessage(entry.message, {
+              level: entry.level === LogLevel.ERROR ? 'error' : 'fatal',
+              contexts: {
+                logger: {
+                  component: entry.context.component,
+                  userId: entry.context.userId,
+                  metadata: entry.context.metadata
+                }
+              },
+              extra: entry.context
+            })
+          })
+        )
+      }
+
+      // Execute all logging attempts
+      if (promises.length > 0) {
+        await Promise.allSettled(promises)
+      }
     } catch (error) {
-      // Fallback to console if remote logging fails
-      console.error('Failed to send log to remote service:', error)
+      // Fallback to console if remote logging fails (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to send log to remote service:', error)
+      }
     }
   }
 

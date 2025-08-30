@@ -5,6 +5,9 @@ import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 import { rbac } from '@/lib/rbac'
 import { useRouter } from 'next/navigation'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('OnboardingPage')
 
 interface BranchForm {
   name: string
@@ -158,7 +161,7 @@ export default function OnboardingPage() {
 
       router.push('/dashboard')
     } catch (error: unknown) {
-      console.error('Error creating branches:', error)
+      logger.error('Error creating branches', error, { userId: user?.id })
       alert('Failed to create your branches. Please try again.')
     } finally {
       setLoading(false)

@@ -6,6 +6,9 @@
 
 import React, { Suspense, memo } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('LazyWrapper')
 
 interface LazyWrapperProps {
   children: React.ReactNode
@@ -96,10 +99,11 @@ const LazyWrapper = memo(function LazyWrapper({
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
       onError={(error, errorInfo) => {
-        // Log error in development
-        if (process.env.NODE_ENV === 'development') {
-          console.error('LazyWrapper Error:', error, errorInfo)
-        }
+        // Log error using structured logging
+        logger.error('LazyWrapper Error', error, { 
+          errorInfo: errorInfo.componentStack,
+          nodeEnv: process.env.NODE_ENV 
+        })
         
         // In production, you might want to send to error reporting service
         // errorReportingService.captureError(error, errorInfo)

@@ -7,6 +7,9 @@
 
 import React, { Component, ReactNode } from 'react'
 import { AppError, ErrorCodes, errorHandler } from '@/lib/error-handler'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('ErrorBoundary')
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -78,15 +81,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       // Call custom error handler if provided
       onError?.(appError, errorId)
 
-      // Log additional React error info in development
-      if (process.env.NODE_ENV === 'development') {
-        console.error('React Error Boundary caught an error:', {
-          error: appError,
-          errorId,
-          componentStack: errorInfo.componentStack,
-          errorBoundary: this.constructor.name
-        })
-      }
+      // Log React error info using structured logging
+      logger.error('React Error Boundary caught an error', appError, {
+        errorId,
+        componentStack: errorInfo.componentStack,
+        errorBoundary: this.constructor.name,
+        nodeEnv: process.env.NODE_ENV
+      })
     }
   }
 

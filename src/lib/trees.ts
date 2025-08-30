@@ -1,4 +1,7 @@
 import { supabase } from '@/lib/supabase/client'
+import { createComponentLogger } from './logger'
+
+const logger = createComponentLogger('TreeService')
 
 export async function getUserPrimaryTree(userId: string): Promise<string | null> {
   try {
@@ -24,7 +27,7 @@ export async function getUserPrimaryTree(userId: string): Promise<string | null>
     return treeMembers[0].tree_id
 
   } catch (error) {
-    console.error('Error getting user primary tree:', error)
+    logger.error('Error getting user primary tree', error, { userId })
     return null
   }
 }
@@ -48,17 +51,14 @@ export async function getUserTrees(userId: string) {
       .order('joined_at', { ascending: true })
 
     if (error) {
-      console.error('Error fetching user trees:', error)
+      logger.error('Error fetching user trees', error, { userId })
       return []
     }
 
     return userTrees || []
   } catch (error) {
-    console.error('Error getting user trees:', error)
+    logger.error('Error getting user trees', error, { userId })
     return []
   }
 }
 
-// Backward compatibility aliases (to be removed after migration)
-export const getUserPrimaryTribe = getUserPrimaryTree
-export const getUserTribes = getUserTrees

@@ -5,6 +5,9 @@
 
 import { supabase } from '@/lib/supabase/client'
 import type { AIPromptContext } from './aiService'
+import { createComponentLogger } from '../logger'
+
+const logger = createComponentLogger('ContextManager')
 
 export interface UserConversationState {
   userId: string
@@ -261,7 +264,7 @@ class ConversationContextManager {
       .limit(1)
 
     if (error) {
-      console.error('Error fetching user conversation state:', error)
+      logger.error('Error fetching user conversation state', error, { userId, branchId })
     }
 
     const existingState = existingStates?.[0]
@@ -319,7 +322,7 @@ class ConversationContextManager {
       })
 
     if (error) {
-      console.error('Error persisting user state:', error)
+      logger.error('Error persisting user state', error, { userId: state.userId, branchId: state.branchId })
     }
   }
 

@@ -18,6 +18,9 @@ import {
   CreateLeafData
 } from '@/lib/leaves'
 import { supabase } from '@/lib/supabase/client'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('TreeLeavesPage')
 
 /**
  * Calculate child age in months from tree data
@@ -44,7 +47,7 @@ function calculateChildAge(tree: Tree): number | undefined {
     
     return undefined
   } catch (error) {
-    console.error('Error calculating child age:', error)
+    logger.error('Error calculating child age', error, { treeId: tree.id })
     return undefined
   }
 }
@@ -95,7 +98,7 @@ export default function TreeLeavesPage() {
         .single()
 
       if (treeError) {
-        console.error('Error loading tree:', treeError)
+        logger.error('Error loading tree', treeError, { treeId })
         return
       }
 
@@ -116,7 +119,7 @@ export default function TreeLeavesPage() {
         .eq('tree_id', treeId)
 
       if (branchError) {
-        console.error('Error loading branches:', branchError)
+        logger.error('Error loading branches', branchError, { treeId })
       } else {
         setBranches(branchData || [])
       }
@@ -135,7 +138,7 @@ export default function TreeLeavesPage() {
       setTreeStats(stats)
 
     } catch (error) {
-      console.error('Error loading initial data:', error)
+      logger.error('Error loading initial data', error, { treeId })
     } finally {
       setIsLoading(false)
     }
@@ -192,7 +195,7 @@ export default function TreeLeavesPage() {
         ))
       }
     } catch (error) {
-      console.error('Error refreshing leaf:', error)
+      logger.error('Error refreshing leaf', error, { leafId })
     }
   }
 
@@ -214,7 +217,7 @@ export default function TreeLeavesPage() {
         setTreeStats(updatedStats)
       }
     } catch (error) {
-      console.error('Error creating leaf:', error)
+      logger.error('Error creating leaf', error, { leafData: data })
     }
   }
 

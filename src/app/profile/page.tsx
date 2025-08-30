@@ -6,12 +6,15 @@ import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, LeafWithDetails } from '@/types/database'
 import { BranchWithMembers } from '@/types/common'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('ProfilePage')
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [userCircles, setUserCircles] = useState<BranchWithMembers[]>([])
+  const [userBranches, setUserBranches] = useState<BranchWithMembers[]>([])
   const [recentPosts, setRecentPosts] = useState<LeafWithDetails[]>([])
   const router = useRouter()
 
@@ -36,21 +39,21 @@ export default function ProfilePage() {
           .single()
 
         if (profileError) {
-          console.error('Error loading profile:', profileError)
+          logger.error('Error loading profile', profileError, { userId: user?.id })
           return
         }
 
         setProfile(profile)
 
-        // Get user's circles
-        const { data: circles, error: circlesError } = await supabase
+        // Get user's branches
+        const { data: branches, error: branchesError } = await supabase
           .from('branch_members')
           .select(`
-            circle_id,
+            branch_id,
             role,
             joined_at,
             status,
-            circles (
+            branches (
               id,
               name,
               description,
@@ -63,8 +66,8 @@ export default function ProfilePage() {
           .eq('status', 'active')
           .order('joined_at', { ascending: false })
 
-        if (!circlesError && circles) {
-          setUserCircles(circles)
+        if (!branchesError && branches) {
+          setUserBranches(branches)
         }
 
         // Get user's recent posts (last 5)
@@ -76,7 +79,7 @@ export default function ProfilePage() {
             created_at,
             media_urls,
             milestone_type,
-            circles (
+            branches (
               id,
               name
             )
@@ -90,7 +93,7 @@ export default function ProfilePage() {
         }
 
       } catch (error) {
-        console.error('Error loading profile:', error)
+        logger.error('Error loading profile', error)
       } finally {
         setLoading(false)
       }
@@ -188,32 +191,32 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Circles */}
+          {/* Branches */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">My Circles</h2>
-              <p className="text-sm text-gray-500">Circles you're a member of</p>
+              <h2 className="text-lg font-medium text-gray-900">My Branches</h2>
+              <p className="text-sm text-gray-500">Branches you're a member of</p>
             </div>
             <div className="p-6">
-              {userCircles.length === 0 ? (
+              {userBranches.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">
-                  You haven't joined any circles yet
+                  You haven't joined any branches yet
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {userCircles.map((membership) => (
+                  {userBranches.map((membership) => (
                     <div
-                      key={membership.circle_id}
+                      key={membership.branch_id}
                       className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
                       onClick={() => router.push('/dashboard')}
                     >
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900">
-                          {membership.circles.name}
+                          {membership.branches.name}
                         </h3>
-                        {membership.circles.description && (
+                        {membership.branches.description && (
                           <p className="text-sm text-gray-500 mt-1">
-                            {membership.circles.description}
+                            {membership.branches.description}
                           </p>
                         )}
                         <div className="flex items-center space-x-4 mt-2">
@@ -255,7 +258,7 @@ export default function ProfilePage() {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-blue-600">
-                          {post.circles.name}
+                          {post.branches.name}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(post.created_at)}

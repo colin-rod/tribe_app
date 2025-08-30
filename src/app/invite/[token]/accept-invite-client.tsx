@@ -5,6 +5,9 @@ import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { BranchInvitation } from '@/types/database'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('AcceptInviteClient')
 
 interface AcceptInviteClientProps {
   invitation: BranchInvitation & { branch_name?: string }
@@ -88,7 +91,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
       router.push('/dashboard')
 
     } catch (error: unknown) {
-      console.error('Error accepting invitation:', error)
+      logger.error('Error accepting invitation', error, { invitationId: invitation.id, userId: user?.id })
       setError(error.message)
       setLoading(false)
     }

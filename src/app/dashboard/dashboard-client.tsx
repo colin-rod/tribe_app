@@ -12,6 +12,9 @@ import GlobalLeafCreator from '@/components/leaves/GlobalLeafCreator'
 import { UnassignedLeavesPanel } from '@/components/leaves/UnassignedLeavesPanel'
 import { DragDropLeafAssignment } from '@/components/leaves/DragDropLeafAssignment'
 import { AllLeavesView } from '@/components/leaves/AllLeavesView'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('DashboardClient')
 
 interface DashboardClientProps {
   user: User
@@ -386,14 +389,14 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                       <DragDropLeafAssignment 
                         userId={user.id}
                         onLeafAssigned={(leafId, branchIds) => {
-                          console.log(`Leaf ${leafId} assigned to branches:`, branchIds)
+                          logger.info('Leaf assigned to branches', { leafId, branchIds })
                         }}
                       />
                     ) : (
                       <UnassignedLeavesPanel 
                         userId={user.id}
                         onLeafAssigned={(leafId, branchIds) => {
-                          console.log(`Leaf ${leafId} assigned to branches:`, branchIds)
+                          logger.info('Leaf assigned to branches', { leafId, branchIds })
                         }}
                       />
                     )}

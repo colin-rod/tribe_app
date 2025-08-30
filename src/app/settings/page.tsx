@@ -11,6 +11,9 @@ import {
   NotificationSettings,
   AccountSettings
 } from '@/components/settings'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('SettingsPage')
 
 type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'account'
 
@@ -44,14 +47,14 @@ export default function SettingsPage() {
           .single()
 
         if (profileError) {
-          console.error('Error loading profile:', profileError)
+          logger.error('Error loading profile', profileError, { userId: user.id })
           return
         }
 
         setProfile(profile)
 
       } catch (error) {
-        console.error('Error loading user data:', error)
+        logger.error('Error loading user data', error)
       } finally {
         setLoading(false)
       }
@@ -87,7 +90,7 @@ export default function SettingsPage() {
 
       return publicUrl
     } catch (error) {
-      console.error('Error uploading avatar:', error)
+      logger.error('Error uploading avatar', error, { file: file.name, fileSize: file.size })
       throw error
     }
   }
@@ -145,7 +148,7 @@ export default function SettingsPage() {
       showMessage('success', 'Profile updated successfully!')
       
     } catch (error: unknown) {
-      console.error('Error updating profile:', error)
+      logger.error('Error updating profile', error, { userId: user?.id, profileData: data })
       showMessage('error', error.message || 'Failed to update profile')
     } finally {
       setSaving(false)
@@ -166,7 +169,7 @@ export default function SettingsPage() {
 
       showMessage('success', 'Password changed successfully!')
     } catch (error: unknown) {
-      console.error('Error changing password:', error)
+      logger.error('Error changing password', error, { userId: user?.id })
       throw new Error(error.message || 'Failed to change password')
     }
   }

@@ -101,13 +101,13 @@ export async function getBranchLeaves(branchId: string, limit = 20, offset = 0):
       .range(offset, offset + limit - 1)
 
     if (error) {
-      console.error('Error fetching branch leaves:', error)
+      logger.error('Error fetching branch leaves', error, { branchId, offset, limit })
       return []
     }
 
     return data || []
   } catch (error) {
-    console.error('Error fetching branch leaves:', error)
+    logger.error('Error fetching branch leaves', error, { branchId, offset, limit })
     return []
   }
 }
@@ -128,13 +128,13 @@ export async function addLeafReaction(leafId: string, reactionType: ReactionType
       })
 
     if (error) {
-      console.error('Error adding leaf reaction:', error)
+      logger.error('Error adding leaf reaction', error, { leafId, reactionType })
       return false
     }
 
     return true
   } catch (error) {
-    console.error('Error adding leaf reaction:', error)
+    logger.error('Error adding leaf reaction', error, { leafId, reactionType })
     return false
   }
 }
@@ -155,13 +155,13 @@ export async function removeLeafReaction(leafId: string, reactionType: ReactionT
       .eq('reaction_type', reactionType)
 
     if (error) {
-      console.error('Error removing leaf reaction:', error)
+      logger.error('Error removing leaf reaction', error, { leafId, reactionType })
       return false
     }
 
     return true
   } catch (error) {
-    console.error('Error removing leaf reaction:', error)
+    logger.error('Error removing leaf reaction', error, { leafId, reactionType })
     return false
   }
 }
@@ -192,13 +192,13 @@ export async function shareLeafWithBranches(leafId: string, branchIds: string[])
       .insert(shareData)
 
     if (error) {
-      console.error('Error sharing leaf:', error)
+      logger.error('Error sharing leaf', error, { leafId, branchIds })
       return false
     }
 
     return true
   } catch (error) {
-    console.error('Error sharing leaf:', error)
+    logger.error('Error sharing leaf', error, { leafId, branchIds })
     return false
   }
 }
@@ -220,13 +220,13 @@ export async function addLeafComment(leafId: string, content: string): Promise<b
       })
 
     if (error) {
-      console.error('Error adding leaf comment:', error)
+      logger.error('Error adding leaf comment', error, { leafId, content: content.length + ' chars' })
       return false
     }
 
     return true
   } catch (error) {
-    console.error('Error adding leaf comment:', error)
+    logger.error('Error adding leaf comment', error, { leafId, content: content.length + ' chars' })
     return false
   }
 }
@@ -243,13 +243,13 @@ export async function getMilestones(): Promise<Milestone[]> {
       .order('typical_age_months', { ascending: true })
 
     if (error) {
-      console.error('Error fetching milestones:', error)
+      logger.error('Error fetching milestones', error)
       return []
     }
 
     return data || []
   } catch (error) {
-    console.error('Error fetching milestones:', error)
+    logger.error('Error fetching milestones', error)
     return []
   }
 }
@@ -266,13 +266,13 @@ export async function getMilestonesByCategory(category: string): Promise<Milesto
       .order('typical_age_months', { ascending: true })
 
     if (error) {
-      console.error('Error fetching milestones by category:', error)
+      logger.error('Error fetching milestones by category', error, { category })
       return []
     }
 
     return data || []
   } catch (error) {
-    console.error('Error fetching milestones by category:', error)
+    logger.error('Error fetching milestones by category', error, { category })
     return []
   }
 }
@@ -338,13 +338,13 @@ export async function searchLeaves(
       .limit(50)
 
     if (error) {
-      console.error('Error searching leaves:', error)
+      logger.error('Error searching leaves', error, { query, filters })
       return []
     }
 
     return data || []
   } catch (error) {
-    console.error('Error searching leaves:', error)
+    logger.error('Error searching leaves', error, { query, filters })
     return []
   }
 }
@@ -366,7 +366,7 @@ export async function getTreeStats(treeId: string): Promise<{
       .eq('tree_id', treeId)
 
     if (error) {
-      console.error('Error fetching tree stats:', error)
+      logger.error('Error fetching tree stats', error, { treeId })
       return {
         totalLeaves: 0,
         milestoneCount: 0,
@@ -400,7 +400,7 @@ export async function getTreeStats(treeId: string): Promise<{
 
     return stats
   } catch (error) {
-    console.error('Error calculating tree stats:', error)
+    logger.error('Error calculating tree stats', error, { treeId })
     return {
       totalLeaves: 0,
       milestoneCount: 0,
@@ -429,7 +429,7 @@ export async function uploadLeafMedia(files: File[], leafId: string): Promise<st
         .upload(filePath, file)
 
       if (error) {
-        console.error('Error uploading file:', error)
+        logger.error('Error uploading file', error, { leafId, fileName, filePath })
         return null
       }
 
@@ -444,7 +444,7 @@ export async function uploadLeafMedia(files: File[], leafId: string): Promise<st
     const results = await Promise.all(uploadPromises)
     return results.filter((url): url is string => url !== null)
   } catch (error) {
-    console.error('Error uploading leaf media:', error)
+    logger.error('Error uploading leaf media', error, { leafId, fileCount: files.length })
     return []
   }
 }
