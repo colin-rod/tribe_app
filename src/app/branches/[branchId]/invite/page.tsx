@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client'
 import { getUserBranchPermissions } from '@/lib/rbac'
 import type { User } from '@supabase/supabase-js'
 import { createComponentLogger } from '@/lib/logger'
+import { showWarning, showError } from '@/lib/toast-service'
 
 const logger = createComponentLogger('BranchInvitePage')
 
@@ -98,7 +99,7 @@ export default function BranchInvitePage({ params }: PageProps) {
     e.preventDefault()
     
     if (!email.trim() || !branch || !user) {
-      alert('Please fill in all required fields')
+      showWarning('Please fill in all required fields')
       return
     }
 
@@ -127,7 +128,7 @@ export default function BranchInvitePage({ params }: PageProps) {
       }
 
       if (existingMember && existingMember.status === 'active') {
-        alert('This person is already a member of this branch')
+        showWarning('This person is already a member of this branch')
         return
       }
 
@@ -145,7 +146,7 @@ export default function BranchInvitePage({ params }: PageProps) {
       }
 
       if (existingInvite) {
-        alert('There is already a pending invitation for this email to this branch')
+        showWarning('There is already a pending invitation for this email to this branch')
         return
       }
 
@@ -184,7 +185,7 @@ export default function BranchInvitePage({ params }: PageProps) {
 
     } catch (error: unknown) {
       logger.error('Error sending invitation', error)
-      alert(`Failed to send invitation: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(`Failed to send invitation: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSending(false)
     }

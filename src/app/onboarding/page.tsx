@@ -6,6 +6,15 @@ import { supabase } from '@/lib/supabase/client'
 import { rbac } from '@/lib/rbac'
 import { useRouter } from 'next/navigation'
 import { createComponentLogger } from '@/lib/logger'
+import { showWarning, showError } from '@/lib/toast-service'
+import { useAsyncOperation } from '@/hooks/useAsyncOperation'
+import { useRetryOperation } from '@/hooks/useRetryOperation'
+import { useFormValidation } from '@/hooks/useFormValidation'
+import { LoadingButton, LoadingOverlay, LoadingSkeleton } from '@/components/ui/LoadingSpinner'
+import { ErrorDisplay, InlineError } from '@/components/ui/ErrorDisplay'
+import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
+import { treeCreateSchema, branchCreateSchema } from '@/lib/validation/schemas'
+import { AppError, ErrorCodes } from '@/lib/error-handler'
 
 const logger = createComponentLogger('OnboardingPage')
 
@@ -19,7 +28,6 @@ interface BranchForm {
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   
   // Tree creation form
@@ -32,6 +40,37 @@ export default function OnboardingPage() {
   ])
   
   const router = useRouter()
+
+  // Enhanced async operations with retry
+  const treeCreationOperation = useAsyncOperation({
+    showSuccessToast: true,
+    successMessage: 'Family tree created successfully!',
+    context: {
+      action: 'create',
+      resourceType: 'tree',
+      feature: 'onboarding'
+    }
+  })
+
+  const retryOperation = useRetryOperation({
+    maxRetries: 3,
+    initialDelay: 1500,
+    onRetryAttempt: (attempt, error) => {
+      logger.info(`Retrying tree creation (attempt ${attempt})`, { error: error.message })
+    },
+    onMaxRetriesReached: (error) => {
+      logger.error('Tree creation failed after max retries', error)
+    }
+  })
+
+  // Form validation
+  const treeValidation = useFormValidation({
+    schema: treeCreateSchema
+  })
+
+  const branchValidation = useFormValidation({
+    schema: branchCreateSchema
+  })
 
   useEffect(() => {
     const getUser = async () => {
@@ -66,13 +105,22 @@ export default function OnboardingPage() {
   const createTreeAndBranches = async () => {
     if (!user) return
 
-    if (!treeName.trim()) {
-      alert('Please enter a tree name to continue')
-      return
+    // Validate tree data
+    const treeData = { 
+      name: treeName.trim(), 
+      description: treeDescription.trim(),
+      privacy: 'private' as const
+    }
+    
+    const treeValidationResult = treeValidation.validate(treeData)
+    if (!treeValidationResult.success) {
+      return // Validation errors are already shown
     }
 
-    setLoading(true)
-    try {
+    // Use enhanced async operation with retry
+    await treeCreationOperation.execute(async () => {
+      return await retryOperation.executeWithRetry(async () => {
+        try {
       let tree = null
       
       // Create required tree
@@ -159,13 +207,13 @@ export default function OnboardingPage() {
         }
       }
 
-      router.push('/dashboard')
-    } catch (error: unknown) {
-      logger.error('Error creating branches', error, { userId: user?.id })
-      alert('Failed to create your branches. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+          router.push('/dashboard')
+        } catch (error: unknown) {
+          logger.error('Error creating branches', error)
+          throw error // Re-throw for the retry mechanism to handle
+        }
+      })
+    })
   }
 
   const colorOptions = [

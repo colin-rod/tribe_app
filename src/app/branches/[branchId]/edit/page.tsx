@@ -14,6 +14,7 @@ import {
   BranchDangerZone
 } from '@/components/branches/edit'
 import { createComponentLogger } from '@/lib/logger'
+import { showSuccess, showError } from '@/lib/toast-service'
 
 const logger = createComponentLogger('BranchEditPage')
 
@@ -176,11 +177,11 @@ export default function BranchEditPage({ params }: PageProps) {
         privacy: data.privacy,
       })
 
-      alert('Branch settings updated successfully!')
+      showSuccess('Branch settings updated successfully!')
       
     } catch (error: unknown) {
       logger.error('Error updating branch', error)
-      alert(`Failed to update branch: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(`Failed to update branch: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSaving(false)
     }
@@ -213,11 +214,11 @@ export default function BranchEditPage({ params }: PageProps) {
         member.id === memberId ? { ...member, role: newRole } : member
       ))
 
-      alert('Member role updated successfully!')
+      showSuccess('Member role updated successfully!')
       
     } catch (error: unknown) {
       logger.error('Error updating member role', error)
-      alert(`Failed to update member role: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(`Failed to update member role: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -237,11 +238,11 @@ export default function BranchEditPage({ params }: PageProps) {
       // Update local state
       setMembers(prev => prev.filter(member => member.id !== memberId))
 
-      alert(`${memberName} has been removed from the branch.`)
+      showSuccess(`${memberName} has been removed from the branch.`)
       
     } catch (error: unknown) {
       logger.error('Error removing member', error)
-      alert(`Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(`Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -257,11 +258,11 @@ export default function BranchEditPage({ params }: PageProps) {
       const accessData = await getCrossTreeAccess(branchId)
       setCrossTreeAccess(accessData)
 
-      alert('Tree access granted successfully!')
+      showSuccess('Tree access granted successfully!')
       
     } catch (error: unknown) {
       logger.error('Error granting tree access', error)
-      alert(`Failed to grant access: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(`Failed to grant access: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -276,11 +277,11 @@ export default function BranchEditPage({ params }: PageProps) {
       // Update local state
       setCrossTreeAccess(prev => prev.filter(access => access.id !== accessId))
 
-      alert('Access revoked successfully!')
+      showSuccess('Access revoked successfully!')
       
     } catch (error: unknown) {
       logger.error('Error revoking access', error)
-      alert(`Failed to revoke access: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(`Failed to revoke access: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -298,12 +299,12 @@ export default function BranchEditPage({ params }: PageProps) {
         throw error
       }
 
-      alert('Branch deleted successfully.')
+      showSuccess('Branch deleted successfully.')
       router.push('/dashboard')
       
     } catch (error: unknown) {
       logger.error('Error deleting branch', error)
-      alert(`Failed to delete branch: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(`Failed to delete branch: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

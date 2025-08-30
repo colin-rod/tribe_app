@@ -12,6 +12,7 @@ import { LeafType, Milestone } from '@/types/database'
 import { BranchWithMembers } from '@/types/common'
 import { uploadLeafMedia } from '@/lib/leaves'
 import { createComponentLogger } from '@/lib/logger'
+import { showError } from '@/lib/toast-service'
 import { useMilestones, useCreateUnassignedLeaf, useAssignLeafToBranches } from '@/hooks/use-leaves'
 
 const logger = createComponentLogger('GlobalLeafCreator')
@@ -181,7 +182,7 @@ export default function GlobalLeafCreator({
       onSave()
     } catch (error: unknown) {
       logger.error('Failed to create leaf', error, { action: 'createLeaf' })
-      alert(`Failed to create leaf: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(`Failed to create leaf: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setStep('create')
     } finally {
       setIsLoading(false)

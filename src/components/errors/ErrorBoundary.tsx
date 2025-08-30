@@ -8,6 +8,8 @@
 import React, { Component, ReactNode } from 'react'
 import { AppError, ErrorCodes, errorHandler } from '@/lib/error-handler'
 import { createComponentLogger } from '@/lib/logger'
+import { formatErrorForUser } from '@/lib/error-messages'
+import { ErrorBoundaryFallback } from '@/components/ui/ErrorDisplay'
 
 const logger = createComponentLogger('ErrorBoundary')
 
@@ -153,50 +155,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 /**
  * Page-level error fallback
  */
-export function PageErrorFallback({ error, resetError, errorId }: ErrorFallbackProps) {
-  const isNetworkError = error.code === ErrorCodes.NETWORK_ERROR
-  const isAuthError = [ErrorCodes.UNAUTHORIZED, ErrorCodes.FORBIDDEN].includes(error.code as ErrorCodes)
-
+export function PageErrorFallback({ error, resetError }: ErrorFallbackProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="text-center">
-          <div className="text-6xl mb-4">
-            {isNetworkError ? '🔌' : isAuthError ? '🔒' : '⚠️'}
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            {isNetworkError ? 'Connection Problem' : isAuthError ? 'Access Denied' : 'Something Went Wrong'}
-          </h1>
-          <p className="text-gray-600 mb-8">
-            {error.message || 'An unexpected error occurred. Please try again.'}
-          </p>
-          
-          <div className="space-x-4">
-            <button
-              onClick={resetError}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={() => window.location.href = '/'}
-              className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium"
-            >
-              Go Home
-            </button>
-          </div>
-
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
-              <h3 className="text-red-800 font-medium mb-2">Development Info</h3>
-              <p className="text-red-700 text-sm mb-2">Error ID: {errorId}</p>
-              <p className="text-red-700 text-sm mb-2">Code: {error.code}</p>
-              <pre className="text-red-600 text-xs overflow-auto">
-                {JSON.stringify(error.context, null, 2)}
-              </pre>
-            </div>
-          )}
-        </div>
+      <div className="sm:mx-auto sm:w-full sm:max-w-2xl px-4">
+        <ErrorBoundaryFallback 
+          error={error} 
+          resetError={resetError} 
+        />
       </div>
     </div>
   )

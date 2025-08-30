@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import { createComponentLogger } from '@/lib/logger'
+import { showWarning, showError } from '@/lib/toast-service'
+import { useFormSubmission } from '@/hooks/useAsyncOperation'
+import { useRetryOperation } from '@/hooks/useRetryOperation'
+import { LoadingButton, LoadingOverlay } from '@/components/ui/LoadingSpinner'
+import { ErrorDisplay, InlineError } from '@/components/ui/ErrorDisplay'
+import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useFormValidation } from '@/hooks/useFormValidation'
@@ -22,9 +28,27 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'member' | 'viewer'>('member')
   const [selectedBranches, setSelectedBranches] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
+
+  // Enhanced async operation handling
+  const inviteOperation = useFormSubmission({
+    successMessage: 'Invitation sent successfully!',
+    context: {
+      action: 'send',
+      resourceType: 'invitation',
+      feature: 'family invites'
+    }
+  })
+
+  // Retry mechanism for failed operations
+  const retryOperation = useRetryOperation({
+    maxRetries: 2,
+    initialDelay: 2000,
+    onRetryAttempt: (attempt) => {
+      logger.info(`Retrying invitation send (attempt ${attempt})`)
+    }
+  })
 
   // Form validation
   const {
@@ -66,7 +90,7 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
     }
 
     if (selectedBranches.length === 0) {
-      alert('Please select at least one branch')
+      showWarning('Please select at least one branch')
       return
     }
 
@@ -105,7 +129,7 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
 
     } catch (error: unknown) {
       logger.error('Error sending invitation', error, { email, treeId: selectedTree })
-      alert(`Failed to send invitation: ${error.message}`)
+      showError(`Failed to send invitation: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
