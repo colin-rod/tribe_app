@@ -68,7 +68,7 @@ export default function BranchInvitePage({ params }: PageProps) {
         } : null
 
         if (branchError || !branchData) {
-          logger.error('Error loading branch', branchError, { branchId })
+          logger.error('Error loading branch', branchError)
           router.push('/dashboard')
           return
         }
@@ -84,7 +84,7 @@ export default function BranchInvitePage({ params }: PageProps) {
         setBranch(transformedBranch)
 
       } catch (error) {
-        logger.error('Error loading data', error, { branchId })
+        logger.error('Error loading data', error)
         router.push('/dashboard')
       } finally {
         setLoading(false)
@@ -106,18 +106,24 @@ export default function BranchInvitePage({ params }: PageProps) {
     setSuccess(false)
 
     try {
-      logger.info('Starting invitation process', { branchId, email: email.trim(), role, userId: user.id })
+      logger.info('Starting invitation process')
 
       // Check if the email is already a member of this branch
       const { data: existingMember, error: checkError } = await supabase
         .from('branch_members')
-        .select('id, status')
+        .select(`
+          id, 
+          status,
+          profiles!inner (
+            email
+          )
+        `)
         .eq('branch_id', branchId)
         .eq('profiles.email', email.trim())
         .single()
 
       if (checkError && checkError.code !== 'PGRST116') {
-        logger.error('Error checking existing member', checkError, { branchId, email: email.trim() })
+        logger.error('Error checking existing member', checkError)
       }
 
       if (existingMember && existingMember.status === 'active') {
@@ -135,7 +141,7 @@ export default function BranchInvitePage({ params }: PageProps) {
         .single()
 
       if (inviteCheckError && inviteCheckError.code !== 'PGRST116') {
-        logger.error('Error checking existing invitation', inviteCheckError, { branchId, email: email.trim() })
+        logger.error('Error checking existing invitation', inviteCheckError)
       }
 
       if (existingInvite) {
@@ -143,7 +149,7 @@ export default function BranchInvitePage({ params }: PageProps) {
         return
       }
 
-      logger.info('Creating branch invitation', { branchId, email: email.trim(), role })
+      logger.info('Creating branch invitation')
       
       // Create the branch-specific invitation
       const { data: invitation, error: inviteError } = await supabase
@@ -159,11 +165,11 @@ export default function BranchInvitePage({ params }: PageProps) {
         .single()
 
       if (inviteError) {
-        logger.error('Invitation creation error', inviteError, { branchId, email: email.trim(), role })
+        logger.error('Invitation creation error', inviteError)
         throw inviteError
       }
 
-      logger.info('Invitation created successfully', { invitationId: invitation.id, branchId, email: email.trim() })
+      logger.info('Invitation created successfully')
 
       // Send email notification (you would implement this with your email service)
       // For MVP, we'll just show success message
@@ -177,7 +183,7 @@ export default function BranchInvitePage({ params }: PageProps) {
       }, 2000)
 
     } catch (error: unknown) {
-      logger.error('Error sending invitation', error, { branchId, email: email.trim(), role })
+      logger.error('Error sending invitation', error)
       alert(`Failed to send invitation: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSending(false)

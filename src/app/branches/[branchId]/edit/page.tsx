@@ -57,7 +57,7 @@ export default function BranchEditPage({ params }: PageProps) {
           .single()
 
         if (branchError || !branchData) {
-          logger.error('Error loading branch', branchError, { branchId })
+          logger.error('Error loading branch', branchError)
           router.push('/dashboard')
           return
         }
@@ -140,7 +140,7 @@ export default function BranchEditPage({ params }: PageProps) {
 
         setLoading(false)
       } catch (error) {
-        logger.error('Error loading branch data', error, { branchId })
+        logger.error('Error loading branch data', error)
         router.push('/dashboard')
       }
     }
@@ -179,7 +179,7 @@ export default function BranchEditPage({ params }: PageProps) {
       alert('Branch settings updated successfully!')
       
     } catch (error: unknown) {
-      logger.error('Error updating branch', error, { branchId, updateData: data })
+      logger.error('Error updating branch', error)
       alert(`Failed to update branch: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSaving(false)
@@ -216,7 +216,7 @@ export default function BranchEditPage({ params }: PageProps) {
       alert('Member role updated successfully!')
       
     } catch (error: unknown) {
-      logger.error('Error updating member role', error, { branchId, memberId, role })
+      logger.error('Error updating member role', error)
       alert(`Failed to update member role: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -240,7 +240,7 @@ export default function BranchEditPage({ params }: PageProps) {
       alert(`${memberName} has been removed from the branch.`)
       
     } catch (error: unknown) {
-      logger.error('Error removing member', error, { branchId, memberId })
+      logger.error('Error removing member', error)
       alert(`Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -260,7 +260,7 @@ export default function BranchEditPage({ params }: PageProps) {
       alert('Tree access granted successfully!')
       
     } catch (error: unknown) {
-      logger.error('Error granting tree access', error, { branchId, treeId })
+      logger.error('Error granting tree access', error)
       alert(`Failed to grant access: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -279,7 +279,7 @@ export default function BranchEditPage({ params }: PageProps) {
       alert('Access revoked successfully!')
       
     } catch (error: unknown) {
-      logger.error('Error revoking access', error, { branchId, accessId })
+      logger.error('Error revoking access', error)
       alert(`Failed to revoke access: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -302,7 +302,7 @@ export default function BranchEditPage({ params }: PageProps) {
       router.push('/dashboard')
       
     } catch (error: unknown) {
-      logger.error('Error deleting branch', error, { branchId })
+      logger.error('Error deleting branch', error)
       alert(`Failed to delete branch: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }

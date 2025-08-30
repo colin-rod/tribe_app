@@ -7,6 +7,9 @@ import { getPromptingEngine } from '@/lib/ai/promptingEngine'
 import { supabase } from '@/lib/supabase/client'
 import { uploadLeafMedia } from '@/lib/leaves'
 import { createComponentLogger } from '@/lib/logger'
+import { FileUpload, FileWithPreview } from '@/components/ui/FileUpload'
+import { UploadProgress } from '@/components/ui/UploadProgress'
+import { useFileUpload } from '@/hooks/useFileUpload'
 
 const logger = createComponentLogger('LeafCreator')
 
@@ -44,8 +47,6 @@ export default function LeafCreator({
   const [leafType, setLeafType] = useState<LeafType>('photo')
   const [selectedBranch, setSelectedBranch] = useState<string>(branches[0]?.id || '')
   const [content, setContent] = useState('')
-  const [mediaFiles, setMediaFiles] = useState<File[]>([])
-  const [mediaUrls, setMediaUrls] = useState<string[]>([])
   const [tags, setTags] = useState<string[]>([])
   const [selectedMilestone, setSelectedMilestone] = useState<string>('')
   const [milestoneDate, setMilestoneDate] = useState('')
@@ -54,6 +55,23 @@ export default function LeafCreator({
   const [enhancement, setEnhancement] = useState<LeafEnhancementResult | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [userProfile, setUserProfile] = useState<{ first_name: string; last_name: string } | null>(null)
+
+  // Enhanced file upload system
+  const fileUpload = useFileUpload({
+    autoUpload: false,
+    maxRetries: 3,
+    processImages: true,
+    generateThumbnails: true,
+    onUploadComplete: (results) => {
+      logger.info('File uploads completed', { 
+        count: results.length,
+        successful: results.filter(r => r.success).length
+      })
+    },
+    onUploadError: (error) => {
+      logger.error('File upload error', new Error(error), { action: 'fileUpload' })
+    }
+  })
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -92,10 +110,7 @@ export default function LeafCreator({
   ]
 
   const handleMediaCapture = (files: File[]) => {
-    setMediaFiles(files)
-    // Create preview URLs
-    const urls = files.map(file => URL.createObjectURL(file))
-    setMediaUrls(urls)
+    fileUpload.addFiles(files)
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,6 +118,11 @@ export default function LeafCreator({
     if (files.length > 0) {
       handleMediaCapture(files)
     }
+  }
+
+  const handleFilesFromUpload = (files: FileWithPreview[]) => {
+    // Files are automatically handled by the useFileUpload hook
+    // No additional processing needed here
   }
 
   const startCameraCapture = async () => {
@@ -140,7 +160,7 @@ export default function LeafCreator({
         canvas.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], 'captured-photo.jpg', { type: 'image/jpeg' })
-            handleMediaCapture([file])
+            fileUpload.addFiles([file])
           }
         }, 'image/jpeg', 0.8)
 
@@ -155,6 +175,12 @@ export default function LeafCreator({
     setIsEnhancing(true)
     try {
       const promptingEngine = getPromptingEngine()
+      
+      // Get preview URLs from uploaded files
+      const mediaUrls = fileUpload.files
+        .filter(file => file.preview)
+        .map(file => file.preview!)
+      
       const request: LeafEnhancementRequest = {
         leafId: '', // Will be generated on save
         content,
@@ -198,12 +224,25 @@ export default function LeafCreator({
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // Upload media files to storage and get URLs
+      // Upload files using the enhanced upload system
       let uploadedUrls: string[] = []
-      if (mediaFiles.length > 0) {
+      if (fileUpload.files.length > 0) {
         // Generate a unique leaf ID for file organization
         const tempLeafId = crypto.randomUUID()
-        uploadedUrls = await uploadLeafMedia(mediaFiles, tempLeafId)
+        fileUpload.updateLeafId(tempLeafId)
+        
+        // Start the upload process
+        const uploadResults = await fileUpload.startUpload()
+        uploadedUrls = uploadResults
+          .filter(result => result.success && result.url)
+          .map(result => result.url!)
+        
+        if (uploadResults.some(r => !r.success)) {
+          logger.warn('Some file uploads failed', {
+            failed: uploadResults.filter(r => !r.success).length,
+            total: uploadResults.length
+          })
+        }
       }
       
       const leafData: LeafData = {
@@ -305,28 +344,65 @@ export default function LeafCreator({
         />
       </div>
 
-      {/* Media Capture */}
+      {/* Enhanced Media Upload */}
       {(leafType === 'photo' || leafType === 'video' || leafType === 'audio') && (
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
-            {leafType === 'photo' ? 'Photo' : leafType === 'video' ? 'Video' : 'Audio'}
-          </label>
-          
-          <div className="flex space-x-3">
-            <button
-              onClick={leafType === 'photo' ? startCameraCapture : () => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              {leafType === 'photo' ? '📷 Take Photo' : leafType === 'video' ? '🎥 Record' : '🎤 Record'}
-            </button>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700">
+              {leafType === 'photo' ? 'Photos' : leafType === 'video' ? 'Videos' : 'Audio'}
+            </label>
             
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              📁 Choose File
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={leafType === 'photo' ? startCameraCapture : () => fileInputRef.current?.click()}
+                className="px-3 py-1 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                {leafType === 'photo' ? '📷 Camera' : leafType === 'video' ? '🎥 Record' : '🎤 Record'}
+              </button>
+            </div>
           </div>
+
+          {/* Enhanced File Upload Component */}
+          <FileUpload
+            onFiles={handleFilesFromUpload}
+            maxFiles={5}
+            maxSize={leafType === 'video' ? 50 : 10} // 50MB for videos, 10MB for others
+            acceptedTypes={
+              leafType === 'photo' 
+                ? ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+                : leafType === 'video'
+                ? ['video/mp4', 'video/quicktime', 'video/webm']
+                : ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4']
+            }
+            value={fileUpload.files}
+            showPreviews={true}
+            className="mb-4"
+          />
+
+          {/* Upload Progress */}
+          {(fileUpload.uploading || fileUpload.files.some(f => f.uploading)) && (
+            <UploadProgress
+              files={fileUpload.files.map(file => ({
+                id: file.id,
+                name: file.name,
+                size: file.size,
+                progress: file.progress,
+                status: file.uploading 
+                  ? 'uploading' 
+                  : file.error 
+                  ? 'error' 
+                  : fileUpload.completed 
+                  ? 'completed' 
+                  : 'pending',
+                error: file.error
+              }))}
+              onRetry={(fileId) => {
+                // Retry logic could be added here if needed
+                logger.info('Retry requested for file', { fileId })
+              }}
+              onCancel={(fileId) => fileUpload.removeFile(fileId)}
+            />
+          )}
 
           <input
             ref={fileInputRef}
@@ -340,23 +416,6 @@ export default function LeafCreator({
           {/* Camera preview */}
           <video ref={videoRef} className="hidden" />
           <canvas ref={canvasRef} className="hidden" />
-          
-          {/* Media previews */}
-          {mediaUrls.length > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              {mediaUrls.map((url, index) => (
-                <div key={index} className="relative">
-                  {leafType === 'photo' ? (
-                    <Image src={url} alt={`Preview ${index}`} width={200} height={200} className="rounded-lg object-cover" />
-                  ) : leafType === 'video' ? (
-                    <video src={url} controls className="w-full rounded-lg" />
-                  ) : (
-                    <audio src={url} controls className="w-full" />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
 
@@ -370,7 +429,7 @@ export default function LeafCreator({
         </button>
         <button
           onClick={() => setStep('enhance')}
-          disabled={!content.trim() && mediaUrls.length === 0}
+          disabled={!content.trim() && fileUpload.files.length === 0}
           className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Next: Enhance ✨
