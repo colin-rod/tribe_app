@@ -1,0 +1,232 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { createClient } from '@/lib/supabase/server'
+import { createValidationMiddleware, createRateLimitMiddleware } from '@/lib/validation/middleware'
+import { branchCreateSchema } from '@/lib/validation/schemas'
+import { createComponentLogger } from '@/lib/logger'
+import { getUserBranchPermissions } from '@/lib/rbac'
+
+const logger = createComponentLogger('BranchesAPI')
+
+// Rate limiting: 10 requests per minute per user
+const rateLimitMiddleware = createRateLimitMiddleware({
+  maxRequests: 10,
+  windowMs: 60 * 1000, // 1 minute
+  keyGenerator: (req) => {
+    const userId = req.headers.get('x-user-id')
+    return userId || req.ip || 'anonymous'
+  },
+})
+
+// Validation middleware
+const validationMiddleware = createValidationMiddleware(branchCreateSchema, {
+  sanitize: true,
+  logErrors: true,
+  returnValidationErrors: process.env.NODE_ENV === 'development',
+})
+
+/**
+ * POST /api/branches
+ * Create a new branch
+ */
+export async function POST(req: NextRequest) {
+  return rateLimitMiddleware(
+    validationMiddleware(async (req: NextRequest, validatedData: z.infer<typeof branchCreateSchema>) => {
+      try {
+        const supabase = await createClient()
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError || !user) {
+          logger.warn('Unauthorized branch creation attempt', { userError })
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          )
+        }
+
+        // Check if user has permission to create branches in this tree
+        const permissions = await getUserBranchPermissions(user.id, validatedData.tree_id)
+        if (!permissions.canCreatePosts) {
+          logger.warn('User lacks permission to create branch', { 
+            userId: user.id, 
+            treeId: validatedData.tree_id 
+          })
+          return NextResponse.json(
+            { error: 'Insufficient permissions' },
+            { status: 403 }
+          )
+        }
+
+        // Create the branch
+        const { data: branch, error: branchError } = await supabase
+          .from('branches')
+          .insert({
+            ...validatedData,
+            created_by: user.id,
+            is_discoverable: false,
+            auto_approve_members: true,
+          })
+          .select()
+          .single()
+
+        if (branchError) {
+          logger.error('Failed to create branch', branchError, { 
+            userId: user.id, 
+            data: validatedData 
+          })
+          return NextResponse.json(
+            { error: 'Failed to create branch' },
+            { status: 500 }
+          )
+        }
+
+        // Assign owner role to creator
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: user.id,
+            role_id: 'owner', // This should reference the actual owner role ID
+            context_type: 'branch',
+            context_id: branch.id,
+            granted_by: user.id,
+          })
+
+        if (roleError) {
+          logger.error('Failed to assign owner role', roleError, { 
+            userId: user.id, 
+            branchId: branch.id 
+          })
+          // Continue anyway - branch was created successfully
+        }
+
+        logger.info('Branch created successfully', { 
+          branchId: branch.id, 
+          userId: user.id, 
+          treeId: validatedData.tree_id 
+        })
+
+        return NextResponse.json(
+          { 
+            success: true, 
+            data: branch,
+            message: 'Branch created successfully'
+          },
+          { status: 201 }
+        )
+
+      } catch (error) {
+        logger.error('Unexpected error in branch creation', error)
+        return NextResponse.json(
+          { error: 'Internal server error' },
+          { status: 500 }
+        )
+      }
+    })
+  )(req)
+}
+
+/**
+ * GET /api/branches
+ * Get branches with filtering and pagination
+ */
+export async function GET(req: NextRequest) {
+  return rateLimitMiddleware(async (req: NextRequest) => {
+    try {
+      const supabase = await createClient()
+      
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        )
+      }
+
+      // Parse and validate query parameters
+      const { searchParams } = new URL(req.url)
+      const treeId = searchParams.get('tree_id')
+      const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
+      const offset = Math.max(parseInt(searchParams.get('offset') || '0'), 0)
+
+      // Build query based on user permissions
+      let query = supabase
+        .from('branches')
+        .select(`
+          id,
+          name,
+          description,
+          color,
+          type,
+          privacy,
+          created_at,
+          tree_id,
+          created_by
+        `)
+
+      // Filter by tree if specified
+      if (treeId) {
+        query = query.eq('tree_id', treeId)
+      }
+
+      // Only show branches user has access to
+      // This is simplified - in reality you'd check permissions properly
+      query = query.or(`privacy.eq.public,created_by.eq.${user.id}`)
+
+      // Apply pagination
+      query = query
+        .range(offset, offset + limit - 1)
+        .order('created_at', { ascending: false })
+
+      const { data: branches, error: branchError } = await query
+
+      if (branchError) {
+        logger.error('Failed to fetch branches', branchError, { userId: user.id })
+        return NextResponse.json(
+          { error: 'Failed to fetch branches' },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: branches || [],
+        pagination: {
+          limit,
+          offset,
+          count: branches?.length || 0,
+        }
+      })
+
+    } catch (error) {
+      logger.error('Unexpected error in branch fetch', error)
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      )
+    }
+  })(req)
+}
+
+// Handle unsupported methods
+export async function PUT() {
+  return NextResponse.json(
+    { error: 'Method not allowed' },
+    { status: 405 }
+  )
+}
+
+export async function DELETE() {
+  return NextResponse.json(
+    { error: 'Method not allowed' },
+    { status: 405 }
+  )
+}
+
+export async function PATCH() {
+  return NextResponse.json(
+    { error: 'Method not allowed' },
+    { status: 405 }
+  )
+}

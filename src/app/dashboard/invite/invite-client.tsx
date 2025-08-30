@@ -2,12 +2,15 @@
 
 import { useState } from 'react'
 import { createComponentLogger } from '@/lib/logger'
-
-const logger = createComponentLogger('InviteClient')
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useFormValidation } from '@/hooks/useFormValidation'
+import { invitationCreateSchema } from '@/lib/validation/schemas'
+import { sanitizeEmail } from '@/lib/validation/sanitization'
 import type { User } from '@supabase/supabase-js'
 import type { TreeWithMembers } from '@/types/common'
+
+const logger = createComponentLogger('InviteClient')
 
 interface InviteClientProps {
   user: User
@@ -23,6 +26,18 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
   const [success, setSuccess] = useState(false)
   const router = useRouter()
 
+  // Form validation
+  const {
+    errors,
+    isValid,
+    validate,
+    validateField,
+    clearFieldError,
+  } = useFormValidation({
+    schema: invitationCreateSchema,
+    sanitize: true,
+  })
+
   const selectedTreeData = trees.find(t => t.id === selectedTree)
 
   const handleBranchToggle = (branchId: string) => {
@@ -36,8 +51,17 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
   const sendInvitation = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!email.trim() || !selectedTree) {
-      alert('Please fill in all required fields')
+    // Validate form data
+    const formData = {
+      email: sanitizeEmail(email),
+      role: role as 'member' | 'viewer',
+      tree_id: selectedTree,
+      message: '',
+    }
+
+    const validationResult = validate(formData)
+    if (!validationResult.success) {
+      logger.warn('Form validation failed', { errors: validationResult.errors })
       return
     }
 
@@ -160,11 +184,25 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
                   type="email"
                   id="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) => {
+                    const newEmail = e.target.value
+                    setEmail(newEmail)
+                    clearFieldError('email')
+                    // Validate email on blur or when complete
+                    if (newEmail.includes('@') && newEmail.includes('.')) {
+                      validateField('email', sanitizeEmail(newEmail))
+                    }
+                  }}
+                  onBlur={() => validateField('email', sanitizeEmail(email))}
+                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  }`}
                   placeholder="Enter their email address"
                   required
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                )}
               </div>
 
               {/* Role */}
@@ -260,7 +298,7 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || !email.trim() || selectedBranches.length === 0}
+                  disabled={loading || !email.trim() || selectedBranches.length === 0 || !isValid}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Sending...' : 'Send Invitation'}
