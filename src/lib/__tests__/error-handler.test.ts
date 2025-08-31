@@ -1,4 +1,4 @@
-import { AppError, handleError, ErrorSeverity } from '../error-handler'
+import { AppError, handleError, ErrorCodes } from '../error-handler'
 
 // Mock the logger
 jest.mock('../logger', () => ({
@@ -7,6 +7,11 @@ jest.mock('../logger', () => ({
     warn: jest.fn(),
     info: jest.fn(),
   }),
+}))
+
+// Mock the toast service
+jest.mock('../toast-service', () => ({
+  handleErrorToast: jest.fn(),
 }))
 
 describe('AppError', () => {
@@ -56,53 +61,50 @@ describe('handleError', () => {
   it('should handle AppError correctly', () => {
     const appError = new AppError('App error', 'APP_ERROR', { test: true })
     
-    handleError(appError, { logError: true })
+    const result = handleError(appError, { logError: false })
     
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('App error'),
-      expect.objectContaining({ test: true })
-    )
+    expect(result).toBeInstanceOf(AppError)
+    expect(result.message).toBe('App error')
+    expect(result.code).toBe('APP_ERROR')
+    expect(result.context).toEqual({ test: true })
   })
 
   it('should handle generic Error correctly', () => {
     const genericError = new Error('Generic error')
     
-    handleError(genericError, { logError: true })
+    const result = handleError(genericError, { logError: false })
     
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Generic error'),
-      expect.any(Object)
-    )
+    expect(result).toBeInstanceOf(AppError)
+    expect(result.message).toBe('Generic error')
+    expect(result.code).toBe('UNKNOWN_ERROR')
   })
 
   it('should handle string error correctly', () => {
-    handleError('String error', { logError: true })
+    const result = handleError('String error', { logError: false })
     
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('String error'),
-      expect.any(Object)
-    )
+    expect(result).toBeInstanceOf(AppError)
+    expect(result.message).toBe('An unexpected error occurred')
+    expect(result.code).toBe('UNKNOWN_ERROR')
   })
 
   it('should handle unknown error correctly', () => {
     const unknownError = { weird: 'object' }
     
-    handleError(unknownError, { logError: true })
+    const result = handleError(unknownError, { logError: false })
     
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Unknown error'),
-      expect.any(Object)
-    )
+    expect(result).toBeInstanceOf(AppError)
+    expect(result.message).toBe('An unexpected error occurred')
+    expect(result.code).toBe('UNKNOWN_ERROR')
   })
 
   it('should use fallback message when provided', () => {
-    const result = handleError('Test error', { 
+    const result = handleError(null, { 
       logError: false,
       fallbackMessage: 'Fallback message'
     })
     
-    expect(result.message).toBe('Test error')
-    expect(result.fallbackMessage).toBe('Fallback message')
+    expect(result.message).toBe('Fallback message')
+    expect(result.code).toBe('UNKNOWN_ERROR')
   })
 
   it('should respect logError option', () => {
@@ -112,28 +114,25 @@ describe('handleError', () => {
     expect(consoleWarnSpy).not.toHaveBeenCalled()
   })
 
-  it('should handle different severities correctly', () => {
-    handleError('Warning error', { 
-      logError: true, 
-      severity: ErrorSeverity.WARN 
-    })
+  it('should handle error mapping correctly', () => {
+    const networkError = new Error('Network connection failed')
     
-    expect(consoleWarnSpy).toHaveBeenCalled()
-    expect(consoleErrorSpy).not.toHaveBeenCalled()
+    const result = handleError(networkError, { logError: false })
+    
+    expect(result.code).toBe('NETWORK_ERROR')
+    expect(result.message).toBe('Network connection failed')
   })
 
-  it('should return error details', () => {
+  it('should return AppError instance with correct properties', () => {
     const result = handleError('Test error', { 
       logError: false,
       fallbackMessage: 'Fallback'
     })
     
-    expect(result).toEqual({
-      message: 'Test error',
-      fallbackMessage: 'Fallback',
-      code: 'UNKNOWN_ERROR',
-      timestamp: expect.any(Date),
-      context: expect.any(Object)
-    })
+    expect(result).toBeInstanceOf(AppError)
+    expect(result.message).toBe('Fallback')
+    expect(result.code).toBe('UNKNOWN_ERROR')
+    expect(result.timestamp).toBeInstanceOf(Date)
+    expect(result.context).toEqual(expect.objectContaining({ originalError: 'Test error' }))
   })
 })

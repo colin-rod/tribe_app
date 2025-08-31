@@ -120,3 +120,6 @@ export const mockQueryClient = () => {
   })
   return queryClient
 }
+
+// This file is a utility file, not a test file
+// It provides test helpers for other test files

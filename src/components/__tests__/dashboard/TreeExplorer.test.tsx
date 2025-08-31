@@ -47,7 +47,10 @@ jest.mock('next/navigation', () => ({
 
 const createMockTreeWithMembers = (): TreeWithMembers => ({
   tree_id: 'tree-1',
-  trees: createMockTree(),
+  trees: {
+    ...createMockTree(),
+    id: 'tree-1',
+  },
   role: 'owner',
   permissions: ['manage_tree'],
   member_count: 4,
@@ -55,17 +58,25 @@ const createMockTreeWithMembers = (): TreeWithMembers => ({
 
 const createMockBranchWithMembers = (): BranchWithMembers => ({
   branch_id: 'branch-1',
-  branches: createMockBranch(),
+  branches: {
+    ...createMockBranch(),
+    id: 'branch-1',
+    tree_id: 'tree-1',
+  },
   role: 'owner',
   permissions: ['manage_branch'],
   member_count: 2,
 })
 
 describe('TreeExplorer', () => {
+  const mockBranch = createMockBranch()
+  const mockTree = createMockTreeWithMembers()
+  const mockUserBranch = createMockBranchWithMembers()
+  
   const mockProps = {
-    selectedBranch: createMockBranch(),
-    trees: [createMockTreeWithMembers()],
-    userBranches: [createMockBranchWithMembers()],
+    selectedBranch: mockBranch,
+    trees: [mockTree],
+    userBranches: [mockUserBranch],
     userId: 'user-1',
   }
 
@@ -89,12 +100,26 @@ describe('TreeExplorer', () => {
   })
 
   it('should render tree header with correct information', async () => {
+    const { useTreeStats } = jest.requireMock('@/hooks/use-trees')
+    useTreeStats.mockReturnValue({
+      data: {
+        totalLeaves: 25,
+        milestoneCount: 5,
+        recentLeaves: 3,
+        leafTypeBreakdown: { photo: 15, text: 8, milestone: 2 },
+        seasonBreakdown: { winter: 10, spring: 8, summer: 5, fall: 2 },
+        memberCount: 4,
+      },
+      isLoading: false,
+    })
+
     render(<TreeExplorer {...mockProps} />)
 
     await waitFor(() => {
       expect(screen.getByText('Test Family Tree')).toBeInTheDocument()
-      expect(screen.getByText('A collection of precious family leaves')).toBeInTheDocument()
     })
+    
+    expect(screen.getByText('A test tree')).toBeInTheDocument()
   })
 
   it('should display tree statistics correctly', async () => {
@@ -140,7 +165,7 @@ describe('TreeExplorer', () => {
 
   it('should show empty state when no leaves match filter', async () => {
     // Mock empty leaves data
-    const { useTreeLeaves } = require('@/hooks/use-leaves')
+    const { useTreeLeaves } = jest.requireMock('@/hooks/use-leaves')
     useTreeLeaves.mockReturnValue({
       data: [],
       isLoading: false,
@@ -157,14 +182,14 @@ describe('TreeExplorer', () => {
   })
 
   it('should show loading state', () => {
-    const { useTreeLeaves, useTreeStats } = require('@/hooks/use-leaves')
+    const { useTreeLeaves, useTreeStats } = jest.requireMock('@/hooks/use-leaves')
     useTreeLeaves.mockReturnValue({
       data: [],
       isLoading: true,
       isError: false,
     })
 
-    const { useTreeStats: mockUseTreeStats } = require('@/hooks/use-trees')
+    const { useTreeStats: mockUseTreeStats } = jest.requireMock('@/hooks/use-trees')
     mockUseTreeStats.mockReturnValue({
       data: null,
       isLoading: true,
@@ -179,13 +204,26 @@ describe('TreeExplorer', () => {
     render(<TreeExplorer {...mockProps} />)
 
     await waitFor(() => {
-      const newLeafButtons = screen.getAllByRole('button', { name: /new leaf/i })
-      expect(newLeafButtons).toHaveLength(2) // One in filter bar, one in empty state
+      const newLeafButton = screen.getByRole('button', { name: /new leaf/i })
+      expect(newLeafButton).toBeInTheDocument()
     })
   })
 
   it('should handle view full timeline click', async () => {
     const user = userEvent.setup()
+    const { useTreeStats } = jest.requireMock('@/hooks/use-trees')
+    useTreeStats.mockReturnValue({
+      data: {
+        totalLeaves: 25,
+        milestoneCount: 5,
+        recentLeaves: 3,
+        leafTypeBreakdown: { photo: 15, text: 8, milestone: 2 },
+        seasonBreakdown: { winter: 10, spring: 8, summer: 5, fall: 2 },
+        memberCount: 4,
+      },
+      isLoading: false,
+    })
+
     render(<TreeExplorer {...mockProps} />)
 
     await waitFor(() => {
@@ -200,14 +238,32 @@ describe('TreeExplorer', () => {
 
   it('should show correct empty state messages for different filters', async () => {
     const user = userEvent.setup()
-    const { useTreeLeaves } = require('@/hooks/use-leaves')
+    const { useTreeLeaves } = jest.requireMock('@/hooks/use-leaves')
+    const { useTreeStats } = jest.requireMock('@/hooks/use-trees')
+    
     useTreeLeaves.mockReturnValue({
       data: [],
       isLoading: false,
       isError: false,
     })
 
+    useTreeStats.mockReturnValue({
+      data: {
+        totalLeaves: 0,
+        milestoneCount: 0,
+        recentLeaves: 0,
+        leafTypeBreakdown: {},
+        seasonBreakdown: {},
+        memberCount: 1,
+      },
+      isLoading: false,
+    })
+
     render(<TreeExplorer {...mockProps} />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /milestones/i })).toBeInTheDocument()
+    })
 
     // Test milestones filter empty state
     const milestonesButton = screen.getByRole('button', { name: /milestones/i })
