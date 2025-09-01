@@ -238,7 +238,7 @@ export default function TreeLeavesPage() {
         <div className="text-center">
           <div className="text-6xl mb-4">🌳</div>
           <h1 className="text-xl font-semibold text-gray-900 mb-2">Tree not found</h1>
-          <p className="text-gray-600">This memory tree doesn't exist or you don't have access to it.</p>
+          <p className="text-gray-600">This memory tree doesn&apos;t exist or you don&apos;t have access to it.</p>
         </div>
       </div>
     )
@@ -259,7 +259,7 @@ export default function TreeLeavesPage() {
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
-                  <span>{tree.name}'s Memory Tree</span>
+                  <span>{tree.name}&apos;s Memory Tree</span>
                   <span className="text-3xl">🌳</span>
                 </h1>
                 <p className="text-gray-600">{tree.description}</p>

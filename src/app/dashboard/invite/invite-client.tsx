@@ -3,11 +3,6 @@
 import { useState } from 'react'
 import { createComponentLogger } from '@/lib/logger'
 import { showWarning, showError } from '@/lib/toast-service'
-import { useFormSubmission } from '@/hooks/useAsyncOperation'
-import { useRetryOperation } from '@/hooks/useRetryOperation'
-import { LoadingButton, LoadingOverlay } from '@/components/ui/LoadingSpinner'
-import { ErrorDisplay, InlineError } from '@/components/ui/ErrorDisplay'
-import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useFormValidation } from '@/hooks/useFormValidation'
@@ -28,27 +23,9 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'member' | 'viewer'>('member')
   const [selectedBranches, setSelectedBranches] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
-
-  // Enhanced async operation handling
-  const inviteOperation = useFormSubmission({
-    successMessage: 'Invitation sent successfully!',
-    context: {
-      action: 'send',
-      resourceType: 'invitation',
-      feature: 'family invites'
-    }
-  })
-
-  // Retry mechanism for failed operations
-  const retryOperation = useRetryOperation({
-    maxRetries: 2,
-    initialDelay: 2000,
-    onRetryAttempt: (attempt) => {
-      logger.info(`Retrying invitation send (attempt ${attempt})`)
-    }
-  })
 
   // Form validation
   const {
@@ -167,7 +144,7 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Invitation Sent!</h2>
             <p className="text-gray-600 mb-4">
-              We've sent an invitation to <strong>{email}</strong> to join your tree.
+              We&apos;ve sent an invitation to <strong>{email}</strong> to join your tree.
             </p>
             <p className="text-sm text-gray-500">
               Redirecting you back to dashboard...

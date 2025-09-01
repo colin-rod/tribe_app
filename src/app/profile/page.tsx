@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
@@ -166,10 +167,12 @@ export default function ProfilePage() {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 {profile.avatar_url ? (
-                  <img
+                  <Image
                     className="h-20 w-20 rounded-full object-cover"
                     src={profile.avatar_url}
                     alt={`${profile.first_name} ${profile.last_name}`}
+                    width={80}
+                    height={80}
                   />
                 ) : (
                   <div className="h-20 w-20 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-xl font-medium">
@@ -195,12 +198,12 @@ export default function ProfilePage() {
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">My Branches</h2>
-              <p className="text-sm text-gray-500">Branches you're a member of</p>
+              <p className="text-sm text-gray-500">Branches you&apos;re a member of</p>
             </div>
             <div className="p-6">
               {userBranches.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">
-                  You haven't joined any branches yet
+                  You haven&apos;t joined any branches yet
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -247,7 +250,7 @@ export default function ProfilePage() {
             <div className="p-6">
               {recentPosts.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">
-                  You haven't created any posts yet
+                  You haven&apos;t created any posts yet
                 </p>
               ) : (
                 <div className="space-y-4">

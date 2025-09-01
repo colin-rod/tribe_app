@@ -139,7 +139,7 @@ export default function PrivacySettings({}: PrivacySettingsProps) {
             <div className="mt-2 text-sm text-yellow-700">
               <p>
                 These privacy controls are currently being developed. Your profile is currently visible to 
-                family members only. We'll notify you when these settings become available.
+                family members only. We&apos;ll notify you when these settings become available.
               </p>
             </div>
           </div>

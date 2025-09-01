@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
@@ -102,10 +103,12 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                   className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition-colors"
                 >
                   {profile?.avatar_url ? (
-                    <img
+                    <Image
                       className="w-8 h-8 rounded-full object-cover"
                       src={profile.avatar_url}
                       alt={`${profile.first_name} ${profile.last_name}`}
+                      width={32}
+                      height={32}
                     />
                   ) : (
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">

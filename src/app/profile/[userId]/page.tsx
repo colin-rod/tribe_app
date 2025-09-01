@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
@@ -225,10 +226,12 @@ export default function UserProfilePage({ params }: PageProps) {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 {userProfile.avatar_url ? (
-                  <img
+                  <Image
                     className="h-20 w-20 rounded-full object-cover"
                     src={userProfile.avatar_url}
                     alt={`${userProfile.first_name} ${userProfile.last_name}`}
+                    width={80}
+                    height={80}
                   />
                 ) : (
                   <div className="h-20 w-20 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-xl font-medium">

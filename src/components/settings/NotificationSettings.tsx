@@ -84,7 +84,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
           <label className="flex items-center justify-between">
             <div>
               <div className="font-medium text-gray-900">Branch invitations</div>
-              <div className="text-sm text-gray-600">When you're invited to join a family branch</div>
+              <div className="text-sm text-gray-600">When you&apos;re invited to join a family branch</div>
             </div>
             <input
               type="checkbox"
@@ -110,8 +110,8 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </h3>
             <div className="mt-2 text-sm text-yellow-700">
               <p>
-                Notification preferences are currently being developed. You'll receive email notifications 
-                for important updates. We'll notify you when these settings become available.
+                Notification preferences are currently being developed. You&apos;ll receive email notifications 
+                for important updates. We&apos;ll notify you when these settings become available.
               </p>
             </div>
           </div>

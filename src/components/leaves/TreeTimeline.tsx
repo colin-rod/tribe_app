@@ -156,7 +156,7 @@ export default function TreeTimeline({
     <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <h1 className="text-2xl font-bold text-gray-900">{treeName}'s Memory Tree</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{treeName}&apos;s Memory Tree</h1>
           <span className="text-3xl">🌳</span>
         </div>
         

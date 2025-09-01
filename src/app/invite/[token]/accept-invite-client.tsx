@@ -163,7 +163,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">You're Invited!</h2>
+            <h2 className="text-2xl font-bold text-gray-900">You&apos;re Invited!</h2>
           </div>
 
           <div className="text-center mb-6">
@@ -194,7 +194,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
           {currentUser && currentUser.email !== invitation.email ? (
             <div className="space-y-4">
               <p className="text-sm text-gray-600 text-center">
-                You're currently signed in as <strong>{currentUser.email}</strong>, but this invitation is for <strong>{invitation.email}</strong>.
+                You&apos;re currently signed in as <strong>{currentUser.email}</strong>, but this invitation is for <strong>{invitation.email}</strong>.
               </p>
               <button
                 onClick={handleSignIn}
