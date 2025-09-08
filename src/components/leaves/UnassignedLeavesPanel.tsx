@@ -168,6 +168,31 @@ export function UnassignedLeavesPanel({ userId, onLeafAssigned }: UnassignedLeav
 
   return (
     <div className="space-y-6">
+      {/* Email-to-Leaf Info Card */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-blue-900 mb-1">Email-to-Leaf Feature</h3>
+              <p className="text-sm text-blue-700 mb-2">
+                Send photos, messages, and content directly to your inbox by emailing: 
+                <code className="bg-white/60 px-2 py-1 rounded text-xs font-mono ml-1">
+                  u-{userId.substring(0, 8)}@tribe.app
+                </code>
+              </p>
+              <p className="text-xs text-blue-600">
+                Content sent via email will appear here as unassigned leaves. You can then organize them into your branches.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">

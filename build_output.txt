@@ -1,0 +1,431 @@
+
+> tribe_app@0.1.0 build
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/colinrodrigues/package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/colinrodrigues/tribe_app/package-lock.json
+
+   ▲ Next.js 15.5.0
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.3s
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./src/app/auth/signup/page.tsx
+54:15  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/branches/[branchId]/invite/page.tsx
+156:21  Warning: 'invitation' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/dashboard-client.tsx
+105:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/dashboard/invite/invite-client.tsx
+8:10  Warning: 'LoadingButton' is defined but never used.  @typescript-eslint/no-unused-vars
+8:25  Warning: 'LoadingOverlay' is defined but never used.  @typescript-eslint/no-unused-vars
+9:10  Warning: 'ErrorDisplay' is defined but never used.  @typescript-eslint/no-unused-vars
+9:24  Warning: 'InlineError' is defined but never used.  @typescript-eslint/no-unused-vars
+10:10  Warning: 'ErrorBoundary' is defined but never used.  @typescript-eslint/no-unused-vars
+35:9  Warning: 'inviteOperation' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+45:9  Warning: 'retryOperation' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+102:21  Warning: 'invitation' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/invite/[token]/accept-invite-client.tsx
+35:6  Warning: React Hook useEffect has a missing dependency: 'acceptInvitation'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/invite/[token]/page.tsx
+1:10  Warning: 'redirect' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/onboarding/page.tsx
+9:10  Warning: 'showWarning' is defined but never used.  @typescript-eslint/no-unused-vars
+9:23  Warning: 'showError' is defined but never used.  @typescript-eslint/no-unused-vars
+13:10  Warning: 'LoadingButton' is defined but never used.  @typescript-eslint/no-unused-vars
+13:25  Warning: 'LoadingOverlay' is defined but never used.  @typescript-eslint/no-unused-vars
+13:41  Warning: 'LoadingSkeleton' is defined but never used.  @typescript-eslint/no-unused-vars
+14:10  Warning: 'ErrorDisplay' is defined but never used.  @typescript-eslint/no-unused-vars
+14:24  Warning: 'InlineError' is defined but never used.  @typescript-eslint/no-unused-vars
+15:10  Warning: 'ErrorBoundary' is defined but never used.  @typescript-eslint/no-unused-vars
+17:10  Warning: 'AppError' is defined but never used.  @typescript-eslint/no-unused-vars
+17:20  Warning: 'ErrorCodes' is defined but never used.  @typescript-eslint/no-unused-vars
+71:9  Warning: 'branchValidation' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/profile/[userId]/page.tsx
+228:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/profile/page.tsx
+169:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/settings/page.tsx
+115:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/trees/[treeId]/leaves/page.tsx
+9:8  Warning: 'BranchSelector' is defined but never used.  @typescript-eslint/no-unused-vars
+55:11  Warning: 'TreeLeavesPageProps' is defined but never used.  @typescript-eslint/no-unused-vars
+75:10  Warning: 'treeStats' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+88:6  Warning: React Hook useEffect has a missing dependency: 'loadInitialData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+241:62  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+241:81  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+262:36  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/components/__tests__/dashboard/TreeExplorer.test.tsx
+143:31  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports
+160:28  Warning: 'useTreeStats' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+160:45  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports
+167:48  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports
+203:31  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports
+
+./src/components/__tests__/leaves/LeafCard.test.tsx
+1:18  Warning: 'fireEvent' is defined but never used.  @typescript-eslint/no-unused-vars
+1:29  Warning: 'waitFor' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/branches/edit/BranchMembersManager.tsx
+84:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/branches/edit/BranchPermissionsManager.tsx
+16:3  Warning: 'branchId' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/common/LazyWrapper.tsx
+122:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+142:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/dashboard/TreeExplorer.tsx
+3:38  Warning: 'useMemo' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'LeafWithDetails' is defined but never used.  @typescript-eslint/no-unused-vars
+6:46  Warning: 'FilterOption' is defined but never used.  @typescript-eslint/no-unused-vars
+18:11  Warning: 'TreeStats' is defined but never used.  @typescript-eslint/no-unused-vars
+30:3  Warning: 'userId' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/errors/ErrorBoundary.tsx
+11:10  Warning: 'formatErrorForUser' is defined but never used.  @typescript-eslint/no-unused-vars
+215:42  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/examples/EnhancedErrorHandlingExample.tsx
+12:25  Warning: 'LoadingOverlay' is defined but never used.  @typescript-eslint/no-unused-vars
+15:10  Warning: 'AppError' is defined but never used.  @typescript-eslint/no-unused-vars
+16:10  Warning: 'treeCreateSchema' is defined but never used.  @typescript-eslint/no-unused-vars
+163:75  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/leaves/AllLeavesView.tsx
+8:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+8:41  Warning: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+19:3  Warning: 'Calendar' is defined but never used.  @typescript-eslint/no-unused-vars
+53:6  Warning: React Hook useEffect has a missing dependency: 'loadLeaves'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+57:6  Warning: React Hook useEffect has a missing dependency: 'applyFiltersAndSort'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+64:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+120:9  Warning: 'getLeafIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+130:9  Warning: 'getAssignmentStatusColor' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+139:9  Warning: 'getAssignmentStatusText' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/leaves/BranchSelector.tsx
+25:3  Warning: 'leafId' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/leaves/DragDropLeafAssignment.tsx
+8:10  Warning: 'Button' is defined but never used.  @typescript-eslint/no-unused-vars
+31:6  Warning: React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+43:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+111:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+122:9  Warning: 'getLeafIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/leaves/GlobalLeafCreator.tsx
+11:20  Warning: 'Milestone' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/leaves/LeafCard.tsx
+25:61  Warning: 'onShare' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/leaves/LeafCreator.tsx
+4:8  Warning: 'Image' is defined but never used.  @typescript-eslint/no-unused-vars
+8:10  Warning: 'uploadLeafMedia' is defined but never used.  @typescript-eslint/no-unused-vars
+13:10  Warning: 'useAsyncOperation' is defined but never used.  @typescript-eslint/no-unused-vars
+13:29  Warning: 'useFormSubmission' is defined but never used.  @typescript-eslint/no-unused-vars
+14:10  Warning: 'useRetryOperation' is defined but never used.  @typescript-eslint/no-unused-vars
+15:10  Warning: 'LoadingButton' is defined but never used.  @typescript-eslint/no-unused-vars
+15:25  Warning: 'LoadingOverlay' is defined but never used.  @typescript-eslint/no-unused-vars
+16:10  Warning: 'ErrorDisplay' is defined but never used.  @typescript-eslint/no-unused-vars
+16:24  Warning: 'InlineError' is defined but never used.  @typescript-eslint/no-unused-vars
+17:10  Warning: 'ErrorBoundary' is defined but never used.  @typescript-eslint/no-unused-vars
+128:34  Warning: 'files' is defined but never used.  @typescript-eslint/no-unused-vars
+154:9  Warning: 'capturePhoto' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/leaves/LeafViewer.tsx
+48:6  Warning: React Hook useEffect has a missing dependency: 'autoHideTimer'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/leaves/TreeTimeline.tsx
+3:27  Warning: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+6:10  Warning: 'formatDistanceToNow' is defined but never used.  @typescript-eslint/no-unused-vars
+30:3  Warning: 'treeId' is defined but never used.  @typescript-eslint/no-unused-vars
+43:10  Warning: 'selectedMilestoneType' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+43:33  Warning: 'setSelectedMilestoneType' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+83:9  Warning: 'displayName' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+159:70  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+240:35  Warning: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/leaves/UnassignedLeavesPanel.tsx
+41:6  Warning: React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+55:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+102:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+143:9  Warning: 'getLeafIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/settings/NotificationSettings.tsx
+5:11  Error: An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+87:62  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+113:76  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+114:42  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/components/settings/PrivacySettings.tsx
+5:11  Error: An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+142:40  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/components/settings/ProfileSettings.tsx
+116:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/ui/FileUpload.tsx
+205:48  Warning: Image elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+285:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/ui/UploadProgress.tsx
+38:42  Warning: 'progress' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/card.tsx
+3:11  Error: An interface declaring no members is equivalent to its supertype.  @typescript-eslint/no-empty-object-type
+16:11  Error: An interface declaring no members is equivalent to its supertype.  @typescript-eslint/no-empty-object-type
+29:11  Error: An interface declaring no members is equivalent to its supertype.  @typescript-eslint/no-empty-object-type
+42:11  Error: An interface declaring no members is equivalent to its supertype.  @typescript-eslint/no-empty-object-type
+
+./src/components/ui/command.tsx
+1:17  Warning: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
+1:27  Warning: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+1:35  Warning: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/ui/popover.tsx
+26:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/ui/select.tsx
+28:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/hooks/__tests__/use-branches.test.ts
+36:25  Error: Parsing error: '>' expected.
+
+./src/hooks/__tests__/use-trees.test.ts
+26:25  Error: Parsing error: '>' expected.
+
+./src/hooks/use-branches.ts
+9:32  Warning: 'BranchPermissions' is defined but never used.  @typescript-eslint/no-unused-vars
+10:29  Warning: 'BranchWithRelations' is defined but never used.  @typescript-eslint/no-unused-vars
+91:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+111:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+133:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+159:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+178:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+207:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+229:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/hooks/use-leaves.ts
+8:47  Warning: 'LeafAssignment' is defined but never used.  @typescript-eslint/no-unused-vars
+9:10  Warning: 'LeafWithAssignments' is defined but never used.  @typescript-eslint/no-unused-vars
+9:31  Warning: 'UnassignedLeaf' is defined but never used.  @typescript-eslint/no-unused-vars
+12:3  Warning: 'getBranchLeaves' is defined but never used.  @typescript-eslint/no-unused-vars
+119:39  Warning: 'variables' is defined but never used.  @typescript-eslint/no-unused-vars
+140:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+163:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+186:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+211:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+228:9  Warning: 'queryClient' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+238:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+277:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+301:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+324:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/hooks/use-toast.ts
+1:34  Warning: 'showWarning' is defined but never used.  @typescript-eslint/no-unused-vars
+1:47  Warning: 'showInfo' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/hooks/use-trees.ts
+10:27  Warning: 'TreeWithRelations' is defined but never used.  @typescript-eslint/no-unused-vars
+66:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+86:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+107:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+132:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+150:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+175:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/hooks/use-users.ts
+10:10  Warning: 'getUserBranchPermissions' is defined but never used.  @typescript-eslint/no-unused-vars
+87:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+113:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+121:26  Warning: 'currentPassword' is defined but never used.  @typescript-eslint/no-unused-vars
+137:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+174:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/hooks/useAsyncOperation.ts
+19:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+33:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+137:6  Warning: React Hook useCallback has unnecessary dependencies: 'maxRetries' and 'retryDelay'. Either exclude them or remove the dependency array.  react-hooks/exhaustive-deps
+203:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+216:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+245:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+277:6  Warning: React Hook useCallback has a missing dependency: 'asyncOp'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/hooks/useFileUpload.ts
+2:23  Warning: 'UploadFile' is defined but never used.  @typescript-eslint/no-unused-vars
+126:6  Warning: React Hook useEffect has missing dependencies: 'files' and 'options'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+186:33  Warning: 'removed' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/hooks/useFormValidation.ts
+57:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+68:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+147:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+158:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+210:16  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/hooks/useRetryOperation.ts
+46:9  Warning: The 'finalConfig' object makes the dependencies of useCallback Hook (at line 59) change on every render. To fix this, wrap the initialization of 'finalConfig' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+46:9  Warning: The 'finalConfig' object makes the dependencies of useCallback Hook (at line 160) change on every render. To fix this, wrap the initialization of 'finalConfig' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+280:9  Warning: 'calculateDelayWithJitter' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/ai/aiService.ts
+378:76  Warning: 'context' is defined but never used.  @typescript-eslint/no-unused-vars
+494:16  Warning: 'parseError' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/ai/personalizedPrompting.ts
+174:5  Warning: '_leaves' is defined but never used.  @typescript-eslint/no-unused-vars
+377:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+532:5  Warning: '_currentTime' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/ai/promptTemplates.ts
+313:72  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/ai/promptingEngine.ts
+107:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+127:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+326:15  Warning: 'aiContext' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+448:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+660:13  Warning: 'contextManager' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+800:9  Error: 'prompt' is never reassigned. Use 'const' instead.  prefer-const
+
+./src/lib/api/error-middleware.ts
+17:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+24:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+31:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+36:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+37:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+51:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+211:12  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+221:3  Warning: 'config' is defined but never used.  @typescript-eslint/no-unused-vars
+233:9  Warning: 'key' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/data/base-service.ts
+7:10  Warning: 'withSupabaseErrorHandling' is defined but never used.  @typescript-eslint/no-unused-vars
+20:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+154:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/enhanced-loading.ts
+196:13  Error: Parsing error: '>' expected.
+
+./src/lib/errors/async-error-wrapper.ts
+38:5  Warning: 'showToast' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+58:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/errors/index.ts
+70:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/errors/validation-helpers.ts
+8:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+234:61  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+242:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/forms/form-components.tsx
+21:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+27:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+55:52  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+124:56  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+201:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+276:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+302:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+310:15  Warning: '_' is defined but never used.  @typescript-eslint/no-unused-vars
+311:12  Warning: 'field' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/forms/form-store.ts
+9:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+15:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+32:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+48:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+109:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+109:67  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+120:8  Warning: React Hook useCallback has an unnecessary dependency: 'fields'. Either exclude it or remove the dependency array. Outer scope values like 'fields' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+140:8  Warning: React Hook useCallback has an unnecessary dependency: 'fields'. Either exclude it or remove the dependency array. Outer scope values like 'fields' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+161:8  Warning: React Hook useCallback has an unnecessary dependency: 'validateOnChange'. Either exclude it or remove the dependency array. Outer scope values like 'validateOnChange' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+183:8  Warning: React Hook useCallback has an unnecessary dependency: 'validateOnChange'. Either exclude it or remove the dependency array. Outer scope values like 'validateOnChange' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+216:8  Warning: React Hook useCallback has an unnecessary dependency: 'validateOnBlur'. Either exclude it or remove the dependency array. Outer scope values like 'validateOnBlur' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+283:8  Warning: React Hook useCallback has unnecessary dependencies: 'fields' and 'onSubmit'. Either exclude them or remove the dependency array. Outer scope values like 'onSubmit' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+300:8  Warning: React Hook useCallback has unnecessary dependencies: 'initialData' and 'initialTouched'. Either exclude them or remove the dependency array. Outer scope values like 'initialData' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+323:8  Warning: React Hook useCallback has an unnecessary dependency: 'fields'. Either exclude it or remove the dependency array. Outer scope values like 'fields' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+
+./src/lib/forms/index.ts
+42:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:13  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+70:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+70:79  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+71:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+85:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/lib/leaf-assignments.ts
+158:11  Warning: 'result' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/leaves.ts
+7:33  Warning: 'LeafReaction' is defined but never used.  @typescript-eslint/no-unused-vars
+7:47  Warning: 'LeafShare' is defined but never used.  @typescript-eslint/no-unused-vars
+427:15  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/media/imageProcessor.ts
+293:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/query-client.ts
+40:15  Warning: 'errorWithDetails' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/state/create-store.ts
+81:8  Warning: React Hook useCallback has an unnecessary dependency: 'initialData'. Either exclude it or remove the dependency array. Outer scope values like 'initialData' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+102:8  Warning: React Hook useCallback has unnecessary dependencies: 'fetchFn' and 'onError'. Either exclude them or remove the dependency array. Outer scope values like 'fetchFn' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+109:8  Warning: React Hook useEffect has unnecessary dependencies: 'autoFetch' and 'fetchFn'. Either exclude them or remove the dependency array. Outer scope values like 'autoFetch' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+236:8  Warning: React Hook useCallback has unnecessary dependencies: 'fetchFn' and 'onError'. Either exclude them or remove the dependency array. Outer scope values like 'fetchFn' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+266:8  Warning: React Hook useCallback has a missing dependency: 'setLoading'. Either include it or remove the dependency array. Outer scope values like 'fetchFn' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+280:8  Warning: React Hook useCallback has unnecessary dependencies: 'initialLimit' and 'initialPage'. Either exclude them or remove the dependency array. Outer scope values like 'initialPage' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+287:8  Warning: React Hook useEffect has unnecessary dependencies: 'autoFetch' and 'fetchFn'. Either exclude them or remove the dependency array. Outer scope values like 'autoFetch' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+
+./src/lib/toast-service.ts
+140:27  Warning: '_options' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/types/common.ts
+5:66  Warning: 'LeafAssignment' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/utils/performance.ts
+32:49  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+32:59  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+124:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+124:67  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+144:6  Warning: React Hook useEffect was passed a dependency list that is not an array literal. This means we can't statically verify whether you've passed the correct dependencies.  react-hooks/exhaustive-deps
+144:6  Warning: React Hook useEffect has missing dependencies: 'debugName' and 'deps'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+146:10  Warning: React Hook useCallback received a function whose dependencies are unknown. Pass an inline function instead.  react-hooks/exhaustive-deps
+172:6  Warning: React Hook useEffect was passed a dependency list that is not an array literal. This means we can't statically verify whether you've passed the correct dependencies.  react-hooks/exhaustive-deps
+172:6  Warning: React Hook useEffect has missing dependencies: 'debugName' and 'deps'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+174:10  Warning: React Hook useMemo received a function whose dependencies are unknown. Pass an inline function instead.  react-hooks/exhaustive-deps
+251:68  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

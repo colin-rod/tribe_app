@@ -203,8 +203,8 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <span className="mr-2">📋</span>
-              Unassigned
+              <span className="mr-2">📥</span>
+              Inbox
             </button>
           </div>
           
@@ -273,10 +273,10 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                       : 'border border-gray-200 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="mr-3">📋</span>
+                  <span className="mr-3">📥</span>
                   <div className="text-left">
-                    <div className="font-medium">Unassigned</div>
-                    <div className="text-xs text-gray-500">Organize later</div>
+                    <div className="font-medium">Inbox</div>
+                    <div className="text-xs text-gray-500">Email & unassigned content</div>
                   </div>
                 </button>
               </div>

@@ -46,7 +46,7 @@ export function Button({
     outline: 'border-3 border-ac-brown bg-surface text-ac-brown hover:bg-ac-peach-light hover:border-ac-brown-dark rounded-2xl shadow-md font-display',
     ghost: 'text-ac-brown hover:bg-ac-peach-light rounded-xl transition-all duration-200',
     destructive: 'bg-ac-coral text-white hover:bg-red-500 border-3 border-red-600 rounded-2xl shadow-lg font-display',
-    wooden: 'bg-ac-brown text-ac-cream border-3 border-ac-brown-dark rounded-2xl shadow-wooden font-display hover:bg-ac-brown-light leaf-decoration',
+    wooden: 'bg-ac-brown text-white border-3 border-ac-brown-dark rounded-2xl shadow-wooden font-display hover:bg-ac-brown-light font-semibold text-shadow',
     leaf: 'bg-gradient-to-br from-ac-sage to-ac-sage-light text-ac-brown-dark border-3 border-ac-sage-dark rounded-full shadow-lg relative overflow-visible'
   }
   

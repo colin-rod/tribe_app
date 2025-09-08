@@ -33,19 +33,19 @@ export const useTactileButton = () => {
 
   const bind = useGesture({
     onPointerDown: () => {
-      api.start({ scale: 0.95, y: 2 })
+      api.start({ scale: 0.99, y: 0.5 })
       triggerHaptic('light')
     },
     onPointerUp: () => {
-      api.start({ scale: 1.02, y: -3 })
-      setTimeout(() => api.start({ scale: 1, y: 0 }), 150)
+      api.start({ scale: 1.005, y: -0.5 })
+      setTimeout(() => api.start({ scale: 1, y: 0 }), 100)
     },
     onPointerLeave: () => {
-      api.start({ scale: 1, y: 0 })
+      api.start({ scale: 1, y: 0, rotateZ: 0 })
     },
     onHover: ({ hovering }) => {
       if (hovering) {
-        api.start({ scale: 1.05, y: -2, rotateZ: Math.random() * 2 - 1 })
+        api.start({ scale: 1.01, y: -0.5, rotateZ: Math.random() * 0.3 - 0.15 })
       } else {
         api.start({ scale: 1, y: 0, rotateZ: 0 })
       }
@@ -71,24 +71,24 @@ export const useTactileCard = () => {
       if (!hovering) return
       
       const [x, y] = xy
-      const rotateX = (y - window.innerHeight / 2) / window.innerHeight * -10
-      const rotateY = (x - window.innerWidth / 2) / window.innerWidth * 10
+      const rotateX = (y - window.innerHeight / 2) / window.innerHeight * -3
+      const rotateY = (x - window.innerWidth / 2) / window.innerWidth * 3
       
       api.start({
         rotateX,
         rotateY,
-        rotateZ: Math.random() * 1 - 0.5,
-        scale: 1.02,
-        y: -5
+        rotateZ: Math.random() * 0.5 - 0.25,
+        scale: 1.01,
+        y: -2
       })
     },
     onHover: ({ hovering }) => {
       api.start({
         rotateX: 0,
         rotateY: 0,
-        rotateZ: hovering ? Math.random() * 2 - 1 : 0,
-        scale: hovering ? 1.02 : 1,
-        y: hovering ? -5 : 0
+        rotateZ: hovering ? Math.random() * 0.5 - 0.25 : 0,
+        scale: hovering ? 1.01 : 1,
+        y: hovering ? -2 : 0
       })
     }
   })

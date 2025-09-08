@@ -58,11 +58,6 @@ export function Card({
       {...bind()}
       {...props}
     >
-      {variant === 'wooden' && (
-        <div className="absolute top-2 left-2 text-xs text-ac-brown-dark opacity-40">
-          🌳 Wood Panel
-        </div>
-      )}
       {variant === 'bulletin' && (
         <>
           <div className="absolute -top-2 left-4 w-4 h-4 bg-ac-yellow rounded-full shadow-sm transform rotate-12"></div>

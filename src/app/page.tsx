@@ -62,10 +62,10 @@ export default function Home() {
             <h1 className="mx-auto max-w-4xl font-display text-5xl font-bold tracking-tight text-ac-brown-dark sm:text-7xl mb-8">
               Connect your{' '}
               <span className="relative">
-                <span className="bg-gradient-to-r from-ac-sage to-ac-sage-light bg-clip-text text-transparent font-black">
+                <span className="text-ac-brown-dark font-black">
                   community
                 </span>
-                <div className="absolute -bottom-2 left-0 right-0 h-3 bg-ac-yellow/30 rounded-full transform -rotate-1"></div>
+                <div className="absolute -bottom-2 left-0 right-0 h-3 bg-ac-yellow/40 rounded-full transform -rotate-1"></div>
               </span>{' '}
               in branches of shared experiences
             </h1>
@@ -81,27 +81,28 @@ export default function Home() {
           </p>
           
           <div className="mt-12 flex justify-center gap-x-6 flex-wrap">
-            <Button
-              variant="wooden"
-              size="lg"
-              particles
-              className="shadow-xl text-lg px-8 py-4 mb-4"
-            >
-              <Link href="/auth/signup" className="flex items-center">
+            <Link href="/auth/signup" className="inline-block">
+              <Button
+                variant="wooden"
+                size="lg"
+                tactile={false}
+                className="shadow-xl text-lg px-8 py-4 mb-4 w-full flex items-center justify-center hover:scale-[1.01] transition-transform duration-200"
+              >
                 <span className="mr-2">🌳</span>
                 Start your tree
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="shadow-lg text-lg px-8 py-4 mb-4"
-            >
-              <Link href="/auth/login" className="flex items-center">
+              </Button>
+            </Link>
+            <Link href="/auth/login" className="inline-block">
+              <Button
+                variant="outline"
+                size="lg"
+                tactile={false}
+                className="shadow-lg text-lg px-8 py-4 mb-4 w-full flex items-center justify-center hover:scale-[1.01] transition-transform duration-200"
+              >
                 <span className="mr-2">🌿</span>
                 Sign in
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
           
           {showEasterEgg && (
@@ -122,7 +123,7 @@ export default function Home() {
           <div className="grid gap-8 md:grid-cols-3">
             <Card 
               variant="bulletin" 
-              className="p-8 hover:rotate-0 transition-all duration-500 transform hover:scale-105"
+              className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
               <div className="w-16 h-16 bg-ac-sage-light rounded-full flex items-center justify-center mb-6 border-4 border-ac-sage shadow-lg mx-auto">
                 <span className="text-3xl">🔒</span>
@@ -136,7 +137,7 @@ export default function Home() {
             
             <Card 
               variant="polaroid" 
-              className="p-8 hover:rotate-0 transition-all duration-500 transform hover:scale-105"
+              className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
               <div className="w-16 h-16 bg-ac-peach-light rounded-full flex items-center justify-center mb-6 border-4 border-ac-peach shadow-lg mx-auto">
                 <span className="text-3xl">📸</span>
@@ -150,7 +151,7 @@ export default function Home() {
             
             <Card 
               variant="wooden" 
-              className="p-8 hover:rotate-0 transition-all duration-500 transform hover:scale-105"
+              className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
               <div className="w-16 h-16 bg-ac-lavender rounded-full flex items-center justify-center mb-6 border-4 border-purple-300 shadow-lg mx-auto">
                 <span className="text-3xl">👥</span>

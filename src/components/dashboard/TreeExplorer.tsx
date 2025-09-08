@@ -179,9 +179,9 @@ const TreeExplorer = memo(function TreeExplorer({
               <Button
                 variant="leaf"
                 size="lg"
-                particles
+                tactile={false}
                 onClick={() => router.push('/trees')}
-                className="w-full"
+                className="w-full hover:scale-[1.02] transition-transform duration-200"
               >
                 🌱 Manage Trees
               </Button>
@@ -259,19 +259,19 @@ const TreeExplorer = memo(function TreeExplorer({
         
               {/* Stats Row */}
               <div className="grid grid-cols-4 gap-6 mt-8">
-                <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-105 transition-transform">
+                <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-[1.01] transition-transform">
                   <div className="text-3xl font-bold text-ac-brown-dark font-display">{treeStats?.totalLeaves || 0}</div>
                   <div className="text-sm text-ac-brown font-semibold">🌿 Total Leaves</div>
                 </Card>
-                <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-105 transition-transform">
+                <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-[1.01] transition-transform">
                   <div className="text-3xl font-bold text-ac-brown-dark font-display">{treeStats?.milestoneCount || 0}</div>
                   <div className="text-sm text-ac-brown font-semibold">⭐ Milestones</div>
                 </Card>
-                <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-105 transition-transform">
+                <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-[1.01] transition-transform">
                   <div className="text-3xl font-bold text-ac-brown-dark font-display">{treeStats?.recentLeaves || 0}</div>
                   <div className="text-sm text-ac-brown font-semibold">✨ This Week</div>
                 </Card>
-                <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-105 transition-transform">
+                <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-[1.01] transition-transform">
                   <div className="text-3xl font-bold text-ac-brown-dark font-display">{Object.keys(treeStats?.seasonBreakdown || {}).length}</div>
                   <div className="text-sm text-ac-brown font-semibold">🌸 Seasons</div>
                 </Card>
@@ -318,7 +318,7 @@ const TreeExplorer = memo(function TreeExplorer({
                 <Button
                   variant="leaf"
                   size="md"
-                  particles
+                  tactile={false}
                   onClick={() => router.push(`/trees/${selectedTree.tree_id}/leaves`)}
                   className="shadow-lg"
                 >
@@ -392,7 +392,7 @@ const TreeExplorer = memo(function TreeExplorer({
                   <Button
                     variant="leaf"
                     size="lg"
-                    particles
+                    tactile={false}
                     onClick={() => router.push(`/trees/${selectedTree.tree_id}/leaves`)}
                     className="w-full shadow-lg"
                   >

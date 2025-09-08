@@ -228,7 +228,7 @@ export default function TreeTimeline({
             onReaction={onReaction}
             onShare={onShare}
             onComment={onComment}
-            className="transform hover:scale-105 transition-transform duration-200"
+            className="transform hover:scale-[1.01] transition-transform duration-200"
           />
         ))}
       </div>
