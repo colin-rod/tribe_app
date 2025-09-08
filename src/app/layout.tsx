@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 import { QueryProvider } from '@/providers/query-provider';
+import { DragDropProvider } from '@/components/common/DragDropProvider';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,39 +31,43 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            reverseOrder={false}
-            gutter={8}
-            containerStyle={{
-              top: '20px',
-              right: '20px',
-            }}
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#fff',
-                color: '#333',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                borderRadius: '8px',
-                fontSize: '14px',
-                maxWidth: '400px',
-              },
-              success: {
-                iconTheme: {
-                  primary: '#10B981',
-                  secondary: '#fff',
+          <DragDropProvider>
+            {children}
+            <Toaster
+              position="top-right"
+              reverseOrder={false}
+              gutter={8}
+              containerStyle={{
+                top: '20px',
+                right: '20px',
+              }}
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'var(--surface)',
+                  color: 'var(--ac-brown-dark)',
+                  boxShadow: 'var(--shadow-large)',
+                  borderRadius: 'var(--radius-large)',
+                  fontSize: '14px',
+                  maxWidth: '400px',
+                  fontFamily: 'var(--font-display)',
+                  border: '3px solid var(--ac-sage-light)',
                 },
-              },
-              error: {
-                iconTheme: {
-                  primary: '#EF4444',
-                  secondary: '#fff',
+                success: {
+                  iconTheme: {
+                    primary: 'var(--ac-sage)',
+                    secondary: 'var(--surface)',
+                  },
                 },
-              },
-            }}
-          />
+                error: {
+                  iconTheme: {
+                    primary: 'var(--ac-coral)',
+                    secondary: 'var(--surface)',
+                  },
+                },
+              }}
+            />
+          </DragDropProvider>
         </QueryProvider>
       </body>
     </html>

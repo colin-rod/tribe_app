@@ -1,28 +1,222 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Animal Crossing Color Palette */
+  --ac-cream: #FEF7E8;
+  --ac-sage: #B8D4B8;
+  --ac-sage-light: #D4E8D4;
+  --ac-sage-dark: #8FB08F;
+  --ac-brown-light: #D4B5A0;
+  --ac-brown: #A0826D;
+  --ac-brown-dark: #8B6F47;
+  --ac-sky: #C8E6F5;
+  --ac-sky-light: #E8F4FA;
+  --ac-sky-dark: #87CEEB;
+  --ac-peach: #FFD6B3;
+  --ac-peach-light: #FFE8D6;
+  --ac-coral: #FF9F80;
+  --ac-lavender: #E6D7FF;
+  --ac-yellow: #FFE55C;
+  --ac-white: #FFFEF7;
+  
+  /* Game-like Shadows and Effects */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-large: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-wooden: 0 4px 8px rgba(139, 111, 71, 0.3);
+  
+  /* Border Radius */
+  --radius-small: 8px;
+  --radius-medium: 16px;
+  --radius-large: 24px;
+  --radius-xl: 32px;
+  
+  /* Transitions */
+  --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* Background textures */
+  --texture-paper: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fef7e8' fill-opacity='0.05'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='47' cy='23' r='1'/%3E%3Ccircle cx='23' cy='43' r='1'/%3E%3C/g%3E%3C/svg%3E");
+  --texture-wood: linear-gradient(45deg, rgba(212, 181, 160, 0.1) 25%, transparent 25%, transparent 50%, rgba(212, 181, 160, 0.1) 50%, rgba(212, 181, 160, 0.1) 75%, transparent 75%, transparent);
+  
+  /* Main theme colors */
+  --background: var(--ac-cream);
+  --foreground: var(--ac-brown-dark);
+  --surface: var(--ac-white);
+  --surface-soft: var(--ac-peach-light);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-surface: var(--surface);
+  --color-ac-sage: var(--ac-sage);
+  --color-ac-brown: var(--ac-brown);
+  --color-ac-sky: var(--ac-sky);
+  --color-ac-peach: var(--ac-peach);
+  --color-ac-coral: var(--ac-coral);
+  --color-ac-lavender: var(--ac-lavender);
+  --color-ac-yellow: var(--ac-yellow);
+  --font-sans: 'Quicksand', var(--font-geist-sans), system-ui;
+  --font-display: 'Comic Neue', cursive;
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #2C3E2C;
+    --foreground: var(--ac-cream);
+    --surface: #3A4A3A;
+    --surface-soft: #435543;
   }
 }
 
 body {
   background: var(--background);
+  background-image: var(--texture-paper);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Quicksand', system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  transition: background-color 0.3s var(--transition-soft);
+}
+
+/* Tactile interaction base styles */
+.tactile-element {
+  transition: all 0.2s var(--transition-bounce);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tactile-element:hover {
+  transform: translateY(-2px);
+}
+
+.tactile-element:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Game-like button base */
+.game-button {
+  position: relative;
+  background: var(--ac-brown);
+  color: var(--ac-cream);
+  border: 3px solid var(--ac-brown-dark);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-wooden);
+  font-family: 'Comic Neue', cursive;
+  font-weight: 600;
+  transition: all 0.15s var(--transition-bounce);
+}
+
+.game-button:hover {
+  background: var(--ac-brown-light);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-large);
+}
+
+.game-button:active {
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Card styles with game-like appearance */
+.game-card {
+  background: var(--surface);
+  border: 3px solid var(--ac-brown-light);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-medium);
+  transition: all 0.3s var(--transition-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-card:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--ac-sage);
+  opacity: 0.7;
+}
+
+.game-card:hover {
+  transform: translateY(-4px) rotate(0.5deg);
+  box-shadow: var(--shadow-large);
+  border-color: var(--ac-sage);
+}
+
+/* Leaf-like decorative elements */
+.leaf-decoration {
+  position: relative;
+}
+
+.leaf-decoration:after {
+  content: '🍃';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 1.2em;
+  opacity: 0.6;
+  animation: gentle-sway 3s ease-in-out infinite;
+}
+
+@keyframes gentle-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* Particle effects for interactions */
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+  100% { opacity: 0; transform: scale(0) rotate(360deg); }
+}
+
+.sparkle {
+  position: absolute;
+  pointer-events: none;
+  color: var(--ac-yellow);
+  animation: sparkle 0.8s ease-out;
+}
+
+/* Ripple effect for tactile feedback */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(184, 212, 184, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ripple-effect:active:before {
+  width: 300px;
+  height: 300px;
+  animation: ripple 0.6s ease-out;
 }
 
 /* Real-time notification animations */

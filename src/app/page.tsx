@@ -1,70 +1,187 @@
+'use client'
+
 import Link from 'next/link'
+import { useParallax, useShakeDetection, useParticleEffect } from '@/hooks/useTactileInteractions'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { animated, useSpring } from '@react-spring/web'
+import { useEffect, useState } from 'react'
 
 export default function Home() {
+  const scrollY = useParallax()
+  const createParticles = useParticleEffect()
+  const [showEasterEgg, setShowEasterEgg] = useState(false)
+  
+  // Parallax animations
+  const [backgroundSpring, backgroundApi] = useSpring(() => ({
+    transform: 'translateY(0px) scale(1)'
+  }))
+  
+  const [heroSpring, heroApi] = useSpring(() => ({
+    transform: 'translateY(0px)',
+    opacity: 1
+  }))
+  
+  // Shake easter egg
+  useShakeDetection(() => {
+    setShowEasterEgg(true)
+    createParticles(window.innerWidth / 2, window.innerHeight / 2, 20)
+    setTimeout(() => setShowEasterEgg(false), 3000)
+  })
+  
+  // Parallax effect on scroll
+  useEffect(() => {
+    const unsubscribe = scrollY.onChange((latest) => {
+      backgroundApi.start({
+        transform: `translateY(${latest * 0.5}px) scale(${1 + latest * 0.0001})`
+      })
+      heroApi.start({
+        transform: `translateY(${latest * 0.3}px)`,
+        opacity: Math.max(0.3, 1 - latest * 0.001)
+      })
+    })
+    
+    return unsubscribe
+  }, [scrollY, backgroundApi, heroApi])
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="pt-20 pb-16 text-center lg:pt-32">
-          <h1 className="mx-auto max-w-4xl font-display text-5xl font-medium tracking-tight text-slate-900 sm:text-7xl">
-            Connect your{' '}
-            <span className="relative whitespace-nowrap text-blue-600">
-              <span className="relative">family</span>
-            </span>{' '}
-            in branches of love
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg tracking-tight text-slate-700">
+    <div className="min-h-screen bg-gradient-to-br from-ac-cream via-ac-sky-light to-ac-peach-light relative overflow-hidden">
+      {/* Background decorative elements */}
+      <animated.div className="absolute inset-0" style={backgroundSpring}>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-ac-sage/10 rounded-full animate-pulse"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-ac-peach/15 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-32 left-40 w-40 h-40 bg-ac-lavender/8 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-20 right-20 w-20 h-20 bg-ac-yellow/20 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+        
+        {/* Floating emojis */}
+        <div className="absolute top-32 left-1/4 text-4xl animate-bounce opacity-20" style={{ animationDelay: '0s' }}>🌸</div>
+        <div className="absolute top-1/2 right-1/4 text-3xl animate-bounce opacity-15" style={{ animationDelay: '1s' }}>🦋</div>
+        <div className="absolute bottom-40 left-1/3 text-5xl animate-bounce opacity-25" style={{ animationDelay: '2s' }}>🌿</div>
+        <div className="absolute bottom-1/4 right-1/3 text-2xl animate-bounce opacity-30" style={{ animationDelay: '1.5s' }}>🍃</div>
+      </animated.div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <animated.div className="pt-20 pb-16 text-center lg:pt-32" style={heroSpring}>
+          <div className="relative">
+            <h1 className="mx-auto max-w-4xl font-display text-5xl font-bold tracking-tight text-ac-brown-dark sm:text-7xl mb-8">
+              Connect your{' '}
+              <span className="relative">
+                <span className="bg-gradient-to-r from-ac-sage to-ac-sage-light bg-clip-text text-transparent font-black">
+                  family
+                </span>
+                <div className="absolute -bottom-2 left-0 right-0 h-3 bg-ac-yellow/30 rounded-full transform -rotate-1"></div>
+              </span>{' '}
+              in branches of love
+            </h1>
+            
+            {/* Decorative elements around title */}
+            <div className="absolute -top-8 left-1/4 text-3xl animate-spin" style={{ animationDuration: '8s' }}>🌻</div>
+            <div className="absolute -top-4 right-1/4 text-2xl animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}>🌱</div>
+          </div>
+          
+          <p className="mx-auto mt-6 max-w-2xl text-xl leading-relaxed text-ac-brown-dark font-medium">
             Share precious moments, milestones, and memories in completely private family spaces. 
             Every branch is invite-only, keeping your family memories safe and intimate.
           </p>
-          <div className="mt-10 flex justify-center gap-x-6">
-            <Link
-              href="/auth/signup"
-              className="group inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-blue-600 text-white hover:text-slate-100 hover:bg-blue-500 active:bg-blue-800 active:text-blue-100 focus-visible:outline-blue-600"
+          
+          <div className="mt-12 flex justify-center gap-x-6 flex-wrap">
+            <Button
+              variant="wooden"
+              size="lg"
+              particles
+              className="shadow-xl text-lg px-8 py-4 mb-4"
             >
-              Start your tree
-            </Link>
-            <Link
-              href="/auth/login"
-              className="group inline-flex ring-1 items-center justify-center rounded-full py-2 px-4 text-sm focus:outline-none ring-slate-200 text-slate-700 hover:text-slate-900 hover:ring-slate-300 active:bg-slate-100 active:text-slate-600 focus-visible:outline-blue-600 focus-visible:ring-slate-300"
+              <Link href="/auth/signup" className="flex items-center">
+                <span className="mr-2">🌳</span>
+                Start your tree
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="shadow-lg text-lg px-8 py-4 mb-4"
             >
-              Sign in
-            </Link>
+              <Link href="/auth/login" className="flex items-center">
+                <span className="mr-2">🌿</span>
+                Sign in
+              </Link>
+            </Button>
           </div>
-        </div>
+          
+          {showEasterEgg && (
+            <div className="mt-6 animate-bounce">
+              <div className="text-4xl mb-2">🎉</div>
+              <p className="text-ac-brown font-display text-lg bg-ac-yellow/20 px-4 py-2 rounded-full border-2 border-ac-yellow inline-block">
+                You found the secret shake! 🎊
+              </p>
+            </div>
+          )}
+        </animated.div>
         
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-6xl mt-20">
+          <h2 className="text-3xl font-bold text-center text-ac-brown-dark font-display mb-12">
+            🌸 Why families love our grove 🌸
+          </h2>
+          
           <div className="grid gap-8 md:grid-cols-3">
-            <div className="bg-white rounded-2xl shadow-sm p-8">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+            <Card 
+              variant="bulletin" 
+              className="p-8 hover:rotate-0 transition-all duration-500 transform hover:scale-105"
+            >
+              <div className="w-16 h-16 bg-ac-sage-light rounded-full flex items-center justify-center mb-6 border-4 border-ac-sage shadow-lg mx-auto">
+                <span className="text-3xl">🔒</span>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Always Private & Secure</h3>
-              <p className="text-slate-600">Create separate branches for different children, topics, or family groups. Only invited family members can see your content.</p>
-            </div>
+              <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Always Private & Secure</h3>
+              <p className="text-ac-brown leading-relaxed text-center">
+                Create separate branches for different children, topics, or family groups. 
+                Only invited family members can see your precious content.
+              </p>
+            </Card>
             
-            <div className="bg-white rounded-2xl shadow-sm p-8">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+            <Card 
+              variant="polaroid" 
+              className="p-8 hover:rotate-0 transition-all duration-500 transform hover:scale-105"
+            >
+              <div className="w-16 h-16 bg-ac-peach-light rounded-full flex items-center justify-center mb-6 border-4 border-ac-peach shadow-lg mx-auto">
+                <span className="text-3xl">📸</span>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Rich Memories & Milestones</h3>
-              <p className="text-slate-600">Share photos, videos, voice notes, and milestone moments with AI-powered prompts to help capture every precious memory.</p>
-            </div>
+              <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Rich Memories & Milestones</h3>
+              <p className="text-ac-brown leading-relaxed text-center">
+                Share photos, videos, voice notes, and milestone moments with AI-powered prompts 
+                to help capture every precious memory.
+              </p>
+            </Card>
             
-            <div className="bg-white rounded-2xl shadow-sm p-8">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+            <Card 
+              variant="wooden" 
+              className="p-8 hover:rotate-0 transition-all duration-500 transform hover:scale-105"
+            >
+              <div className="w-16 h-16 bg-ac-lavender rounded-full flex items-center justify-center mb-6 border-4 border-purple-300 shadow-lg mx-auto">
+                <span className="text-3xl">👨‍👩‍👧‍👦</span>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Family Friendly Design</h3>
-              <p className="text-slate-600">Easy web access for all family members including grandparents. Real-time chat and simple invitation system.</p>
+              <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Family Friendly Design</h3>
+              <p className="text-ac-cream leading-relaxed text-center">
+                Easy access for all family members including grandparents. 
+                Real-time sharing and simple invitation system.
+              </p>
+            </Card>
+          </div>
+          
+          {/* Bottom decoration */}
+          <div className="text-center mt-16 opacity-60">
+            <div className="flex justify-center items-center space-x-4 text-2xl">
+              <span className="animate-bounce" style={{ animationDelay: '0s' }}>🌿</span>
+              <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🌸</span>
+              <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🦋</span>
+              <span className="animate-bounce" style={{ animationDelay: '0.6s' }}>🌻</span>
+              <span className="animate-bounce" style={{ animationDelay: '0.8s' }}>🍃</span>
             </div>
+            <p className="mt-4 text-ac-brown-light font-display text-sm">
+              💫 Shake your device for a surprise! 💫
+            </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
