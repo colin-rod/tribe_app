@@ -29,7 +29,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Notification Preferences</h2>
         <p className="text-gray-600">
-          Choose how you want to be notified about activity in your family branches.
+          Choose how you want to be notified about activity in your group branches.
         </p>
       </div>
 
@@ -84,7 +84,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
           <label className="flex items-center justify-between">
             <div>
               <div className="font-medium text-gray-900">Branch invitations</div>
-              <div className="text-sm text-gray-600">When you&apos;re invited to join a family branch</div>
+              <div className="text-sm text-gray-600">When you&apos;re invited to join a group branch</div>
             </div>
             <input
               type="checkbox"

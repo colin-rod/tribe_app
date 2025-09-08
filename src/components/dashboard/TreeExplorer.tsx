@@ -174,8 +174,8 @@ const TreeExplorer = memo(function TreeExplorer({
               <div className="w-20 h-20 bg-ac-sage-light rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-ac-sage shadow-lg">
                 <span className="text-4xl">🌳</span>
               </div>
-              <h3 className="text-xl font-bold text-ac-brown-dark mb-2 font-display">Welcome to your Family Grove!</h3>
-              <p className="text-ac-brown mb-6 leading-relaxed">Select a branch from the sidebar to explore your precious family leaves and memories.</p>
+              <h3 className="text-xl font-bold text-ac-brown-dark mb-2 font-display">Welcome to your Community Grove!</h3>
+              <p className="text-ac-brown mb-6 leading-relaxed">Select a branch from the sidebar to explore your precious group leaves and memories.</p>
               <Button
                 variant="leaf"
                 size="lg"
@@ -241,10 +241,10 @@ const TreeExplorer = memo(function TreeExplorer({
                 <div>
                   <h1 className="text-3xl font-bold flex items-center font-display mb-2">
                     <span className="mr-4 text-4xl">🌳</span>
-                    {selectedTree.trees?.name || 'Family Tree'}
+                    {selectedTree.trees?.name || 'Community Tree'}
                   </h1>
                   <p className="text-ac-brown-dark/80 mt-1 text-lg leading-relaxed">
-                    {selectedTree.trees?.description || 'A collection of precious family leaves'}
+                    {selectedTree.trees?.description || 'A collection of precious group memories'}
                   </p>
                 </div>
                 <Button

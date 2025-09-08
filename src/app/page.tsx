@@ -63,11 +63,11 @@ export default function Home() {
               Connect your{' '}
               <span className="relative">
                 <span className="bg-gradient-to-r from-ac-sage to-ac-sage-light bg-clip-text text-transparent font-black">
-                  family
+                  community
                 </span>
                 <div className="absolute -bottom-2 left-0 right-0 h-3 bg-ac-yellow/30 rounded-full transform -rotate-1"></div>
               </span>{' '}
-              in branches of love
+              in branches of shared experiences
             </h1>
             
             {/* Decorative elements around title */}
@@ -76,8 +76,8 @@ export default function Home() {
           </div>
           
           <p className="mx-auto mt-6 max-w-2xl text-xl leading-relaxed text-ac-brown-dark font-medium">
-            Share precious moments, milestones, and memories in completely private family spaces. 
-            Every branch is invite-only, keeping your family memories safe and intimate.
+            Share precious moments, milestones, and memories in completely private group spaces. 
+            Every branch is invite-only, keeping your community memories safe and intimate.
           </p>
           
           <div className="mt-12 flex justify-center gap-x-6 flex-wrap">
@@ -116,7 +116,7 @@ export default function Home() {
         
         <div className="mx-auto max-w-6xl mt-20">
           <h2 className="text-3xl font-bold text-center text-ac-brown-dark font-display mb-12">
-            🌸 Why families love our grove 🌸
+            🌸 Why communities love our grove 🌸
           </h2>
           
           <div className="grid gap-8 md:grid-cols-3">
@@ -129,8 +129,8 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Always Private & Secure</h3>
               <p className="text-ac-brown leading-relaxed text-center">
-                Create separate branches for different children, topics, or family groups. 
-                Only invited family members can see your precious content.
+                Create separate branches for different topics, projects, or interest groups. 
+                Only invited members can see your precious content.
               </p>
             </Card>
             
@@ -153,16 +153,45 @@ export default function Home() {
               className="p-8 hover:rotate-0 transition-all duration-500 transform hover:scale-105"
             >
               <div className="w-16 h-16 bg-ac-lavender rounded-full flex items-center justify-center mb-6 border-4 border-purple-300 shadow-lg mx-auto">
-                <span className="text-3xl">👨‍👩‍👧‍👦</span>
+                <span className="text-3xl">👥</span>
               </div>
-              <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Family Friendly Design</h3>
+              <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Community-Focused Design</h3>
               <p className="text-ac-cream leading-relaxed text-center">
-                Easy access for all family members including grandparents. 
+                Easy access for all group members regardless of age or tech experience. 
                 Real-time sharing and simple invitation system.
               </p>
             </Card>
           </div>
           
+          {/* Use Cases Section */}
+          <div className="mt-24">
+            <h3 className="text-2xl font-bold text-center text-ac-brown-dark font-display mb-8">
+              Perfect for any close-knit group
+            </h3>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <Card variant="leaf" className="p-6 text-center">
+                <div className="text-2xl mb-3">👨‍👩‍👧‍👦</div>
+                <h4 className="font-semibold text-ac-brown-dark font-display mb-2">Families</h4>
+                <p className="text-sm text-ac-brown">Share milestones, photos, and precious moments with your loved ones.</p>
+              </Card>
+              <Card variant="leaf" className="p-6 text-center">
+                <div className="text-2xl mb-3">🎒</div>
+                <h4 className="font-semibold text-ac-brown-dark font-display mb-2">Friend Groups</h4>
+                <p className="text-sm text-ac-brown">Document adventures, trips, and memories with your closest friends.</p>
+              </Card>
+              <Card variant="leaf" className="p-6 text-center">
+                <div className="text-2xl mb-3">🚀</div>
+                <h4 className="font-semibold text-ac-brown-dark font-display mb-2">Teams</h4>
+                <p className="text-sm text-ac-brown">Keep your team connected with project highlights and shared achievements.</p>
+              </Card>
+              <Card variant="leaf" className="p-6 text-center">
+                <div className="text-2xl mb-3">🎨</div>
+                <h4 className="font-semibold text-ac-brown-dark font-display mb-2">Hobby Groups</h4>
+                <p className="text-sm text-ac-brown">Share your passion projects, creations, and learning journey together.</p>
+              </Card>
+            </div>
+          </div>
+
           {/* Bottom decoration */}
           <div className="text-center mt-16 opacity-60">
             <div className="flex justify-center items-center space-x-4 text-2xl">

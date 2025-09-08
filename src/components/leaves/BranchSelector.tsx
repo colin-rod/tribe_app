@@ -79,7 +79,7 @@ export default function BranchSelector({
           <p className="text-sm text-gray-600">
             {selectedCount === 0 
               ? 'Select branches to share this leaf with'
-              : `Sharing with ${selectedCount} branch${selectedCount > 1 ? 'es' : ''} (${totalMembers} family members)`
+              : `Sharing with ${selectedCount} branch${selectedCount > 1 ? 'es' : ''} (${totalMembers} members)`
             }
           </p>
         </div>
@@ -224,14 +224,14 @@ export default function BranchSelector({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => {
-                const familyBranches = branchOptions
+                const primaryBranches = branchOptions
                   .filter(branch => branch.type === 'family')
                   .map(branch => branch.id)
-                onSelectionChange(familyBranches)
+                onSelectionChange(primaryBranches)
               }}
               className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
             >
-              👨‍👩‍👧‍👦 All Family
+              👥 All Primary
             </button>
             <button
               onClick={() => {

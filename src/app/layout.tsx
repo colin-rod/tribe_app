@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tribe - Private Family Sharing",
-  description: "Share precious moments and memories in completely private family spaces",
+  title: "Tribe - Private Community Platform",
+  description: "Share precious moments and memories in completely private group spaces with your closest communities",
 };
 
 export default function RootLayout({
