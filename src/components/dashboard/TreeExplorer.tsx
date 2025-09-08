@@ -107,16 +107,12 @@ const TreeExplorer = memo(function TreeExplorer({
 
   // Parallax effect on scroll
   useEffect(() => {
-    const unsubscribe = scrollY.onChange((latest) => {
-      backgroundApi.start({
-        transform: `translateY(${latest * 0.5}px) scale(${1 + latest * 0.0002})`
-      })
-      headerApi.start({
-        transform: `translateY(${latest * 0.3}px)`
-      })
+    backgroundApi.start({
+      transform: `translateY(${scrollY * 0.5}px) scale(${1 + scrollY * 0.0002})`
     })
-    
-    return unsubscribe
+    headerApi.start({
+      transform: `translateY(${scrollY * 0.3}px)`
+    })
   }, [scrollY, backgroundApi, headerApi])
 
   const handleReaction = (leafId: string, reactionType: ReactionType) => {

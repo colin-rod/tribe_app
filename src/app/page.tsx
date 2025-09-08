@@ -31,17 +31,13 @@ export default function Home() {
   
   // Parallax effect on scroll
   useEffect(() => {
-    const unsubscribe = scrollY.onChange((latest) => {
-      backgroundApi.start({
-        transform: `translateY(${latest * 0.5}px) scale(${1 + latest * 0.0001})`
-      })
-      heroApi.start({
-        transform: `translateY(${latest * 0.3}px)`,
-        opacity: Math.max(0.3, 1 - latest * 0.001)
-      })
+    backgroundApi.start({
+      transform: `translateY(${scrollY * 0.5}px) scale(${1 + scrollY * 0.0001})`
     })
-    
-    return unsubscribe
+    heroApi.start({
+      transform: `translateY(${scrollY * 0.3}px)`,
+      opacity: Math.max(0.3, 1 - scrollY * 0.001)
+    })
   }, [scrollY, backgroundApi, heroApi])
 
   return (

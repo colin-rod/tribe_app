@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useEffect } from 'react'
+import { useCallback, useRef, useEffect, useState } from 'react'
 import { useSpring, useSpringValue, animated } from '@react-spring/web'
 import { useGesture } from '@use-gesture/react'
 
@@ -167,16 +167,16 @@ export const useRippleEffect = () => {
 
 // Parallax scrolling
 export const useParallax = () => {
-  const scrollY = useSpringValue(0)
+  const [scrollY, setScrollY] = useState(0)
   
   useEffect(() => {
     const handleScroll = () => {
-      scrollY.set(window.scrollY)
+      setScrollY(window.scrollY)
     }
     
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [scrollY])
+  }, [])
 
   return scrollY
 }
