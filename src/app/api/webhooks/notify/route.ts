@@ -300,24 +300,43 @@ export async function POST(req: NextRequest) {
 async function fetchMessageFromMailgun(messageUrl: string): Promise<IncomingEmail | null> {
   try {
     const mailgunApiKey = process.env.MAILGUN_API_KEY
+    console.error('=== MAILGUN FETCH DEBUG ===')
+    console.error('API Key available:', !!mailgunApiKey)
+    console.error('API Key length:', mailgunApiKey?.length || 0)
+    console.error('API Key starts with:', mailgunApiKey?.substring(0, 10) + '...')
+    console.error('Message URL:', messageUrl)
+    
     if (!mailgunApiKey) {
+      console.error('ERROR: MAILGUN_API_KEY not configured')
       logger.error('MAILGUN_API_KEY not configured')
       return null
     }
 
+    const authHeader = `Basic ${Buffer.from(`api:${mailgunApiKey}`).toString('base64')}`
+    console.error('Auth header length:', authHeader.length)
+
     const response = await fetch(messageUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Basic ${Buffer.from(`api:${mailgunApiKey}`).toString('base64')}`,
+        'Authorization': authHeader,
       }
     })
 
+    console.error('Response status:', response.status)
+    console.error('Response status text:', response.statusText)
+    console.error('Response headers:', Object.fromEntries(response.headers.entries()))
+
     if (!response.ok) {
+      const responseText = await response.text()
+      console.error('Response body:', responseText)
+      console.error('=== MAILGUN FETCH ERROR END ===')
+      
       logger.error('Failed to fetch message from Mailgun', {
         metadata: {
           status: response.status,
           statusText: response.statusText,
-          messageUrl
+          messageUrl,
+          responseBody: responseText
         }
       })
       return null
