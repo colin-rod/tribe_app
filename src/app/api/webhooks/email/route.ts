@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { createComponentLogger } from '@/lib/logger'
 import { createUnassignedLeaf } from '@/lib/leaf-assignments'
 import crypto from 'crypto'
@@ -131,8 +131,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verify user exists
-    const supabase = await createClient()
+    // Verify user exists (using service client to bypass RLS)
+    const supabase = createServiceClient()
     const { data: user, error: userError } = await supabase
       .from('profiles')
       .select('id, email, first_name, last_name')
