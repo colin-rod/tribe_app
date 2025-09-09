@@ -99,9 +99,13 @@ export async function POST(req: NextRequest) {
     // For direct forwarding, Mailgun doesn't send auth headers, so we accept requests from Mailgun IPs
     const xForwardedFor = req.headers.get('x-forwarded-for')
     const userAgent = req.headers.get('user-agent')
+    // Mailgun uses Google Cloud IPs starting with 35.x.x.x and Go-http-client/2.0 user agent
     const isMailgunRequest = (
       userAgent === 'Go-http-client/2.0' &&
-      (xForwardedFor?.includes('35.206.128.78') || xForwardedFor?.includes('35.210.116.64'))
+      xForwardedFor &&
+      (xForwardedFor.startsWith('35.206.') || 
+       xForwardedFor.startsWith('35.210.') ||
+       xForwardedFor.startsWith('35.2'))
     )
 
     console.error('Mailgun direct forwarding check:')
