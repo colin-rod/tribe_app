@@ -129,7 +129,10 @@ export async function POST(req: NextRequest) {
     console.error('Authentication passed, proceeding with webhook processing')
 
     // Parse notification data
+    console.error('Step 1: Parsing form data...')
     const formData = await req.formData()
+    console.error('Step 2: Form data parsed successfully')
+    
     const notificationData: MailgunNotificationData = {
       recipient: formData.get('recipient') as string,
       sender: formData.get('sender') as string,
@@ -137,6 +140,13 @@ export async function POST(req: NextRequest) {
       'message-url': formData.get('message-url') as string,
       timestamp: formData.get('timestamp') as string
     }
+    
+    console.error('Step 3: Notification data extracted:', {
+      recipient: notificationData.recipient,
+      sender: notificationData.sender,
+      subject: notificationData.subject,
+      messageUrl: notificationData['message-url']
+    })
     
     logger.info('Received message notification', { 
       metadata: {
@@ -149,9 +159,11 @@ export async function POST(req: NextRequest) {
 
     // Handle different email types with catch-all routing
     const recipient = notificationData.recipient.toLowerCase()
+    console.error('Step 4: Processing recipient:', recipient)
     
     // Check if this is a user-specific email
     if (!recipient.startsWith('u-')) {
+      console.error('Step 4a: Non-user email, skipping')
       logger.info('Non-user email notification received, skipping leaf creation', { 
         metadata: {
           emailTo: notificationData.recipient,
@@ -165,8 +177,10 @@ export async function POST(req: NextRequest) {
       })
     }
     
+    console.error('Step 5: Extracting user ID from email...')
     // Extract user ID from email address
     const userId = extractUserIdFromEmail(notificationData.recipient)
+    console.error('Step 6: Extracted user ID:', userId)
     
     if (!userId) {
       logger.warn('Could not extract user ID from email', { 
@@ -178,13 +192,17 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    console.error('Step 7: Creating Supabase service client...')
     // Verify user exists (using service client to bypass RLS)
     const supabase = createServiceClient()
+    console.error('Step 8: Querying user profile...')
     const { data: user, error: userError } = await supabase
       .from('profiles')
       .select('id, email, first_name, last_name')
       .eq('id', userId)
       .single()
+    
+    console.error('Step 9: User query result:', { user: !!user, error: !!userError })
 
     if (userError || !user) {
       logger.warn('User not found for email', { 
@@ -199,8 +217,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    console.error('Step 10: Fetching message from Mailgun...')
     // Fetch full message from Mailgun
     const emailData = await fetchMessageFromMailgun(notificationData['message-url'])
+    console.error('Step 11: Message fetch result:', { hasEmailData: !!emailData })
     
     if (!emailData) {
       logger.error('Failed to fetch message from Mailgun', {
@@ -260,6 +280,12 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error) {
+    console.error('=== WEBHOOK ERROR ===')
+    console.error('Error details:', error)
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
+    console.error('=== ERROR END ===')
+    
     logger.error('Unexpected error in notify webhook', error)
     return NextResponse.json(
       { error: 'Internal server error' },
