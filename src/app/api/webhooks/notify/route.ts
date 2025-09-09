@@ -4,7 +4,7 @@ import { createComponentLogger } from '@/lib/logger'
 import { createUnassignedLeaf } from '@/lib/leaf-assignments'
 import crypto from 'crypto'
 
-const logger = createComponentLogger('EmailWebhook')
+const logger = createComponentLogger('NotifyWebhook')
 
 interface EmailAttachment {
   filename: string
@@ -13,7 +13,6 @@ interface EmailAttachment {
   url: string
 }
 
-// Generic email interface
 interface IncomingEmail {
   to: string
   from: string
@@ -24,57 +23,33 @@ interface IncomingEmail {
   timestamp?: string
 }
 
-// Mailgun-specific interface
-interface MailgunWebhookData {
+interface MailgunNotificationData {
   recipient: string
   sender: string
   subject: string
-  'body-plain': string
-  'body-html'?: string
-  'attachment-count'?: string
+  'message-url': string
   timestamp: string
-  // Attachments are handled separately in Mailgun
-  [key: string]: string | undefined
 }
 
 /**
- * POST /api/webhooks/email
- * Receive emails from email service (e.g., Mailgun, SendGrid) and create unassigned leaves
+ * POST /api/webhooks/notify
+ * Receive notification from Mailgun that a message has been stored
+ * Then fetch the full message using the Messages API and create unassigned leaves
  */
 export async function POST(req: NextRequest) {
   try {
-    // Validate webhook - either API key or Mailgun signature
-    const apiKey = req.headers.get('x-api-key')
+    // Validate Mailgun webhook signature
     const mailgunSignature = req.headers.get('x-mailgun-signature-256')
     const mailgunTimestamp = req.headers.get('x-mailgun-timestamp')
     const mailgunToken = req.headers.get('x-mailgun-token')
     
-    const expectedApiKey = process.env.WEBHOOK_API_KEY
     const mailgunWebhookKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY
     
-    let isValidWebhook = false
-    
-    // Check API key authentication (for direct calls)
-    if (apiKey && expectedApiKey && apiKey === expectedApiKey) {
-      isValidWebhook = true
-    }
-    
-    // Check Mailgun signature authentication
-    if (!isValidWebhook && mailgunSignature && mailgunTimestamp && mailgunToken && mailgunWebhookKey) {
-      const expectedSignature = crypto
-        .createHmac('sha256', mailgunWebhookKey)
-        .update(mailgunTimestamp + mailgunToken)
-        .digest('hex')
-      
-      if (mailgunSignature === expectedSignature) {
-        isValidWebhook = true
-      }
-    }
-    
-    if (!isValidWebhook) {
-      logger.warn('Invalid webhook authentication', { 
-        hasApiKey: !!apiKey,
-        hasMailgunSignature: !!mailgunSignature,
+    if (!mailgunSignature || !mailgunTimestamp || !mailgunToken || !mailgunWebhookKey) {
+      logger.warn('Missing Mailgun signature headers', { 
+        hasSignature: !!mailgunSignature,
+        hasTimestamp: !!mailgunTimestamp,
+        hasToken: !!mailgunToken,
         ip: req.ip 
       })
       return NextResponse.json(
@@ -83,48 +58,59 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Parse email data based on content type
-    const contentType = req.headers.get('content-type') || ''
-    let emailData: IncomingEmail
+    const expectedSignature = crypto
+      .createHmac('sha256', mailgunWebhookKey)
+      .update(mailgunTimestamp + mailgunToken)
+      .digest('hex')
     
-    if (contentType.includes('application/x-www-form-urlencoded')) {
-      // Mailgun sends form data
-      const formData = await req.formData()
-      emailData = parseMailgunFormData(formData)
-    } else {
-      // JSON format (for testing or other providers)
-      emailData = await req.json()
+    if (mailgunSignature !== expectedSignature) {
+      logger.warn('Invalid Mailgun signature', { ip: req.ip })
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Parse notification data
+    const formData = await req.formData()
+    const notificationData: MailgunNotificationData = {
+      recipient: formData.get('recipient') as string,
+      sender: formData.get('sender') as string,
+      subject: formData.get('subject') as string || '',
+      'message-url': formData.get('message-url') as string,
+      timestamp: formData.get('timestamp') as string
     }
     
-    logger.info('Received email webhook', { 
-      to: emailData.to, 
-      from: emailData.from,
-      subject: emailData.subject,
-      attachmentCount: emailData.attachments?.length || 0,
-      contentType
+    logger.info('Received message notification', { 
+      to: notificationData.recipient, 
+      from: notificationData.sender,
+      subject: notificationData.subject,
+      messageUrl: notificationData['message-url']
     })
 
     // Handle different email types with catch-all routing
-    const recipient = emailData.to.toLowerCase()
+    const recipient = notificationData.recipient.toLowerCase()
     
     // Check if this is a user-specific email
     if (!recipient.startsWith('u-')) {
-      logger.info('Non-user email received, skipping leaf creation', { 
-        emailTo: emailData.to,
-        emailFrom: emailData.from,
-        subject: emailData.subject
+      logger.info('Non-user email notification received, skipping leaf creation', { 
+        emailTo: notificationData.recipient,
+        emailFrom: notificationData.sender,
+        subject: notificationData.subject
       })
       return NextResponse.json({
         success: true,
-        message: 'Email received but not processed (not a user email)'
+        message: 'Email notification received but not processed (not a user email)'
       })
     }
     
-    // Extract user ID from email address (format: u-abc123@domain.com)
-    const userId = extractUserIdFromEmail(emailData.to)
+    // Extract user ID from email address
+    const userId = extractUserIdFromEmail(notificationData.recipient)
     
     if (!userId) {
-      logger.warn('Could not extract user ID from email', { emailTo: emailData.to })
+      logger.warn('Could not extract user ID from email', { 
+        emailTo: notificationData.recipient 
+      })
       return NextResponse.json(
         { error: 'Invalid email address format' },
         { status: 400 }
@@ -140,10 +126,26 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (userError || !user) {
-      logger.warn('User not found for email', { userId, emailTo: emailData.to })
+      logger.warn('User not found for email', { 
+        userId, 
+        emailTo: notificationData.recipient 
+      })
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
+      )
+    }
+
+    // Fetch full message from Mailgun
+    const emailData = await fetchMessageFromMailgun(notificationData['message-url'])
+    
+    if (!emailData) {
+      logger.error('Failed to fetch message from Mailgun', {
+        messageUrl: notificationData['message-url']
+      })
+      return NextResponse.json(
+        { error: 'Failed to retrieve message' },
+        { status: 500 }
       )
     }
 
@@ -172,11 +174,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    logger.info('Successfully created leaf from email', {
+    logger.info('Successfully created leaf from stored message', {
       leafId: leaf.id,
       userId,
       leafType: leaf.leaf_type,
-      hasMedia: mediaUrls.length > 0
+      hasMedia: mediaUrls.length > 0,
+      messageUrl: notificationData['message-url']
     })
 
     return NextResponse.json({
@@ -186,11 +189,11 @@ export async function POST(req: NextRequest) {
         leafType: leaf.leaf_type,
         hasMedia: mediaUrls.length > 0
       },
-      message: 'Email processed successfully'
+      message: 'Stored message processed successfully'
     })
 
   } catch (error) {
-    logger.error('Unexpected error in email webhook', error)
+    logger.error('Unexpected error in notify webhook', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -199,36 +202,59 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * Parse Mailgun form data into our standard email format
+ * Fetch full message from Mailgun Messages API
  */
-function parseMailgunFormData(formData: FormData): IncomingEmail {
-  const attachments: EmailAttachment[] = []
-  
-  // Get attachment count and parse attachments
-  const attachmentCount = parseInt(formData.get('attachment-count') as string) || 0
-  
-  for (let i = 1; i <= attachmentCount; i++) {
-    const attachment = formData.get(`attachment-${i}`) as File
-    if (attachment) {
-      // In production, you'd upload this file to your storage service
-      // For now, we'll create a placeholder URL
-      attachments.push({
-        filename: attachment.name,
-        contentType: attachment.type,
-        size: attachment.size,
-        url: `https://storage.tribe.app/attachments/${Date.now()}-${attachment.name}` // Placeholder
-      })
+async function fetchMessageFromMailgun(messageUrl: string): Promise<IncomingEmail | null> {
+  try {
+    const mailgunApiKey = process.env.MAILGUN_API_KEY
+    if (!mailgunApiKey) {
+      logger.error('MAILGUN_API_KEY not configured')
+      return null
     }
-  }
-  
-  return {
-    to: formData.get('recipient') as string,
-    from: formData.get('sender') as string,
-    subject: formData.get('subject') as string || '',
-    text: formData.get('body-plain') as string || '',
-    html: formData.get('body-html') as string,
-    attachments,
-    timestamp: formData.get('timestamp') as string
+
+    const response = await fetch(messageUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`api:${mailgunApiKey}`).toString('base64')}`,
+      }
+    })
+
+    if (!response.ok) {
+      logger.error('Failed to fetch message from Mailgun', {
+        status: response.status,
+        statusText: response.statusText,
+        messageUrl
+      })
+      return null
+    }
+
+    const data = await response.json()
+    
+    // Parse attachments
+    const attachments: EmailAttachment[] = []
+    if (data.attachments && Array.isArray(data.attachments)) {
+      for (const attachment of data.attachments) {
+        attachments.push({
+          filename: attachment.filename || 'unknown',
+          contentType: attachment['content-type'] || 'application/octet-stream',
+          size: attachment.size || 0,
+          url: attachment.url || ''
+        })
+      }
+    }
+
+    return {
+      to: data.recipient || '',
+      from: data.sender || '',
+      subject: data.subject || '',
+      text: data['body-plain'] || '',
+      html: data['body-html'],
+      attachments,
+      timestamp: data.timestamp
+    }
+  } catch (error) {
+    logger.error('Error fetching message from Mailgun', error, { messageUrl })
+    return null
   }
 }
 
@@ -312,7 +338,7 @@ async function processEmailContent(email: IncomingEmail): Promise<{
   // Extract hashtags from content
   const hashtagMatches = content.match(/#\w+/g)
   if (hashtagMatches) {
-    tags = hashtagMatches.map(tag => tag.substring(1).toLowerCase())
+    tags.push(...hashtagMatches.map(tag => tag.substring(1).toLowerCase()))
   }
 
   // Check for milestone keywords

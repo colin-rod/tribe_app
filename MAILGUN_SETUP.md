@@ -91,45 +91,66 @@ MAILGUN_WEBHOOK_SIGNING_KEY=your-webhook-signing-key
 1. Go to **Settings** → **Webhooks**
 2. Copy the **HTTP webhook signing key**
 
-## Step 4: Configure Mailgun Routes
+## Step 4: Configure Mailgun Route (Free Plan - Single Route)
 
-### 4.1 Create Catch-All Route
+### 4.1 Create Catch-All Route (MVP Recommended)
+
+Since the free plan allows only 1 inbound route, use a catch-all approach for maximum flexibility:
 
 1. In Mailgun dashboard, go to **Receiving** → **Routes**
 2. Click **Create Route**
-3. Configure the route:
+3. Configure the single route:
 
 ```
+Expression Type: Catch All
 Priority: 1
-Filter Expression: match_recipient(".*@your-domain.com")
-Actions: forward("https://your-app.com/api/webhooks/email")
+Actions: 
+  - forward("https://colinrodrigues.com/api/webhooks/email")
+  - store(notify="https://colinrodrigues.com/api/webhooks/notify")
 Description: Forward all emails to Tribe App
 ```
 
-**Important:** Replace `your-domain.com` with your actual domain and `your-app.com` with your deployed app domain.
+### Why Catch-All for MVP:
 
-### 4.2 User-Specific Route (Optional)
+✅ **Maximum Coverage**: Captures ALL emails to any address at your domain  
+✅ **Application Logic**: Handle user-specific routing in your code, not Mailgun routes  
+✅ **Dual Processing**: Both immediate forward and stored backup  
+✅ **Future-Proof**: Easy to add new email patterns without route changes  
+✅ **Flexibility**: Can handle admin emails, support emails, etc. in the same endpoint  
 
-For better organization, you can create specific routes for user emails:
+### Email Handling Logic:
 
-```
-Priority: 1
-Filter Expression: match_recipient("u-.*@your-domain.com")
-Actions: forward("https://your-app.com/api/webhooks/email")
-Description: Forward user emails to Tribe App
+Your webhook can distinguish between email types:
+
+```javascript
+// In your webhook handler
+const recipient = req.body.recipient;
+if (recipient.startsWith('u-')) {
+  // Handle user-specific emails (create leaves)
+} else if (recipient.startsWith('admin@')) {
+  // Handle admin emails
+} else if (recipient.startsWith('support@')) {
+  // Handle support emails
+} else {
+  // Log or ignore unknown patterns
+}
 ```
 
 ## Step 5: Configure Webhook Settings
 
-### 5.1 Add Webhook URL
+### 5.1 Add Webhook URL (MVP Configuration)
+
+For your MVP using Store and Notify:
 
 1. Go to **Settings** → **Webhooks**
-2. Add your webhook URL: `https://your-app.com/api/webhooks/email`
+2. Add notification webhook URL: `https://your-app.com/api/webhooks/notify`
 3. Select events to track:
    - ✅ **delivered**
    - ✅ **failed**
    - ✅ **bounced**
    - ✅ **complained**
+
+**Note:** The free plan webhook limit should be sufficient for MVP testing. You only need the notify endpoint since you're using store and notify routing.
 
 ### 5.2 Webhook Authentication
 
@@ -154,6 +175,14 @@ Attachments: family_photo.jpg
 
 ### 6.2 Verify Webhook Reception
 
+**For Store and Notify setup:**
+Check your application logs for:
+```
+INFO: Received message notification { to: 'u-abc123@tribe.app', from: 'test@example.com', subject: 'Test milestone photo', messageUrl: 'https://...' }
+INFO: Successfully created leaf from stored message { leafId: 'leaf-id-here', userId: 'abc123', leafType: 'photo' }
+```
+
+**For Direct Forward setup:**
 Check your application logs for:
 ```
 INFO: Received email webhook { to: 'u-abc123@tribe.app', from: 'test@example.com', subject: 'Test milestone photo' }
