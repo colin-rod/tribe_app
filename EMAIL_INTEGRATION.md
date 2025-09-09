@@ -42,7 +42,7 @@ Users can send emails to: `u-{userId}@colinrodrigues.com`
 
 #### UnassignedLeavesPanel Enhancements
 - Added email integration information
-- Shows user's unique email address: `u-{userId.substring(0,8)}@colinrodrigues.com`
+- Shows user's unique email address: `u-{userId}@colinrodrigues.com`
 - Instructions for email-to-leaf functionality
 
 ## Configuration

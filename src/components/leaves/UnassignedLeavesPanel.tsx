@@ -182,7 +182,7 @@ export function UnassignedLeavesPanel({ userId, onLeafAssigned }: UnassignedLeav
               <p className="text-sm text-blue-700 mb-2">
                 Send photos, messages, and content directly to your inbox by emailing: 
                 <code className="bg-white/60 px-2 py-1 rounded text-xs font-mono ml-1">
-                  u-{userId.substring(0, 8)}@colinrodrigues.com
+                  u-{userId}@colinrodrigues.com
                 </code>
               </p>
               <p className="text-xs text-blue-600">
