@@ -43,6 +43,14 @@ interface MailgunWebhookData {
  */
 export async function POST(req: NextRequest) {
   try {
+    // DEBUG: Log all headers for debugging
+    const allHeaders: Record<string, string> = {}
+    req.headers.forEach((value, key) => {
+      allHeaders[key] = value
+    })
+    console.error('=== EMAIL WEBHOOK DEBUG START ===')
+    console.error('Headers received:', JSON.stringify(allHeaders, null, 2))
+    
     // Validate webhook - either API key or Mailgun signature
     const apiKey = req.headers.get('x-api-key')
     const mailgunSignature = req.headers.get('x-mailgun-signature-256')
@@ -52,10 +60,21 @@ export async function POST(req: NextRequest) {
     const expectedApiKey = process.env.WEBHOOK_API_KEY
     const mailgunWebhookKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY
     
+    // DEBUG: Log authentication values
+    console.error('Auth values:')
+    console.error('- API key:', apiKey ? `${apiKey.substring(0, 8)}...` : 'MISSING')
+    console.error('- Mailgun signature:', mailgunSignature ? `${mailgunSignature.substring(0, 8)}...` : 'MISSING')
+    console.error('- timestamp:', mailgunTimestamp || 'MISSING')
+    console.error('- token:', mailgunToken ? `${mailgunToken.substring(0, 8)}...` : 'MISSING')
+    console.error('- expected API key available:', !!expectedApiKey)
+    console.error('- webhook signing key available:', !!mailgunWebhookKey)
+    console.error('- webhook signing key length:', mailgunWebhookKey?.length || 0)
+    
     let isValidWebhook = false
     
     // Check API key authentication (for direct calls)
     if (apiKey && expectedApiKey && apiKey === expectedApiKey) {
+      console.error('Authentication: API key validated successfully')
       isValidWebhook = true
     }
     
@@ -66,12 +85,19 @@ export async function POST(req: NextRequest) {
         .update(mailgunTimestamp + mailgunToken)
         .digest('hex')
       
+      console.error('Mailgun signature validation:')
+      console.error('- received:', mailgunSignature)
+      console.error('- expected:', expectedSignature)
+      console.error('- match:', mailgunSignature === expectedSignature)
+      
       if (mailgunSignature === expectedSignature) {
+        console.error('Authentication: Mailgun signature validated successfully')
         isValidWebhook = true
       }
     }
     
     if (!isValidWebhook) {
+      console.error('Authentication FAILED - returning 401')
       logger.warn('Invalid webhook authentication', { 
         hasApiKey: !!apiKey,
         hasMailgunSignature: !!mailgunSignature,
@@ -82,19 +108,34 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       )
     }
+    
+    console.error('Authentication passed, processing email...')
 
     // Parse email data based on content type
     const contentType = req.headers.get('content-type') || ''
+    console.error('Step 1: Parsing email data...')
+    console.error('Content-Type:', contentType)
+    
     let emailData: IncomingEmail
     
     if (contentType.includes('application/x-www-form-urlencoded')) {
+      console.error('Step 1a: Parsing Mailgun form data')
       // Mailgun sends form data
       const formData = await req.formData()
       emailData = parseMailgunFormData(formData)
     } else {
+      console.error('Step 1b: Parsing JSON data')
       // JSON format (for testing or other providers)
       emailData = await req.json()
     }
+    
+    console.error('Step 2: Email data parsed:', {
+      to: emailData.to,
+      from: emailData.from,
+      subject: emailData.subject,
+      textLength: emailData.text?.length || 0,
+      attachmentCount: emailData.attachments?.length || 0
+    })
     
     logger.info('Received email webhook', { 
       to: emailData.to, 
@@ -106,13 +147,17 @@ export async function POST(req: NextRequest) {
 
     // Handle different email types with catch-all routing
     const recipient = emailData.to.toLowerCase()
+    console.error('Step 3: Processing recipient:', recipient)
     
     // Check if this is a user-specific email
     if (!recipient.startsWith('u-')) {
+      console.error('Step 3a: Non-user email, skipping leaf creation')
       logger.info('Non-user email received, skipping leaf creation', { 
-        emailTo: emailData.to,
-        emailFrom: emailData.from,
-        subject: emailData.subject
+        metadata: {
+          emailTo: emailData.to,
+          emailFrom: emailData.from,
+          subject: emailData.subject
+        }
       })
       return NextResponse.json({
         success: true,
@@ -120,36 +165,53 @@ export async function POST(req: NextRequest) {
       })
     }
     
+    console.error('Step 4: Extracting user ID from email...')
     // Extract user ID from email address (format: u-abc123@domain.com)
     const userId = extractUserIdFromEmail(emailData.to)
+    console.error('Step 5: Extracted user ID:', userId)
     
     if (!userId) {
-      logger.warn('Could not extract user ID from email', { emailTo: emailData.to })
+      console.error('Step 5a: Failed to extract user ID')
+      logger.warn('Could not extract user ID from email', { metadata: { emailTo: emailData.to } })
       return NextResponse.json(
         { error: 'Invalid email address format' },
         { status: 400 }
       )
     }
 
+    console.error('Step 6: Creating Supabase service client...')
     // Verify user exists (using service client to bypass RLS)
     const supabase = createServiceClient()
+    console.error('Step 7: Querying user profile...')
     const { data: user, error: userError } = await supabase
       .from('profiles')
       .select('id, email, first_name, last_name')
       .eq('id', userId)
       .single()
 
+    console.error('Step 8: User query result:', { hasUser: !!user, hasError: !!userError })
+
     if (userError || !user) {
-      logger.warn('User not found for email', { userId, emailTo: emailData.to })
+      console.error('Step 8a: User not found')
+      logger.warn('User not found for email', { metadata: { userId, emailTo: emailData.to } })
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       )
     }
 
+    console.error('Step 9: Processing email content...')
     // Process email content and attachments
     const { content, mediaUrls, leafType, tags } = await processEmailContent(emailData)
+    
+    console.error('Step 10: Email content processed:', {
+      contentLength: content.length,
+      mediaCount: mediaUrls.length,
+      leafType,
+      tagCount: tags.length
+    })
 
+    console.error('Step 11: Creating unassigned leaf...')
     // Create unassigned leaf
     const leaf = await createUnassignedLeaf({
       author_id: userId,
@@ -161,10 +223,13 @@ export async function POST(req: NextRequest) {
     })
 
     if (!leaf) {
+      console.error('Step 11a: Failed to create leaf')
       logger.error('Failed to create leaf from email', { 
-        userId, 
-        emailFrom: emailData.from,
-        subject: emailData.subject
+        metadata: {
+          userId, 
+          emailFrom: emailData.from,
+          subject: emailData.subject
+        }
       })
       return NextResponse.json(
         { error: 'Failed to create leaf' },
@@ -172,11 +237,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    logger.info('Successfully created leaf from email', {
+    console.error('Step 12: Leaf created successfully:', {
       leafId: leaf.id,
-      userId,
       leafType: leaf.leaf_type,
       hasMedia: mediaUrls.length > 0
+    })
+    console.error('=== EMAIL WEBHOOK SUCCESS ===')
+
+    logger.info('Successfully created leaf from email', {
+      metadata: {
+        leafId: leaf.id,
+        userId,
+        leafType: leaf.leaf_type,
+        hasMedia: mediaUrls.length > 0
+      }
     })
 
     return NextResponse.json({
@@ -190,6 +264,12 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error) {
+    console.error('=== EMAIL WEBHOOK ERROR ===')
+    console.error('Error details:', error)
+    console.error('Error message:', (error as any)?.message)
+    console.error('Error stack:', (error as any)?.stack)
+    console.error('=== EMAIL ERROR END ===')
+    
     logger.error('Unexpected error in email webhook', error)
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -312,7 +392,7 @@ async function processEmailContent(email: IncomingEmail): Promise<{
   // Extract hashtags from content
   const hashtagMatches = content.match(/#\w+/g)
   if (hashtagMatches) {
-    tags = hashtagMatches.map(tag => tag.substring(1).toLowerCase())
+    tags.push(...hashtagMatches.map(tag => tag.substring(1).toLowerCase()))
   }
 
   // Check for milestone keywords
