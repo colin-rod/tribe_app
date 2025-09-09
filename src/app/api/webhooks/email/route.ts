@@ -96,17 +96,37 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    if (!isValidWebhook) {
+    // For direct forwarding, Mailgun doesn't send auth headers, so we accept requests from Mailgun IPs
+    const xForwardedFor = req.headers.get('x-forwarded-for')
+    const userAgent = req.headers.get('user-agent')
+    const isMailgunRequest = (
+      userAgent === 'Go-http-client/2.0' &&
+      (xForwardedFor?.includes('35.206.128.78') || xForwardedFor?.includes('35.210.116.64'))
+    )
+
+    console.error('Mailgun direct forwarding check:')
+    console.error('- User-Agent:', userAgent)
+    console.error('- X-Forwarded-For:', xForwardedFor)
+    console.error('- Is Mailgun request:', isMailgunRequest)
+
+    if (!isValidWebhook && !isMailgunRequest) {
       console.error('Authentication FAILED - returning 401')
       logger.warn('Invalid webhook authentication', { 
-        hasApiKey: !!apiKey,
-        hasMailgunSignature: !!mailgunSignature,
-        ip: req.ip 
+        metadata: {
+          hasApiKey: !!apiKey,
+          hasMailgunSignature: !!mailgunSignature,
+          ip: xForwardedFor || 'unknown',
+          userAgent: userAgent || 'unknown'
+        }
       })
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
+    }
+
+    if (isMailgunRequest && !isValidWebhook) {
+      console.error('Authentication: Mailgun direct forwarding request accepted')
     }
     
     console.error('Authentication passed, processing email...')
