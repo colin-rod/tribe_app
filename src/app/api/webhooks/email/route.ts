@@ -158,11 +158,13 @@ export async function POST(req: NextRequest) {
     })
     
     logger.info('Received email webhook', { 
-      to: emailData.to, 
-      from: emailData.from,
-      subject: emailData.subject,
-      attachmentCount: emailData.attachments?.length || 0,
-      contentType
+      metadata: {
+        to: emailData.to, 
+        from: emailData.from,
+        subject: emailData.subject,
+        attachmentCount: emailData.attachments?.length || 0,
+        contentType
+      }
     })
 
     // Handle different email types with catch-all routing
@@ -363,7 +365,7 @@ function extractUserIdFromEmail(emailTo: string): string | null {
     
     return null
   } catch (error) {
-    logger.error('Error extracting user ID from email', error, { emailTo })
+    logger.error('Error extracting user ID from email', error, { metadata: { emailTo } })
     return null
   }
 }
