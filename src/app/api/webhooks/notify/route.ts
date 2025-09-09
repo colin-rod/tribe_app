@@ -43,6 +43,8 @@ export async function POST(req: NextRequest) {
     req.headers.forEach((value, key) => {
       allHeaders[key] = value
     })
+    console.error('=== WEBHOOK DEBUG START ===')
+    console.error('Headers received:', JSON.stringify(allHeaders, null, 2))
     logger.info('DEBUG: Incoming webhook headers', { metadata: { headers: allHeaders } })
     
     // Validate Mailgun webhook signature
@@ -53,6 +55,13 @@ export async function POST(req: NextRequest) {
     const mailgunWebhookKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY
     
     // DEBUG: Log what we received
+    console.error('Auth values:')
+    console.error('- signature:', mailgunSignature ? `${mailgunSignature.substring(0, 8)}...` : 'MISSING')
+    console.error('- timestamp:', mailgunTimestamp || 'MISSING')
+    console.error('- token:', mailgunToken ? `${mailgunToken.substring(0, 8)}...` : 'MISSING')
+    console.error('- webhook key available:', !!mailgunWebhookKey)
+    console.error('- webhook key length:', mailgunWebhookKey?.length || 0)
+    
     logger.info('DEBUG: Mailgun auth values', { 
       metadata: {
         signature: mailgunSignature ? `${mailgunSignature.substring(0, 8)}...` : null,
@@ -85,6 +94,13 @@ export async function POST(req: NextRequest) {
       .digest('hex')
     
     // DEBUG: Compare signatures
+    console.error('Signature comparison:')
+    console.error('- received:', mailgunSignature)
+    console.error('- expected:', expectedSignature)
+    console.error('- match:', mailgunSignature === expectedSignature)
+    console.error('- input string:', `${mailgunTimestamp}${mailgunToken}`)
+    console.error('=== WEBHOOK DEBUG END ===')
+    
     logger.info('DEBUG: Signature comparison', {
       metadata: {
         received: mailgunSignature,
