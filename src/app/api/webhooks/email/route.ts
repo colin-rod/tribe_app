@@ -238,23 +238,38 @@ export async function POST(req: NextRequest) {
     })
 
     console.error('Step 11: Creating unassigned leaf...')
-    // Create unassigned leaf
-    const leaf = await createUnassignedLeaf({
-      author_id: userId,
-      leaf_type: leafType,
-      content: content,
-      media_urls: mediaUrls,
-      tags: tags,
-      ai_caption: generateAICaption(emailData),
-    })
+    // Create unassigned leaf using service client to bypass RLS
+    const { data: leaf, error: leafError } = await supabase
+      .from('posts')
+      .insert({
+        author_id: userId,
+        leaf_type: leafType,
+        content: content,
+        media_urls: mediaUrls,
+        tags: tags,
+        ai_caption: generateAICaption(emailData),
+        ai_tags: [],
+        branch_id: null,
+        assignment_status: 'unassigned',
+        message_type: 'post',
+        is_pinned: false
+      })
+      .select()
+      .single()
 
-    if (!leaf) {
+    console.error('Step 11b: Leaf creation result:', { hasLeaf: !!leaf, hasError: !!leafError })
+    if (leafError) {
+      console.error('Step 11c: Leaf creation error details:', leafError)
+    }
+
+    if (leafError || !leaf) {
       console.error('Step 11a: Failed to create leaf')
       logger.error('Failed to create leaf from email', { 
         metadata: {
           userId, 
           emailFrom: emailData.from,
-          subject: emailData.subject
+          subject: emailData.subject,
+          error: leafError
         }
       })
       return NextResponse.json(
