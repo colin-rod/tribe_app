@@ -21,7 +21,7 @@ This MVP implements a single-channel content ingestion system that allows users 
 ### 2. Email Processing
 
 #### Supported Email Formats
-Users can send emails to: `u-{userId}@tribe.app`
+Users can send emails to: `u-{userId}@colinrodrigues.com`
 
 #### Content Processing
 - **Subject**: Used as AI caption if available
@@ -42,7 +42,7 @@ Users can send emails to: `u-{userId}@tribe.app`
 
 #### UnassignedLeavesPanel Enhancements
 - Added email integration information
-- Shows user's unique email address: `u-{userId.substring(0,8)}@tribe.app`
+- Shows user's unique email address: `u-{userId.substring(0,8)}@colinrodrigues.com`
 - Instructions for email-to-leaf functionality
 
 ## Configuration
@@ -64,7 +64,7 @@ The webhook endpoint expects email data in this format:
 
 ```json
 {
-  "to": "u-abc123@tribe.app",
+  "to": "u-abc123@colinrodrigues.com",
   "from": "user@example.com", 
   "subject": "My milestone photo",
   "text": "Check out this amazing moment! #milestone #family",
@@ -82,7 +82,7 @@ The webhook endpoint expects email data in this format:
 ## Usage Flow
 
 1. **User Setup**: User gets their unique email address from the Inbox tab
-2. **Send Email**: User emails content to `u-{userId}@tribe.app`
+2. **Send Email**: User emails content to `u-{userId}@colinrodrigues.com`
 3. **Email Processing**: Webhook receives email, processes content and attachments
 4. **Leaf Creation**: Creates unassigned leaf with appropriate type and metadata
 5. **Organization**: User sees new content in Inbox tab and assigns to branches

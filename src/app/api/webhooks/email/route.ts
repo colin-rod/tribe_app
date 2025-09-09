@@ -216,7 +216,7 @@ function parseMailgunFormData(formData: FormData): IncomingEmail {
         filename: attachment.name,
         contentType: attachment.type,
         size: attachment.size,
-        url: `https://storage.tribe.app/attachments/${Date.now()}-${attachment.name}` // Placeholder
+        url: `https://storage.colinrodrigues.com/attachments/${Date.now()}-${attachment.name}` // Placeholder
       })
     }
   }
@@ -234,28 +234,28 @@ function parseMailgunFormData(formData: FormData): IncomingEmail {
 
 /**
  * Extract user ID from email address
- * Supports formats like: user123@tribe.app, u-abc123@inbox.tribe.app
+ * Supports formats like: user123@colinrodrigues.com, u-abc123@colinrodrigues.com
  */
 function extractUserIdFromEmail(emailTo: string): string | null {
   try {
     const [localPart, domain] = emailTo.toLowerCase().split('@')
     
     // Check if it's our domain
-    if (!domain.includes('tribe.app')) {
+    if (!domain.includes('colinrodrigues.com')) {
       return null
     }
     
-    // Pattern 1: Direct user ID (user123@tribe.app)
+    // Pattern 1: Direct user ID (user123@colinrodrigues.com)
     if (localPart.startsWith('user')) {
       return localPart.replace('user', '')
     }
     
-    // Pattern 2: Prefixed user ID (u-abc123@inbox.tribe.app)
+    // Pattern 2: Prefixed user ID (u-abc123@colinrodrigues.com)
     if (localPart.startsWith('u-')) {
       return localPart.replace('u-', '')
     }
     
-    // Pattern 3: Just the user ID (abc123@tribe.app)
+    // Pattern 3: Just the user ID (abc123@colinrodrigues.com)
     // Validate it looks like a UUID
     if (localPart.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)) {
       return localPart

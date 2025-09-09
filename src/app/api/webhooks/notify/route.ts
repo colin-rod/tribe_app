@@ -47,10 +47,12 @@ export async function POST(req: NextRequest) {
     
     if (!mailgunSignature || !mailgunTimestamp || !mailgunToken || !mailgunWebhookKey) {
       logger.warn('Missing Mailgun signature headers', { 
-        hasSignature: !!mailgunSignature,
-        hasTimestamp: !!mailgunTimestamp,
-        hasToken: !!mailgunToken,
-        ip: req.ip 
+        metadata: {
+          hasSignature: !!mailgunSignature,
+          hasTimestamp: !!mailgunTimestamp,
+          hasToken: !!mailgunToken,
+          ip: req.headers.get('x-forwarded-for') || 'unknown'
+        }
       })
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -64,7 +66,9 @@ export async function POST(req: NextRequest) {
       .digest('hex')
     
     if (mailgunSignature !== expectedSignature) {
-      logger.warn('Invalid Mailgun signature', { ip: req.ip })
+      logger.warn('Invalid Mailgun signature', { 
+        metadata: { ip: req.headers.get('x-forwarded-for') || 'unknown' }
+      })
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -82,10 +86,12 @@ export async function POST(req: NextRequest) {
     }
     
     logger.info('Received message notification', { 
-      to: notificationData.recipient, 
-      from: notificationData.sender,
-      subject: notificationData.subject,
-      messageUrl: notificationData['message-url']
+      metadata: {
+        to: notificationData.recipient, 
+        from: notificationData.sender,
+        subject: notificationData.subject,
+        messageUrl: notificationData['message-url']
+      }
     })
 
     // Handle different email types with catch-all routing
@@ -94,9 +100,11 @@ export async function POST(req: NextRequest) {
     // Check if this is a user-specific email
     if (!recipient.startsWith('u-')) {
       logger.info('Non-user email notification received, skipping leaf creation', { 
-        emailTo: notificationData.recipient,
-        emailFrom: notificationData.sender,
-        subject: notificationData.subject
+        metadata: {
+          emailTo: notificationData.recipient,
+          emailFrom: notificationData.sender,
+          subject: notificationData.subject
+        }
       })
       return NextResponse.json({
         success: true,
@@ -109,7 +117,7 @@ export async function POST(req: NextRequest) {
     
     if (!userId) {
       logger.warn('Could not extract user ID from email', { 
-        emailTo: notificationData.recipient 
+        metadata: { emailTo: notificationData.recipient }
       })
       return NextResponse.json(
         { error: 'Invalid email address format' },
@@ -127,8 +135,10 @@ export async function POST(req: NextRequest) {
 
     if (userError || !user) {
       logger.warn('User not found for email', { 
-        userId, 
-        emailTo: notificationData.recipient 
+        metadata: {
+          userId, 
+          emailTo: notificationData.recipient
+        }
       })
       return NextResponse.json(
         { error: 'User not found' },
@@ -141,7 +151,7 @@ export async function POST(req: NextRequest) {
     
     if (!emailData) {
       logger.error('Failed to fetch message from Mailgun', {
-        messageUrl: notificationData['message-url']
+        metadata: { messageUrl: notificationData['message-url'] }
       })
       return NextResponse.json(
         { error: 'Failed to retrieve message' },
@@ -164,9 +174,11 @@ export async function POST(req: NextRequest) {
 
     if (!leaf) {
       logger.error('Failed to create leaf from email', { 
-        userId, 
-        emailFrom: emailData.from,
-        subject: emailData.subject
+        metadata: {
+          userId, 
+          emailFrom: emailData.from,
+          subject: emailData.subject
+        }
       })
       return NextResponse.json(
         { error: 'Failed to create leaf' },
@@ -175,11 +187,13 @@ export async function POST(req: NextRequest) {
     }
 
     logger.info('Successfully created leaf from stored message', {
-      leafId: leaf.id,
-      userId,
-      leafType: leaf.leaf_type,
-      hasMedia: mediaUrls.length > 0,
-      messageUrl: notificationData['message-url']
+      metadata: {
+        leafId: leaf.id,
+        userId,
+        leafType: leaf.leaf_type,
+        hasMedia: mediaUrls.length > 0,
+        messageUrl: notificationData['message-url']
+      }
     })
 
     return NextResponse.json({
@@ -221,9 +235,11 @@ async function fetchMessageFromMailgun(messageUrl: string): Promise<IncomingEmai
 
     if (!response.ok) {
       logger.error('Failed to fetch message from Mailgun', {
-        status: response.status,
-        statusText: response.statusText,
-        messageUrl
+        metadata: {
+          status: response.status,
+          statusText: response.statusText,
+          messageUrl
+        }
       })
       return null
     }
@@ -260,28 +276,28 @@ async function fetchMessageFromMailgun(messageUrl: string): Promise<IncomingEmai
 
 /**
  * Extract user ID from email address
- * Supports formats like: user123@tribe.app, u-abc123@inbox.tribe.app
+ * Supports formats like: user123@colinrodrigues.com, u-abc123@colinrodrigues.com
  */
 function extractUserIdFromEmail(emailTo: string): string | null {
   try {
     const [localPart, domain] = emailTo.toLowerCase().split('@')
     
     // Check if it's our domain
-    if (!domain.includes('tribe.app')) {
+    if (!domain.includes('colinrodrigues.com')) {
       return null
     }
     
-    // Pattern 1: Direct user ID (user123@tribe.app)
+    // Pattern 1: Direct user ID (user123@colinrodrigues.com)
     if (localPart.startsWith('user')) {
       return localPart.replace('user', '')
     }
     
-    // Pattern 2: Prefixed user ID (u-abc123@inbox.tribe.app)
+    // Pattern 2: Prefixed user ID (u-abc123@colinrodrigues.com)
     if (localPart.startsWith('u-')) {
       return localPart.replace('u-', '')
     }
     
-    // Pattern 3: Just the user ID (abc123@tribe.app)
+    // Pattern 3: Just the user ID (abc123@colinrodrigues.com)
     // Validate it looks like a UUID
     if (localPart.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)) {
       return localPart
@@ -289,7 +305,7 @@ function extractUserIdFromEmail(emailTo: string): string | null {
     
     return null
   } catch (error) {
-    logger.error('Error extracting user ID from email', error, { emailTo })
+    logger.error('Error extracting user ID from email', { metadata: { emailTo, error } })
     return null
   }
 }

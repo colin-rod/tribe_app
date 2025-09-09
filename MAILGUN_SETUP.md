@@ -23,7 +23,7 @@ This guide walks you through setting up Mailgun to receive emails and forward th
 
 1. In Mailgun dashboard, go to **Sending** → **Domains**
 2. Click **Add New Domain**
-3. Enter your domain (e.g., `tribe.app` or subdomain like `mail.tribe.app`)
+3. Enter your domain (e.g., `colinrodrigues.com` or subdomain like `mail.colinrodrigues.com`)
 4. Choose **Receiving** as the domain type (we need to receive emails)
 5. Select your region (US or EU)
 6. Click **Add Domain**
@@ -166,7 +166,7 @@ Mailgun will sign webhooks with your webhook signing key. Our endpoint validates
 
 Example test email:
 ```
-To: u-abc123-def4-5678-9101-112131415161@tribe.app
+To: u-abc123-def4-5678-9101-112131415161@colinrodrigues.com
 Subject: Test milestone photo
 Body: Check out this amazing moment! #milestone #family
 
@@ -178,14 +178,14 @@ Attachments: family_photo.jpg
 **For Store and Notify setup:**
 Check your application logs for:
 ```
-INFO: Received message notification { to: 'u-abc123@tribe.app', from: 'test@example.com', subject: 'Test milestone photo', messageUrl: 'https://...' }
+INFO: Received message notification { to: 'u-abc123@colinrodrigues.com', from: 'test@example.com', subject: 'Test milestone photo', messageUrl: 'https://...' }
 INFO: Successfully created leaf from stored message { leafId: 'leaf-id-here', userId: 'abc123', leafType: 'photo' }
 ```
 
 **For Direct Forward setup:**
 Check your application logs for:
 ```
-INFO: Received email webhook { to: 'u-abc123@tribe.app', from: 'test@example.com', subject: 'Test milestone photo' }
+INFO: Received email webhook { to: 'u-abc123@colinrodrigues.com', from: 'test@example.com', subject: 'Test milestone photo' }
 INFO: Successfully created leaf from email { leafId: 'leaf-id-here', userId: 'abc123', leafType: 'photo' }
 ```
 
@@ -201,8 +201,8 @@ INFO: Successfully created leaf from email { leafId: 'leaf-id-here', userId: 'ab
 ### 7.1 Domain Configuration
 
 For production, use a subdomain for cleaner email addresses:
-- Set up `mail.tribe.app` as your Mailgun domain
-- Users get emails like: `u-{userID}@mail.tribe.app`
+- Set up `mail.colinrodrigues.com` as your Mailgun domain
+- Users get emails like: `u-{userID}@mail.colinrodrigues.com`
 
 ### 7.2 Security Considerations
 
