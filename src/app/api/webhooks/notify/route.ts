@@ -38,6 +38,13 @@ interface MailgunNotificationData {
  */
 export async function POST(req: NextRequest) {
   try {
+    // DEBUG: Log all headers for debugging
+    const allHeaders: Record<string, string> = {}
+    req.headers.forEach((value, key) => {
+      allHeaders[key] = value
+    })
+    logger.info('DEBUG: Incoming webhook headers', { metadata: { headers: allHeaders } })
+    
     // Validate Mailgun webhook signature
     const mailgunSignature = req.headers.get('x-mailgun-signature-256')
     const mailgunTimestamp = req.headers.get('x-mailgun-timestamp')
@@ -45,12 +52,24 @@ export async function POST(req: NextRequest) {
     
     const mailgunWebhookKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY
     
+    // DEBUG: Log what we received
+    logger.info('DEBUG: Mailgun auth values', { 
+      metadata: {
+        signature: mailgunSignature ? `${mailgunSignature.substring(0, 8)}...` : null,
+        timestamp: mailgunTimestamp,
+        token: mailgunToken ? `${mailgunToken.substring(0, 8)}...` : null,
+        hasWebhookKey: !!mailgunWebhookKey,
+        webhookKeyLength: mailgunWebhookKey?.length || 0
+      }
+    })
+    
     if (!mailgunSignature || !mailgunTimestamp || !mailgunToken || !mailgunWebhookKey) {
       logger.warn('Missing Mailgun signature headers', { 
         metadata: {
           hasSignature: !!mailgunSignature,
           hasTimestamp: !!mailgunTimestamp,
           hasToken: !!mailgunToken,
+          hasWebhookKey: !!mailgunWebhookKey,
           ip: req.headers.get('x-forwarded-for') || 'unknown'
         }
       })
@@ -65,9 +84,23 @@ export async function POST(req: NextRequest) {
       .update(mailgunTimestamp + mailgunToken)
       .digest('hex')
     
+    // DEBUG: Compare signatures
+    logger.info('DEBUG: Signature comparison', {
+      metadata: {
+        received: mailgunSignature,
+        expected: expectedSignature,
+        match: mailgunSignature === expectedSignature,
+        timestampTokenInput: `${mailgunTimestamp}${mailgunToken}`
+      }
+    })
+    
     if (mailgunSignature !== expectedSignature) {
       logger.warn('Invalid Mailgun signature', { 
-        metadata: { ip: req.headers.get('x-forwarded-for') || 'unknown' }
+        metadata: { 
+          ip: req.headers.get('x-forwarded-for') || 'unknown',
+          received: mailgunSignature,
+          expected: expectedSignature
+        }
       })
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -269,7 +302,7 @@ async function fetchMessageFromMailgun(messageUrl: string): Promise<IncomingEmai
       timestamp: data.timestamp
     }
   } catch (error) {
-    logger.error('Error fetching message from Mailgun', error, { messageUrl })
+    logger.error('Error fetching message from Mailgun', error, { metadata: { messageUrl } })
     return null
   }
 }
