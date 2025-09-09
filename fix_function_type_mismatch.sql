@@ -1,6 +1,9 @@
 -- Fix function return type mismatch for get_user_unassigned_leaves
 -- The function was declared with VARCHAR but the database column is TEXT
 
+-- Drop existing function first
+DROP FUNCTION IF EXISTS get_user_unassigned_leaves(UUID, INTEGER, INTEGER);
+
 CREATE OR REPLACE FUNCTION get_user_unassigned_leaves(user_id UUID, limit_count INTEGER DEFAULT 20, offset_count INTEGER DEFAULT 0)
 RETURNS TABLE(
   id UUID,
