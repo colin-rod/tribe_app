@@ -121,7 +121,7 @@ export default function BranchSelector({
         {displayedBranches.map((branch) => (
           <div
             key={branch.id}
-            className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all cursor-pointer hover:shadow-sm ${
+            className={`flex items-center justify-between p-3 rounded-lg border-2 transition-colors duration-150 cursor-pointer hover:shadow-sm ${
               branch.isSelected
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-200 hover:border-gray-300'

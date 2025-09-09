@@ -220,7 +220,7 @@ const LeafCard = memo(function LeafCard({
                 <div className="aspect-video relative bg-gradient-to-br from-ac-sky-light to-ac-lavender flex items-center justify-center rounded-2xl border-4 border-ac-sky">
                   <div className="text-6xl opacity-60">🎥</div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <button className="bg-ac-brown/80 text-ac-cream p-4 rounded-full hover:bg-ac-brown transition-all duration-200 hover:scale-[1.02] border-3 border-ac-brown-dark shadow-lg tactile-element">
+                    <button className="bg-ac-brown/80 text-ac-cream p-4 rounded-full hover:bg-ac-brown transition-colors duration-150 border-3 border-ac-brown-dark shadow-lg tactile-element">
                       ▶
                     </button>
                   </div>
@@ -230,7 +230,7 @@ const LeafCard = memo(function LeafCard({
               {leaf.leaf_type === 'audio' && (
                 <div className="aspect-[3/1] relative bg-gradient-to-br from-ac-lavender to-ac-sky-light flex items-center justify-center rounded-2xl border-4 border-ac-lavender">
                   <div className="text-4xl mr-4">🎵</div>
-                  <button className="bg-ac-lavender/80 text-ac-brown-dark px-6 py-2 rounded-full hover:bg-ac-lavender transition-all duration-200 font-display font-semibold border-3 border-ac-brown-light shadow-md tactile-element">
+                  <button className="bg-ac-lavender/80 text-ac-brown-dark px-6 py-2 rounded-full hover:bg-ac-lavender transition-colors duration-150 font-display font-semibold border-3 border-ac-brown-light shadow-md tactile-element">
                     ▶ Play Recording
                   </button>
                 </div>
@@ -259,7 +259,7 @@ const LeafCard = memo(function LeafCard({
                 {allTags.map(({ tag, isAI }, index) => (
                   <span 
                     key={`${isAI ? 'ai' : 'user'}-tag-${index}`} 
-                    className={`px-3 py-1 rounded-full text-xs font-medium border-2 transition-all duration-200 hover:scale-[1.01] ${
+                    className={`px-3 py-1 rounded-full text-xs font-medium border-2 transition-colors duration-150 ${
                       isAI 
                         ? 'bg-ac-peach-light text-ac-brown border-ac-peach opacity-75' 
                         : 'bg-ac-sage-light text-ac-brown-dark border-ac-sage'
@@ -280,7 +280,7 @@ const LeafCard = memo(function LeafCard({
                 <div className="relative">
                   <button
                     onClick={handleToggleReactions}
-                    className="flex items-center space-x-2 text-ac-brown hover:text-ac-coral transition-all duration-200 tactile-element hover:scale-[1.02]"
+                    className="flex items-center space-x-2 text-ac-brown hover:text-ac-coral transition-colors duration-150 tactile-element"
                   >
                     <span className="text-xl">{leaf.user_reaction ? REACTION_EMOJIS[leaf.user_reaction] : '❤️'}</span>
                     {totalReactions > 0 && (
@@ -294,7 +294,7 @@ const LeafCard = memo(function LeafCard({
                         <button
                           key={type}
                           onClick={(e) => handleReaction(type as ReactionType, e)}
-                          className="text-2xl hover:scale-125 transition-transform p-2 rounded-full hover:bg-ac-peach-light tactile-element"
+                          className="text-2xl hover:scale-110 transition-transform duration-150 p-2 rounded-full hover:bg-ac-peach-light tactile-element"
                         >
                           {emoji}
                         </button>
@@ -306,7 +306,7 @@ const LeafCard = memo(function LeafCard({
                 {/* Comments */}
                 <button
                   onClick={handleToggleComments}
-                  className="flex items-center space-x-2 text-ac-brown hover:text-ac-sky-dark transition-all duration-200 tactile-element hover:scale-[1.02]"
+                  className="flex items-center space-x-2 text-ac-brown hover:text-ac-sky-dark transition-colors duration-150 tactile-element"
                 >
                   <span className="text-xl">💬</span>
                   {leaf.comment_count > 0 && (
@@ -359,7 +359,7 @@ const LeafCard = memo(function LeafCard({
                   <button
                     type="submit"
                     disabled={!newComment.trim()}
-                    className="px-6 py-2 bg-ac-sage text-ac-brown-dark rounded-full text-sm font-semibold hover:bg-ac-sage-light disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border-3 border-ac-sage-dark shadow-md tactile-element font-display"
+                    className="px-6 py-2 bg-ac-sage text-ac-brown-dark rounded-full text-sm font-semibold hover:bg-ac-sage-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 border-3 border-ac-sage-dark shadow-md tactile-element font-display"
                   >
                     Send 🌿
                   </button>

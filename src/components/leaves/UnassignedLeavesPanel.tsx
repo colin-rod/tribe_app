@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getUserUnassignedLeaves, assignLeafToBranches, getUserAssignmentStats } from '@/lib/leaf-assignments'
+import { getUserUnassignedLeaves, assignLeafToBranches, getUserAssignmentStats, deleteUnassignedLeaf } from '@/lib/leaf-assignments'
 import { getUserBranches } from '@/lib/branches'
 import { UnassignedLeaf, LeafAssignmentResult } from '@/types/common'
 import { BranchWithDetails } from '@/types/database'
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { Leaf, Camera, Video, Mic, Flag, Hash, Calendar, User, Loader2 } from 'lucide-react'
+import { Leaf, Camera, Video, Mic, Flag, Hash, Calendar, User, Loader2, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 interface UnassignedLeavesPanelProps {
@@ -31,6 +31,7 @@ export function UnassignedLeavesPanel({ userId, onLeafAssigned }: UnassignedLeav
   })
   const [loading, setLoading] = useState(true)
   const [assigningLeaves, setAssigningLeaves] = useState<Set<string>>(new Set())
+  const [deletingLeaves, setDeletingLeaves] = useState<Set<string>>(new Set())
   const [selectedLeaves, setSelectedLeaves] = useState<Set<string>>(new Set())
   const [bulkAssignBranches, setBulkAssignBranches] = useState<string[]>([])
   const [showBulkAssign, setShowBulkAssign] = useState(false)
@@ -110,6 +111,58 @@ export function UnassignedLeavesPanel({ userId, onLeafAssigned }: UnassignedLeav
         const newSet = new Set(prev)
         newSet.delete(leafId)
         return newSet
+      })
+    }
+  }
+
+  const handleDeleteLeaf = async (leafId: string) => {
+    if (!confirm('Are you sure you want to delete this leaf? This action cannot be undone.')) {
+      return
+    }
+
+    setDeletingLeaves(prev => new Set([...prev, leafId]))
+    
+    try {
+      const success = await deleteUnassignedLeaf(leafId, userId)
+
+      if (success) {
+        toast({
+          title: "Leaf deleted",
+          description: "The leaf has been permanently deleted",
+        })
+        
+        // Remove from unassigned list
+        setLeaves(prev => prev.filter(leaf => leaf.id !== leafId))
+        setStats(prev => ({
+          ...prev,
+          unassignedLeaves: prev.unassignedLeaves - 1,
+          totalLeaves: prev.totalLeaves - 1
+        }))
+        
+        // Remove from selected if it was selected
+        setSelectedLeaves(prev => {
+          const updated = new Set(prev)
+          updated.delete(leafId)
+          return updated
+        })
+      } else {
+        toast({
+          title: "Deletion failed",
+          description: "Failed to delete the leaf",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Deletion failed",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      })
+    } finally {
+      setDeletingLeaves(prev => {
+        const updated = new Set(prev)
+        updated.delete(leafId)
+        return updated
       })
     }
   }
@@ -273,8 +326,10 @@ export function UnassignedLeavesPanel({ userId, onLeafAssigned }: UnassignedLeav
                   branches={branches}
                   isSelected={selectedLeaves.has(leaf.id)}
                   isAssigning={assigningLeaves.has(leaf.id)}
+                  isDeleting={deletingLeaves.has(leaf.id)}
                   onSelect={() => toggleLeafSelection(leaf.id)}
                   onAssign={handleAssignLeaf}
+                  onDelete={handleDeleteLeaf}
                 />
               ))}
             </div>
@@ -300,11 +355,13 @@ interface LeafCardProps {
   branches: BranchWithDetails[]
   isSelected: boolean
   isAssigning: boolean
+  isDeleting?: boolean
   onSelect: () => void
   onAssign: (leafId: string, branchIds: string[], primaryBranchId?: string) => void
+  onDelete?: (leafId: string) => void
 }
 
-function LeafCard({ leaf, branches, isSelected, isAssigning, onSelect, onAssign }: LeafCardProps) {
+function LeafCard({ leaf, branches, isSelected, isAssigning, isDeleting = false, onSelect, onAssign, onDelete }: LeafCardProps) {
   const [selectedBranches, setSelectedBranches] = useState<string[]>([])
   const [primaryBranch, setPrimaryBranch] = useState<string>('')
 
@@ -408,21 +465,39 @@ function LeafCard({ leaf, branches, isSelected, isAssigning, onSelect, onAssign 
           </Select>
         )}
         
-        <Button
-          size="sm"
-          onClick={handleAssign}
-          disabled={selectedBranches.length === 0 || isAssigning}
-          className="w-full"
-        >
-          {isAssigning ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Assigning...
-            </>
-          ) : (
-            `Assign to ${selectedBranches.length} branch${selectedBranches.length !== 1 ? 'es' : ''}`
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={handleAssign}
+            disabled={selectedBranches.length === 0 || isAssigning}
+            className="flex-1"
+          >
+            {isAssigning ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Assigning...
+              </>
+            ) : (
+              `Assign to ${selectedBranches.length} branch${selectedBranches.length !== 1 ? 'es' : ''}`
+            )}
+          </Button>
+          
+          {onDelete && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => onDelete(leaf.id)}
+              disabled={isDeleting || isAssigning}
+              className="px-3"
+            >
+              {isDeleting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
           )}
-        </Button>
+        </div>
       </div>
     </div>
   )

@@ -199,6 +199,43 @@ export async function removeLeafFromBranch(
 }
 
 /**
+ * Delete an unassigned leaf permanently
+ */
+export async function deleteUnassignedLeaf(leafId: string, userId: string): Promise<boolean> {
+  try {
+    // First verify the leaf is unassigned and belongs to the user
+    const { data: leaf, error: leafError } = await supabase
+      .from('posts')
+      .select('id, assignment_status, author_id')
+      .eq('id', leafId)
+      .eq('author_id', userId)
+      .eq('assignment_status', 'unassigned')
+      .single()
+
+    if (leafError || !leaf) {
+      logger.error('Leaf not found or not eligible for deletion', leafError, { leafId, userId })
+      return false
+    }
+
+    // Delete the leaf
+    const result = await AsyncUtils.supabaseQuery(
+      () => supabase
+        .from('posts')
+        .delete()
+        .eq('id', leafId)
+        .eq('author_id', userId)
+        .eq('assignment_status', 'unassigned'),
+      'Failed to delete unassigned leaf'
+    )
+
+    return true
+  } catch (error) {
+    logger.error('Error deleting unassigned leaf', error, { leafId, userId })
+    return false
+  }
+}
+
+/**
  * Get leaves for a branch (including multi-assigned ones)
  */
 export async function getBranchLeaves(
