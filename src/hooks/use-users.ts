@@ -123,12 +123,22 @@ export const useChangePassword = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user?.email) throw new Error('No user email found')
 
+      // Verify current password by attempting to sign in with it
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword
+      })
+      
+      if (signInError) {
+        throw new Error('Current password is incorrect')
+      }
+
       // Update password
-      const { error } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       })
       
-      if (error) throw error
+      if (updateError) throw updateError
       return true
     },
     onSuccess: () => {

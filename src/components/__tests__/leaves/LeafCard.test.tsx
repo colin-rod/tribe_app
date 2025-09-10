@@ -4,13 +4,19 @@ import { render, createMockLeaf, createMockProfile, createMockBranch } from '@/_
 import LeafCard from '@/components/leaves/LeafCard'
 import { LeafWithDetails } from '@/types/database'
 
-// Mock the leaf interactions hook
-jest.mock('@/hooks/useLeafInteractions', () => ({
-  useLeafInteractions: () => ({
-    handleReaction: jest.fn(),
-    handleComment: jest.fn(),
-    handleShare: jest.fn(),
-    isLoading: false,
+// Mock the modern leaf interaction hooks
+jest.mock('@/hooks/use-leaves', () => ({
+  useAddLeafReaction: () => ({
+    mutate: jest.fn(),
+    isPending: false,
+  }),
+  useAddLeafComment: () => ({
+    mutate: jest.fn(),
+    isPending: false,
+  }),
+  useShareLeafWithBranches: () => ({
+    mutate: jest.fn(),
+    isPending: false,
   }),
 }))
 

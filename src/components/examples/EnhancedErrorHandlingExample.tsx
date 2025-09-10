@@ -53,7 +53,7 @@ export default function EnhancedErrorHandlingExample() {
   const fileUploadOperation = useFileUploadOperation({
     successMessage: 'File uploaded successfully!',
     onError: (error) => {
-      console.log('Upload failed:', error.message)
+      logger.error('Upload failed', error)
     }
   })
 
@@ -62,14 +62,14 @@ export default function EnhancedErrorHandlingExample() {
     maxRetries: 3,
     initialDelay: 1000,
     onRetryAttempt: (attempt, error) => {
-      console.log(`Retry attempt ${attempt}:`, error.message)
+      logger.warn(`Retry attempt ${attempt}`, { metadata: { error: error.message } })
     }
   })
 
   const apiRetry = useApiRetry({
     maxRetries: 2,
     onMaxRetriesReached: (error) => {
-      console.log('Max retries reached:', error.message)
+      logger.error('Max retries reached', error)
     }
   })
 

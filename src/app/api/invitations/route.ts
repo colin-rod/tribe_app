@@ -6,6 +6,7 @@ import { sanitizeEmail } from '@/lib/validation/sanitization'
 import { ValidationError, SecurityError } from '@/lib/validation/errors'
 import { createComponentLogger } from '@/lib/logger'
 import { getUserBranchPermissions } from '@/lib/rbac'
+import { invitationEmailService } from '@/lib/email/invitation-email-service'
 
 const logger = createComponentLogger('InvitationsAPI')
 
@@ -151,8 +152,23 @@ export async function POST(req: NextRequest) {
         targetId: validatedData.branch_id || validatedData.tree_id,
       })
 
-      // TODO: Send email notification
-      // await sendInvitationEmail(invitation)
+      // Send email notification
+      try {
+        // Get additional data for the email
+        const emailData = await getInvitationEmailData(supabase, invitation, isBranchInvitation)
+        await invitationEmailService.sendInvitationEmail(emailData)
+        
+        logger.info('Invitation email sent successfully', {
+          invitationId: invitation.id,
+          email: sanitizedEmail
+        })
+      } catch (emailError) {
+        // Log email error but don't fail the invitation creation
+        logger.error('Failed to send invitation email', emailError, {
+          invitationId: invitation.id,
+          email: sanitizedEmail
+        })
+      }
 
       return NextResponse.json(
         {
@@ -274,6 +290,57 @@ async function getUserIdByEmail(supabase: ReturnType<typeof createClient>, email
     .single()
   
   return profile?.id || null
+}
+
+/**
+ * Get additional data needed for invitation email
+ */
+async function getInvitationEmailData(
+  supabase: ReturnType<typeof createClient>, 
+  invitation: any, 
+  isBranchInvitation: boolean
+) {
+  // Get inviter name
+  const { data: inviterProfile } = await supabase
+    .from('profiles')
+    .select('first_name, last_name')
+    .eq('id', invitation.invited_by)
+    .single()
+
+  const inviterName = inviterProfile 
+    ? `${inviterProfile.first_name || ''} ${inviterProfile.last_name || ''}`.trim()
+    : 'Someone'
+
+  // Get tree/branch name
+  let targetName = ''
+  if (isBranchInvitation) {
+    const { data: branch } = await supabase
+      .from('branches')
+      .select('name')
+      .eq('id', invitation.branch_id)
+      .single()
+    targetName = branch?.name || 'Branch'
+  } else if (invitation.tree_id) {
+    const { data: tree } = await supabase
+      .from('trees')
+      .select('name')
+      .eq('id', invitation.tree_id)
+      .single()
+    targetName = tree?.name || 'Tree'
+  }
+
+  return {
+    id: invitation.id,
+    email: invitation.email,
+    role: invitation.role,
+    invited_by: invitation.invited_by,
+    tree_id: invitation.tree_id,
+    branch_id: invitation.branch_id,
+    expires_at: invitation.expires_at,
+    tree_name: !isBranchInvitation ? targetName : undefined,
+    branch_name: isBranchInvitation ? targetName : undefined,
+    inviter_name: inviterName
+  }
 }
 
 /**
