@@ -7,6 +7,7 @@ export interface EmailAttachment {
   contentType: string
   size: number
   url: string
+  storagePath?: string
 }
 
 export interface IncomingEmail {

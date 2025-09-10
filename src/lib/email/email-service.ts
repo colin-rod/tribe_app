@@ -13,12 +13,10 @@ import { LeafCreator } from './leaf-creator'
 const logger = createComponentLogger('EmailService')
 
 export class EmailService {
-  private emailParser: EmailParser
   private userResolver: UserResolver
   private leafCreator: LeafCreator
 
   constructor() {
-    this.emailParser = new EmailParser()
     this.userResolver = new UserResolver()
     this.leafCreator = new LeafCreator()
   }
@@ -28,8 +26,49 @@ export class EmailService {
     supabase: SupabaseClient
   ): Promise<EmailProcessingResult> {
     try {
-      // Parse email data
-      const emailData = await this.emailParser.parseEmail(req)
+      // First, do a quick check to extract userId for attachment handling
+      const formData = await req.formData()
+      const recipient = formData.get('recipient') as string || ''
+      
+      // Check if this is a user email first (before parsing attachments)
+      if (!this.userResolver.isUserEmail(recipient)) {
+        logger.info('Non-user email received, skipping processing', {
+          metadata: {
+            emailTo: recipient,
+            emailFrom: formData.get('sender') as string || '',
+            subject: formData.get('subject') as string || ''
+          }
+        })
+        
+        return {
+          success: true,
+          error: 'Email received but not processed (not a user email)'
+        }
+      }
+
+      // Extract user ID for attachment handling
+      const userId = this.userResolver.extractUserIdFromEmail(recipient)
+      if (!userId) {
+        logger.warn('Could not extract user ID from email', {
+          metadata: { emailTo: recipient }
+        })
+        
+        return {
+          success: false,
+          error: 'Invalid email address format'
+        }
+      }
+
+      // Reconstruct the request with the form data for the parser
+      const newReq = new Request(req.url, {
+        method: 'POST',
+        headers: req.headers,
+        body: formData
+      }) as NextRequest
+
+      // Create parser with Supabase client and parse email data
+      const emailParser = new EmailParser(supabase)
+      const emailData = await emailParser.parseEmail(newReq, userId)
       
       logger.info('Email parsed successfully', {
         metadata: {
@@ -40,35 +79,6 @@ export class EmailService {
           attachmentCount: emailData.attachments?.length || 0
         }
       })
-
-      // Check if this is a user email
-      if (!this.userResolver.isUserEmail(emailData.to)) {
-        logger.info('Non-user email received, skipping processing', {
-          metadata: {
-            emailTo: emailData.to,
-            emailFrom: emailData.from,
-            subject: emailData.subject
-          }
-        })
-        
-        return {
-          success: true,
-          error: 'Email received but not processed (not a user email)'
-        }
-      }
-
-      // Extract user ID
-      const userId = this.userResolver.extractUserIdFromEmail(emailData.to)
-      if (!userId) {
-        logger.warn('Could not extract user ID from email', {
-          metadata: { emailTo: emailData.to }
-        })
-        
-        return {
-          success: false,
-          error: 'Invalid email address format'
-        }
-      }
 
       // Verify user exists
       const { data: user, error: userError } = await supabase
