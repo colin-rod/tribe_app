@@ -248,7 +248,7 @@ export async function POST(req: NextRequest) {
       media_urls: mediaUrls,
       tags: tags,
       ai_caption: generateAICaption(emailData),
-    })
+    }, supabase)
 
     if (!leaf) {
       logger.error('Failed to create leaf from email', { 

@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         content: 'Debug test leaf',
         tags: [],
         ai_caption: 'Debug test'
-      })
+      }, supabase)
       
       if (!leaf) {
         console.error('❌ createUnassignedLeaf returned null')

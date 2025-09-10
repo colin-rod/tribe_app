@@ -95,20 +95,25 @@ export async function assignLeafToBranches(
 /**
  * Create a leaf without any branch assignment (unassigned)
  */
-export async function createUnassignedLeaf(leafData: {
-  author_id: string
-  leaf_type: string
-  content?: string
-  media_urls?: string[]
-  tags?: string[]
-  milestone_type?: string
-  milestone_date?: string
-  season?: string
-  ai_caption?: string
-  ai_tags?: string[]
-}): Promise<Leaf | null> {
+export async function createUnassignedLeaf(
+  leafData: {
+    author_id: string
+    leaf_type: string
+    content?: string
+    media_urls?: string[]
+    tags?: string[]
+    milestone_type?: string
+    milestone_date?: string
+    season?: string
+    ai_caption?: string
+    ai_tags?: string[]
+  },
+  clientOverride?: any
+): Promise<Leaf | null> {
+  const client = clientOverride || supabase
+  
   return AsyncUtils.supabaseQuery(
-    () => supabase
+    () => client
       .from('posts')
       .insert({
         ...leafData,
