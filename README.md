@@ -16,9 +16,11 @@ A private family sharing platform built with Next.js 15 and Supabase. Create int
 
 ### 📸 **Rich Memory Sharing**
 - 📱 **Rich Media Support** - Share photos, videos, voice notes, and milestone moments
+- 📧 **Email-to-Memory** - Send photos/videos/audio directly via email to create instant memories
 - 🎉 **Milestone Tracking** - Capture and celebrate important family moments with special milestone posts
 - 💬 **Real-time Engagement** - Live comments, likes, and instant notifications when family shares
 - 🏷️ **Smart Organization** - Organize memories by branches, milestones, and family topics
+- ☁️ **Automatic Media Storage** - All email attachments automatically uploaded to secure cloud storage
 
 ### 🛡️ **Security & Privacy**
 - 🔐 **Row Level Security** - Database-level security ensuring complete privacy
@@ -41,6 +43,8 @@ A private family sharing platform built with Next.js 15 and Supabase. Create int
 
 - **Node.js 18+** (Latest LTS recommended)
 - **Supabase Account** - [Create account](https://supabase.com)
+- **SendGrid Account** - [Create account](https://sendgrid.com) for email integration
+- **Domain Access** - To configure email DNS settings
 - **Git** - For cloning the repository
 
 ### Setup Instructions
@@ -62,9 +66,13 @@ A private family sharing platform built with Next.js 15 and Supabase. Create int
 3. **Configure Environment**
    ```bash
    cp .env.local.example .env.local
-   # Edit .env.local with your Supabase credentials:
+   # Edit .env.local with your credentials:
    # NEXT_PUBLIC_SUPABASE_URL=your-project-url
    # NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   # SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   # SENDGRID_API_KEY=your-sendgrid-api-key
+   # SENDGRID_FROM_EMAIL=noreply@your-domain.com
+   # WEBHOOK_API_KEY=your-secure-webhook-key
    ```
 
 4. **Run Database Migrations**
@@ -76,12 +84,19 @@ A private family sharing platform built with Next.js 15 and Supabase. Create int
    # (Run additional migrations as needed)
    ```
 
-5. **Start Development Server**
+5. **Configure Email Integration (Optional)**
+   ```bash
+   # See SENDGRID_SETUP.md for detailed email setup
+   # Configure SendGrid Parse API for email-to-memory feature
+   # Set up DNS records for your domain
+   ```
+
+6. **Start Development Server**
    ```bash
    npm run dev
    ```
 
-6. **Visit Your App**
+7. **Visit Your App**
    ```
    Open http://localhost:3000
    Create your account and start growing your family tree! 🌱
@@ -96,6 +111,8 @@ A private family sharing platform built with Next.js 15 and Supabase. Create int
 tree_app/
 ├── src/
 │   ├── app/                    # Next.js 15 App Router
+│   │   ├── api/               # API routes
+│   │   │   └── webhooks/      # Email webhook endpoints
 │   │   ├── auth/              # Authentication pages  
 │   │   ├── branches/          # Branch management
 │   │   ├── dashboard/         # Main family dashboard
@@ -113,6 +130,7 @@ tree_app/
 │   │   └── ui/                # UI library components
 │   ├── hooks/                 # Custom React hooks
 │   ├── lib/                   # Utility libraries
+│   │   ├── email/            # Email processing & attachments
 │   │   ├── supabase/         # Supabase client & server
 │   │   ├── validation/        # Form validation & schemas
 │   │   ├── error-handler.ts   # Error handling system
@@ -123,6 +141,8 @@ tree_app/
 │   └── migrations/           # Database schema migrations
 ├── public/                   # Static assets
 ├── docs/                     # Documentation
+├── scripts/                  # Utility scripts and tests
+├── SENDGRID_SETUP.md        # Email integration setup guide
 ├── TODO.md                   # Comprehensive improvement roadmap
 ├── TESTING.md               # Detailed testing guide
 └── README.md               # This file
@@ -131,10 +151,12 @@ tree_app/
 ### Key Technologies
 - **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, Real-time)
+- **Email Integration**: SendGrid Parse API for email-to-memory features
 - **Authentication**: Supabase Auth with email confirmation
 - **Database**: PostgreSQL with Row Level Security (RLS)
-- **Storage**: Supabase Storage for media files
+- **Storage**: Supabase Storage for media files (photos, videos, audio)
 - **Real-time**: Supabase Real-time subscriptions
+- **Media Processing**: Automatic base64 to cloud storage conversion
 - **Deployment**: Vercel (recommended)
 - **State Management**: React Query + React Context
 - **Forms**: React Hook Form with Zod validation
@@ -161,9 +183,18 @@ Your family's **home base** where all branches are organized. Each tree represen
 ### Family Leaves (Posts) 📝
 **Individual memories** shared within branches - the heart of your family's story.
 - **Rich Content** - Text, photos, videos, voice notes, and milestone tracking
+- **Email Creation** - Send media directly via email to create instant memories
 - **Real-time Sharing** - Family sees updates instantly across all devices
 - **Milestone Support** - Special posts for first words, steps, birthdays, achievements
 - **Interactive** - Comments, likes, and reactions to engage with memories
+
+### Email-to-Memory Integration 📧
+**Send memories directly via email** - the easiest way to capture moments on the go.
+- **Unique Email Addresses** - Each user gets a personal email address for their memories
+- **Instant Media Upload** - Photos, videos, and audio automatically uploaded to secure storage
+- **Smart Content Processing** - Email subjects and body text become memory captions
+- **Automatic Organization** - Hashtags and milestone keywords detected automatically
+- **Universal Access** - Works from any device with email capability
 
 ### User Roles 👥
 - **Owner** - Full control over trees/branches, member management, settings
@@ -213,8 +244,18 @@ npm run test:ci
 - [ ] User registration and tree creation
 - [ ] Branch creation within trees
 - [ ] Real-time posts across multiple browsers
+- [ ] Email-to-memory feature with media attachments
+- [ ] Media file playback (audio/video) and display (photos)
 - [ ] Mobile responsive design
 - [ ] Error handling and edge cases
+
+### Email Integration Testing
+- [ ] Send email with photo attachment → verify photo displays in dashboard
+- [ ] Send email with video attachment → verify video plays in leaf card
+- [ ] Send email with audio attachment → verify audio controls work
+- [ ] Test multiple attachments in single email
+- [ ] Verify email subject appears as leaf caption
+- [ ] Test hashtag detection from email content
 
 ---
 
@@ -277,6 +318,10 @@ npm run test:ci
    # Add in Vercel dashboard:
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   SENDGRID_API_KEY=your-sendgrid-api-key
+   SENDGRID_FROM_EMAIL=noreply@your-domain.com
+   WEBHOOK_API_KEY=your-secure-webhook-key
    ```
 
 3. **Deploy**
@@ -294,7 +339,9 @@ npm run test:ci
 ### Production Checklist
 - [ ] Environment variables configured
 - [ ] Database migrations applied
-- [ ] Storage bucket configured
+- [ ] Storage bucket configured ('media' bucket in Supabase)
+- [ ] SendGrid domain and MX records configured
+- [ ] Email webhook endpoints set up
 - [ ] Real-time subscriptions enabled
 - [ ] Error monitoring set up
 - [ ] Analytics configured (optional)
@@ -361,13 +408,14 @@ We welcome contributions that help families better connect and preserve memories
 ### 🚨 **Current Focus** (Next 1-2 months)
 - [x] **Enhanced Testing Infrastructure** - Comprehensive test suite with Jest and RTL
 - [x] **Improved Error Handling** - Better error boundaries and user feedback
-- [ ] **Email Notifications** - Complete invitation and activity notifications
+- [x] **Email Integration** - Complete SendGrid email-to-memory feature with media support
+- [x] **Media Processing** - Automatic upload and storage of email attachments
 - [ ] **Performance Optimization** - Bundle size and loading speed improvements
 - [ ] **Mobile Enhancement** - Progressive Web App features
 
 ### 🎯 **High Priority** (Next 3-6 months)
+- [ ] **Email Notifications** - Complete invitation and activity notifications
 - [ ] **Family Calendar Integration** - Sync events, birthdays, milestones
-- [ ] **Voice Messages** - Native voice recording for posts
 - [ ] **Progressive Web App** - Offline support, push notifications
 - [ ] **Enhanced Photo Management** - Batch uploads, smart organization
 - [ ] **Multi-Factor Authentication** - Enhanced security options

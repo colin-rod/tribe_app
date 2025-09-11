@@ -10,6 +10,7 @@ This document provides comprehensive testing scenarios for the Tree app's tree-f
 - [RBAC Permissions Testing](#rbac-permissions-testing)
 - [Cross-Tree Functionality](#cross-tree-functionality)
 - [Post Creation & Media](#post-creation--media)
+- [Email Integration Testing](#email-integration-testing)
 - [Real-time Features](#real-time-features)
 - [Profile System](#profile-system)
 - [Dashboard & Navigation](#dashboard--navigation)
@@ -23,6 +24,7 @@ This document provides comprehensive testing scenarios for the Tree app's tree-f
 ### Setup Checklist
 - [ ] Supabase project created and configured
 - [ ] Environment variables set in `.env.local`
+- [ ] SendGrid account and domain configured (for email testing)
 - [ ] Database migrations run (especially `20250826_implement_rbac_functions.sql`)
 - [ ] Development server running (`npm run dev`)
 - [ ] Browser dev tools open (F12) for debugging
@@ -353,6 +355,178 @@ SELECT user_has_permission(
 - [ ] Draft persists across browser sessions
 - [ ] File removal works without errors
 - [ ] Complex posts display all elements correctly
+
+---
+
+## 📧 **Email Integration Testing**
+
+### Prerequisites for Email Testing
+**Setup Required:**
+- [ ] SendGrid account created and configured
+- [ ] Domain MX records pointing to SendGrid
+- [ ] SendGrid Parse webhook configured to your app
+- [ ] Environment variables set (SENDGRID_API_KEY, SENDGRID_FROM_EMAIL)
+- [ ] User account with known user ID for generating test email address
+
+### Test Case 16: Basic Email-to-Memory Creation
+**Scenario:** Send plain text email and verify leaf creation
+
+**Steps:**
+1. **Get Test Email Address**: From user dashboard, copy unique email address (format: u-{userId}@yourdomain.com)
+2. **Send Plain Email**: From any email client, send:
+   - To: `u-{userId}@yourdomain.com` 
+   - Subject: "Test memory from email"
+   - Body: "This is a test memory created via email! #family #test"
+3. **Check Dashboard**: Navigate to dashboard and check Inbox tab
+4. **Verify Content**: Confirm new leaf appears with correct content
+
+**Expected Result:**
+- [ ] Email received by SendGrid and forwarded to webhook
+- [ ] New leaf created in user's inbox within 30 seconds
+- [ ] Subject appears as main content with "📧 Email" indicator
+- [ ] Body text displays below subject
+- [ ] Hashtags (#family, #test) extracted and display as tags
+- [ ] Leaf type set to 'text' for email without media
+
+### Test Case 17: Photo Email Upload
+**Scenario:** Send email with photo attachments and verify media handling
+
+**Steps:**
+1. **Send Email with Photos**: Send email with:
+   - Subject: "Family dinner tonight"
+   - Body: "Great food and even better company! #dinner #family"
+   - Attachments: 2-3 JPG/PNG images (under 5MB each)
+2. **Verify Upload**: Check dashboard immediately after sending
+3. **Test Media Display**: Click on leaf to view full media
+4. **Multiple Formats**: Test with different formats (JPG, PNG, GIF, WebP)
+
+**Expected Result:**
+- [ ] Photos automatically uploaded to Supabase Storage
+- [ ] Leaf type set to 'photo' 
+- [ ] Primary photo displays in card preview
+- [ ] Multiple photos show thumbnail previews below main image
+- [ ] "📧 Email Upload" indicator shows on images
+- [ ] Full-size images viewable in expanded view
+- [ ] Public URLs generated and accessible
+- [ ] Different image formats handled correctly
+
+### Test Case 18: Video Email Upload
+**Scenario:** Send email with video attachment and verify playback
+
+**Steps:**
+1. **Send Video Email**: Send with:
+   - Subject: "Kids playing in the park"
+   - Body: "Love watching them have fun #kids #playground"  
+   - Attachment: MP4 or MOV video file (under 10MB)
+2. **Verify Processing**: Wait for email processing (may take longer for video)
+3. **Test Playback**: Click play button in leaf card
+4. **Video Controls**: Test pause, seek, volume controls
+
+**Expected Result:**
+- [ ] Video uploaded to Supabase Storage successfully
+- [ ] Leaf type set to 'video'
+- [ ] Native HTML5 video player displays with controls
+- [ ] "📧 Email Video" indicator appears on video
+- [ ] Video plays without errors across different browsers
+- [ ] Multiple video formats supported (MP4, WebM, OGG)
+
+### Test Case 19: Audio Email Upload
+**Scenario:** Send email with audio attachment and verify playback
+
+**Steps:**
+1. **Send Audio Email**: Send with:
+   - Subject: "Baby's first words!"
+   - Body: "Recording of Emma saying 'mama' for the first time! #milestone #firstwords"
+   - Attachment: Audio file (MP3, WAV, M4A under 5MB)
+2. **Verify Audio Processing**: Check dashboard for new leaf
+3. **Test Playback**: Use audio controls to play recording
+4. **Audio Quality**: Verify clear playback without distortion
+
+**Expected Result:**
+- [ ] Audio uploaded to Supabase Storage
+- [ ] Leaf type set to 'audio'
+- [ ] Native HTML5 audio controls display
+- [ ] "📧 Email Audio" indicator appears
+- [ ] Audio plays clearly across different devices
+- [ ] Multiple audio formats supported (MP3, OGG, WAV)
+- [ ] Milestone keywords detected and tagged automatically
+
+### Test Case 20: Multiple Attachments Email
+**Scenario:** Send email with mixed media types and verify handling
+
+**Steps:**
+1. **Send Mixed Media Email**: Send with:
+   - Subject: "Family vacation highlights"
+   - Body: "Photos and videos from our amazing trip! #vacation #memories"
+   - Attachments: 2 photos, 1 video, 1 audio file
+2. **Verify Processing**: Check all media uploads successfully
+3. **Test Display**: Verify each media type displays correctly
+4. **Attachment Count**: Confirm attachment count indicators
+
+**Expected Result:**
+- [ ] All attachments processed and uploaded
+- [ ] Primary attachment determines leaf type (photos = photo, etc.)
+- [ ] Thumbnail previews show for additional media
+- [ ] "+X more" indicators show correct counts
+- [ ] Each media type playable/viewable independently
+- [ ] Mixed content displays in organized layout
+
+### Test Case 21: Email Error Handling
+**Scenario:** Test email processing with various error conditions
+
+**Steps:**
+1. **Oversized Attachments**: Send email with files >10MB
+2. **Unsupported Formats**: Send with .docx, .pdf, .zip files
+3. **Invalid Email Format**: Send to malformed email address
+4. **Empty Email**: Send email with no subject or body
+5. **Network Issues**: Test during simulated network problems
+
+**Expected Result:**
+- [ ] Oversized files rejected with appropriate error logging
+- [ ] Unsupported formats ignored gracefully (no crash)
+- [ ] Invalid email addresses rejected at SendGrid level
+- [ ] Empty emails create basic text leaf with timestamp
+- [ ] Network issues retry automatically and succeed
+- [ ] Error messages logged but don't prevent successful processing
+- [ ] Failed uploads noted in leaf content (e.g., "2 attachments failed")
+
+### Test Case 22: Email Content Processing
+**Scenario:** Test smart content processing features
+
+**Steps:**
+1. **Hashtag Detection**: Send email with "Great day at the beach! #beach #summer #vacation"
+2. **Milestone Keywords**: Send with "Emma took her first steps today! Such a milestone moment #baby"
+3. **HTML Email**: Send rich HTML email with formatting
+4. **Reply/Forward**: Send forwarded email with RE: or FW: prefixes
+5. **Special Characters**: Send with emojis, international characters
+
+**Expected Result:**
+- [ ] Hashtags extracted and displayed as tags
+- [ ] Milestone keywords trigger milestone leaf type
+- [ ] HTML content converted to clean text
+- [ ] Reply/forward prefixes handled appropriately
+- [ ] Special characters and emojis display correctly
+- [ ] Content formatting preserved where possible
+- [ ] Email subject and body separated properly
+
+### Test Case 23: Email Authentication & Security
+**Scenario:** Test email webhook security and user validation
+
+**Steps:**
+1. **Valid User Email**: Send to known user email address
+2. **Invalid User Email**: Send to u-nonexistent@yourdomain.com
+3. **Wrong Domain**: Send to user@wrongdomain.com (if webhook configured)
+4. **Spam/Malicious**: Send email with suspicious content
+5. **Rate Limiting**: Send multiple emails rapidly
+
+**Expected Result:**
+- [ ] Valid user emails create leaves successfully
+- [ ] Invalid user emails rejected gracefully (no leaf created)
+- [ ] Wrong domain emails ignored/rejected
+- [ ] Malicious content filtered appropriately
+- [ ] Rate limiting prevents spam (if configured)
+- [ ] All security events logged properly
+- [ ] No sensitive information leaked in error responses
 
 ---
 

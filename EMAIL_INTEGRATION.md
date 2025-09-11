@@ -1,108 +1,149 @@
-# Email-to-Leaf Integration MVP
+# Email-to-Memory Integration
 
 ## Overview
 
-This MVP implements a single-channel content ingestion system that allows users to send emails with content (text, photos, videos) directly to the platform, creating unassigned leaves that can be organized later.
+The email integration allows family members to create memories by sending emails with photos, videos, or audio directly to their unique email address. Media files are automatically uploaded to secure cloud storage, and the system creates beautiful, organized family memories that can be assigned to branches later.
 
 ## Features Implemented
 
 ### 1. API Endpoints
 
-#### `/api/leaves` 
-- **POST**: Create unassigned leaves (supports both authenticated users and webhook calls)
-- **GET**: Retrieve user's leaves with optional filtering for unassigned content
-- Authentication via user session or API key for webhook calls
+#### `/api/webhooks/sendgrid` 
+- **POST**: Receives emails from SendGrid Parse API
+- Processes email content and base64-encoded attachments
+- Uploads media to Supabase Storage automatically
+- Creates unassigned leaves with smart content processing
+- Authentication via webhook API key or SendGrid source validation
 
-#### `/api/webhooks/email`
-- **POST**: Receive emails from email service providers (Mailgun, SendGrid, etc.)
-- Parses email content, extracts attachments, and creates unassigned leaves
-- Supports hashtag extraction and automatic milestone detection
+#### `/api/leaves`
+- **POST**: Create unassigned leaves (supports authenticated users and webhook calls)
+- **GET**: Retrieve user's leaves with filtering options
+- Enhanced to handle email-originated content with media URLs
 
-### 2. Email Processing
+### 2. Media Processing & Storage
 
-#### Supported Email Formats
-Users can send emails to: `u-{userId}@colinrodrigues.com`
+#### Supported Media Types
+- 📸 **Images**: JPG, PNG, GIF, WebP → Creates `photo` leaf type
+- 🎵 **Audio**: MP3, WAV, M4A, OGG → Creates `audio` leaf type  
+- 🎥 **Video**: MP4, MOV, AVI, WebM → Creates `video` leaf type
 
-#### Content Processing
-- **Subject**: Used as AI caption if available
-- **Body**: Extracted as leaf content
-- **Attachments**: Uploaded as media URLs, determines leaf type:
-  - Images → `photo` leaf type  
-  - Videos → `video` leaf type
-  - Audio → `audio` leaf type
-- **Hashtags**: Automatically extracted from content (`#milestone`, `#family`, etc.)
-- **Milestone Detection**: Keywords like "first", "birthday", "achievement" trigger milestone leaf type
+#### Email Format
+Users send emails to: `u-{userId}@yourdomain.com`
 
-### 3. User Interface
+#### Processing Pipeline
+1. **Email Reception**: SendGrid Parse API receives email
+2. **Base64 Decoding**: Attachments decoded from base64
+3. **Media Upload**: Files uploaded to Supabase Storage (`email-attachments/{userId}/{emailId}/`)
+4. **Content Processing**:
+   - **Subject**: Displayed prominently with email indicator
+   - **Body**: Main content text with hashtag extraction
+   - **Media URLs**: Attached to leaf for display
+   - **Tags**: Hashtags extracted automatically (`#family`, `#milestone`)
+   - **Type Detection**: Leaf type determined by primary attachment
+
+### 3. Frontend Enhancements
+
+#### LeafCard Improvements
+- **Email Origin Indicators**: Visual "📧 Email" badges
+- **Subject Display**: Email subjects shown prominently above content
+- **Media Enhancement**: 
+  - Multiple photo thumbnail previews
+  - Native video/audio playback controls
+  - "📧 Email Upload" overlays on media
+- **Content Formatting**: Clean display without technical email artifacts
 
 #### Dashboard Integration
-- **Inbox Tab**: New view mode in dashboard showing unassigned leaves
-- **Email Info Card**: Shows users their unique email address for sending content
-- **Assignment Workflow**: Existing drag-and-drop and multi-select assignment system
+- **Inbox Tab**: Unassigned leaves from emails appear with email indicators
+- **Email Address Display**: Users can easily find their unique email address
+- **Media Playback**: Full video/audio playback directly in leaf cards
+- **Responsive Design**: Media displays optimally on all device sizes
 
-#### UnassignedLeavesPanel Enhancements
-- Added email integration information
-- Shows user's unique email address: `u-{userId}@colinrodrigues.com`
-- Instructions for email-to-leaf functionality
+## Quick Setup Guide
 
-## Configuration
+### 1. SendGrid Account Setup
+1. Create [SendGrid account](https://sendgrid.com)
+2. Authenticate your domain (add DNS records)
+3. Create API key with Full Access
+4. Configure Inbound Parse webhook → `https://your-app.com/api/webhooks/sendgrid`
 
-### Environment Variables
+### 2. Environment Variables
 
 ```env
-# Required for webhook authentication
+# SendGrid Configuration  
+SENDGRID_API_KEY=SG.your-sendgrid-api-key-here
+SENDGRID_FROM_EMAIL=noreply@your-domain.com
+
+# Webhook Security
 WEBHOOK_API_KEY=your-secure-webhook-api-key
 
-# Email service configuration (not implemented in MVP)
-MAILGUN_API_KEY=your-mailgun-api-key
-MAILGUN_DOMAIN=your-domain.com
+# Supabase (required for media storage)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-### Email Service Setup
+### 3. DNS Configuration
+Add these DNS records to your domain:
 
-The webhook endpoint expects email data in this format:
+**MX Record:**
+```
+Type: MX, Name: @, Value: mx.sendgrid.net, Priority: 10
+```
 
-```json
+**SPF Record:**  
+```
+Type: TXT, Name: @, Value: v=spf1 include:sendgrid.net ~all
+```
+
+### 4. Test the Integration
+1. Send test email to: `u-{your-user-id}@your-domain.com`
+2. Check dashboard Inbox tab for new memory
+3. Verify media files upload and display correctly
+
+## SendGrid Data Format
+
+SendGrid sends form data to the webhook:
+
+```javascript
 {
-  "to": "u-abc123@colinrodrigues.com",
-  "from": "user@example.com", 
-  "subject": "My milestone photo",
-  "text": "Check out this amazing moment! #milestone #family",
-  "attachments": [
-    {
-      "filename": "photo.jpg",
-      "contentType": "image/jpeg",
-      "size": 1024000,
-      "url": "https://storage.example.com/photo.jpg"
-    }
-  ]
+  to: "u-abc123@yourdomain.com",
+  from: "user@example.com", 
+  subject: "My milestone photo",
+  text: "Check out this amazing moment! #milestone #family",
+  attachments: "1",
+  attachment1: "photo.jpg",
+  attachment1_content_type: "image/jpeg", 
+  attachment1_content: "base64encodeddata..."
 }
 ```
 
 ## Usage Flow
 
-1. **User Setup**: User gets their unique email address from the Inbox tab
-2. **Send Email**: User emails content to `u-{userId}@colinrodrigues.com`
-3. **Email Processing**: Webhook receives email, processes content and attachments
-4. **Leaf Creation**: Creates unassigned leaf with appropriate type and metadata
-5. **Organization**: User sees new content in Inbox tab and assigns to branches
+1. **User Setup**: User finds their unique email address in dashboard
+2. **Send Email**: User emails photos/videos/audio to `u-{userId}@your-domain.com`
+3. **Processing**: SendGrid webhook processes email and uploads media to Supabase Storage
+4. **Memory Creation**: Creates new memory with media URLs and clean formatting  
+5. **Organization**: User assigns memory to family branches from Inbox
 
-## Security
+## Security & Features
 
-- Webhook endpoints protected by API key authentication
-- User ID validation ensures emails only create leaves for valid users
-- Rate limiting on API endpoints (30 requests/minute for leaves API)
-- Input validation and sanitization on all endpoints
+### Security
+- SendGrid webhook validation (user-agent and content-type checking)
+- User ID validation ensures only valid users can create memories
+- Secure media storage in Supabase with organized file paths
+- Input sanitization and content filtering
 
-## Future Enhancements
+### Current Features
+- ✅ **Base64 Media Processing**: Automatic decode and upload
+- ✅ **Multi-format Support**: Images, videos, audio files
+- ✅ **Smart Content Processing**: Hashtag extraction, milestone detection  
+- ✅ **Clean UI Display**: Email indicators, subject prominence, media previews
+- ✅ **Native Media Playback**: HTML5 video/audio controls
+- ✅ **Responsive Design**: Works on all device sizes
 
-### Phase 2 Possibilities
-- Multiple email channels (SMS, social media integrations)
-- AI-powered automatic branch assignment suggestions
-- Email templates for different content types
-- Bulk email processing for newsletters/updates
-- Integration with popular email providers (Gmail, Outlook)
-- Rich media support (embedded videos, documents)
+## For Full Setup Instructions
+
+See detailed setup guide: **[SENDGRID_SETUP.md](./SENDGRID_SETUP.md)**
+
+For comprehensive testing: **[TESTING.md - Email Integration Section](./TESTING.md#email-integration-testing)**
 
 ## Technical Architecture
 
