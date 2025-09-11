@@ -47,7 +47,7 @@ const babyTree = await createPersonTree({
 Each tree gets its own email address for content routing:
 
 ```typescript
-// Email format: person-{treeId}@yourdomain.com
+// Email format: person-{treeId}@colinrodrigues.com
 const emailAddress = `person-${babyTree.id}@colinrodrigues.com`;
 
 // Send photos to this address and they'll automatically:

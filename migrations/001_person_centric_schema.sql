@@ -110,7 +110,7 @@ WHERE NOT EXISTS (
 INSERT INTO tree_email_addresses (tree_id, email_address, created_by)
 SELECT 
   t.id as tree_id,
-  'person-' || t.id || '@yourdomain.com' as email_address,
+  'person-' || t.id || '@colinrodrigues.com' as email_address,
   t.created_by
 FROM trees t
 WHERE NOT EXISTS (

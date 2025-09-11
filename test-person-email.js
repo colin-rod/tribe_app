@@ -44,7 +44,10 @@ The system should:
 #milestone #test #family
     `.trim());
     
-    const response = await fetch('http://localhost:3000/api/webhooks/sendgrid', {
+    // Update this to your production domain
+    const VERCEL_URL = process.env.VERCEL_URL || 'https://colinrodrigues.com';
+    
+    const response = await fetch(`${VERCEL_URL}/api/webhooks/sendgrid`, {
       method: 'POST',
       body: payload,
       headers: {
