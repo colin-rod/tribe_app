@@ -61,6 +61,20 @@ export interface TreeSettings {
   custom_fields?: Record<string, string | number | boolean>
 }
 
+// Person-centric tree privacy levels
+export type TreePrivacyLevel = 'public' | 'shared' | 'private'
+
+// Family relationships between trees (people)
+export interface TreeRelationships {
+  parent_of?: string[]     // Tree IDs of children
+  child_of?: string[]      // Tree IDs of parents
+  sibling_of?: string[]    // Tree IDs of siblings
+  spouse_of?: string       // Tree ID of spouse
+  grandparent_of?: string[] // Tree IDs of grandchildren
+  grandchild_of?: string[]  // Tree IDs of grandparents
+  [key: string]: string[] | string | undefined
+}
+
 export interface Tree {
   id: string
   name: string
@@ -70,6 +84,12 @@ export interface Tree {
   updated_at: string
   is_active: boolean
   settings: TreeSettings
+  // New person-centric fields
+  person_name: string
+  person_birth_date: string | null
+  managed_by: string[]     // User IDs who can manage this person's tree
+  privacy_level: TreePrivacyLevel
+  relationships: TreeRelationships
 }
 
 export interface TreeMember {
@@ -94,6 +114,29 @@ export interface Branch {
   category: string | null
   location: string | null
   member_count: number
+}
+
+// Cross-tree branch sharing
+export type TreeBranchConnectionType = 'owner' | 'shared' | 'viewer'
+
+export interface TreeBranchConnection {
+  id: string
+  branch_id: string
+  tree_id: string
+  connection_type: TreeBranchConnectionType
+  connected_at: string
+  connected_by: string
+  created_at: string
+}
+
+// Person-specific email addresses
+export interface TreeEmailAddress {
+  id: string
+  tree_id: string
+  email_address: string
+  is_active: boolean
+  created_at: string
+  created_by: string
 }
 
 export interface BranchMember {
@@ -475,4 +518,85 @@ export type MessageType = Post['message_type']
 export type NotificationLevel = ConversationParticipant['notification_level']
 export type PromptType = AIPrompt['prompt_type']
 export type ConversationType = Conversation['conversation_type']
+
+// ============================================================================
+// Person-Centric Architecture Enhanced Types
+// ============================================================================
+
+// Enhanced tree with relationship details
+export interface TreeWithRelationships extends Tree {
+  connected_trees?: {
+    tree_id: string
+    person_name: string
+    relationship_type: keyof TreeRelationships
+    privacy_level: TreePrivacyLevel
+  }[]
+  email_addresses?: TreeEmailAddress[]
+  shared_branches?: (TreeBranchConnection & { branch: Branch })[]
+}
+
+// User's tree management context
+export interface UserTreeManagement {
+  managed_trees: TreeWithRelationships[]
+  own_trees: TreeWithRelationships[]
+  accessible_trees: TreeWithRelationships[]
+  total_trees: number
+}
+
+// Enhanced branch with cross-tree connections
+export interface BranchWithConnections extends Branch {
+  connected_trees: (TreeBranchConnection & { 
+    tree: Pick<Tree, 'id' | 'person_name' | 'privacy_level'>
+  })[]
+  primary_tree: Tree
+}
+
+// Person-specific content routing
+export interface PersonContentContext {
+  tree_id: string
+  person_name: string
+  email_addresses: string[]
+  age_months?: number
+  relationships: TreeRelationships
+  managed_by: string[]
+  privacy_level: TreePrivacyLevel
+}
+
+// Email routing result
+export interface EmailRoutingResult {
+  tree_id: string
+  person_name: string
+  email_address: string
+  routing_success: boolean
+  auto_share_candidates?: string[] // Other tree IDs to share with
+}
+
+// Family network statistics
+export interface FamilyNetworkStats {
+  total_people: number
+  active_relationships: number
+  shared_branches: number
+  cross_tree_content: number
+  email_addresses: number
+}
+
+// Tree creation for new person
+export interface CreatePersonTreeRequest {
+  person_name: string
+  person_birth_date?: string
+  privacy_level: TreePrivacyLevel
+  relationships?: Partial<TreeRelationships>
+  email_address?: string
+  description?: string
+}
+
+// Multi-tree content sharing
+export interface CrossTreeContentShare {
+  leaf_id: string
+  primary_tree_id: string
+  shared_tree_ids: string[]
+  sharing_reason: 'manual' | 'auto_detected' | 'relationship_based'
+  shared_by: string
+  shared_at: string
+}
 

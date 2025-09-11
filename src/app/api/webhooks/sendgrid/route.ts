@@ -77,62 +77,131 @@ export async function POST(req: NextRequest) {
       metadata: { attachmentCount: emailData.attachments.length }
     })
 
-    // Handle different email types with catch-all routing
+    // Handle different email types with support for person-specific routing
     const recipient = emailData.to.toLowerCase()
     logger.debug('Processing recipient', { metadata: { recipient } })
     
-    // Check if this is a user-specific email
-    if (!recipient.startsWith('u-')) {
-      logger.info('Non-user email detected, skipping processing')
+    let userId: string | null = null
+    let treeId: string | null = null
+    let routingType: 'user' | 'person' = 'user'
+    
+    // Check if this is a person-specific email (person-{treeId}@domain.com)
+    if (recipient.startsWith('person-')) {
+      treeId = extractTreeIdFromEmail(emailData.to)
+      routingType = 'person'
+      logger.debug('Person-specific email detected', { metadata: { treeId } })
+      
+      if (!treeId) {
+        logger.warn('Could not extract tree ID from person email', { 
+          metadata: { emailTo: emailData.to }
+        })
+        return NextResponse.json(
+          { error: 'Invalid person email address format' },
+          { status: 400 }
+        )
+      }
+    }
+    // Legacy user-specific email (u-{userId}@domain.com) 
+    else if (recipient.startsWith('u-')) {
+      userId = extractUserIdFromEmail(emailData.to)
+      routingType = 'user'
+      logger.debug('User-specific email detected', { metadata: { userId } })
+      
+      if (!userId) {
+        logger.warn('Could not extract user ID from email', { 
+          metadata: { emailTo: emailData.to }
+        })
+        return NextResponse.json(
+          { error: 'Invalid user email address format' },
+          { status: 400 }
+        )
+      }
+    }
+    // Unrecognized email format
+    else {
+      logger.info('Unrecognized email format, skipping processing', { metadata: { recipient } })
       return NextResponse.json({
         success: true,
-        message: 'Email notification received but not processed (not a user email)'
+        message: 'Email notification received but not processed (unrecognized format)'
       })
-    }
-    
-    // Extract user ID from email address
-    const userId = extractUserIdFromEmail(emailData.to)
-    logger.debug('User ID extracted', { metadata: { userId } })
-    
-    if (!userId) {
-      logger.warn('Could not extract user ID from email', { 
-        metadata: { emailTo: emailData.to }
-      })
-      return NextResponse.json(
-        { error: 'Invalid email address format' },
-        { status: 400 }
-      )
     }
 
-    // Verify user exists (using service client to bypass RLS)
+    // Initialize Supabase service client
     const supabase = createServiceClient()
-    const { data: user, error: userError } = await supabase
-      .from('profiles')
-      .select('id, email, first_name, last_name')
-      .eq('id', userId)
-      .single()
     
-    logger.debug('User query completed', { metadata: { userFound: !!user, hasError: !!userError } })
+    let actualUserId: string
+    let targetTreeId: string | null = null
 
-    if (userError || !user) {
-      logger.warn('User not found for email', { 
-        metadata: {
-          userId, 
-          emailTo: emailData.to
+    if (routingType === 'person') {
+      // For person-specific emails, verify tree exists and get managing user
+      const { data: treeData, error: treeError } = await supabase
+        .from('trees')
+        .select('id, person_name, managed_by, created_by')
+        .eq('id', treeId)
+        .single()
+      
+      logger.debug('Tree query completed', { 
+        metadata: { treeFound: !!treeData, hasError: !!treeError, treeId } 
+      })
+
+      if (treeError || !treeData) {
+        logger.warn('Tree not found for person email', { 
+          metadata: { treeId, emailTo: emailData.to }
+        })
+        return NextResponse.json(
+          { error: 'Person tree not found' },
+          { status: 404 }
+        )
+      }
+
+      // Use the first manager or creator as the author
+      actualUserId = treeData.managed_by.length > 0 ? treeData.managed_by[0] : treeData.created_by
+      targetTreeId = treeId
+      
+      logger.debug('Person routing resolved', { 
+        metadata: { 
+          personName: treeData.person_name, 
+          actualUserId, 
+          managedBy: treeData.managed_by 
         }
       })
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
+    } else {
+      // Legacy user routing - use the extracted user ID
+      actualUserId = userId!
+      
+      // Verify user exists
+      const { data: user, error: userError } = await supabase
+        .from('profiles')
+        .select('id, email, first_name, last_name')
+        .eq('id', actualUserId)
+        .single()
+      
+      logger.debug('User query completed', { 
+        metadata: { userFound: !!user, hasError: !!userError } 
+      })
+
+      if (userError || !user) {
+        logger.warn('User not found for email', { 
+          metadata: { userId: actualUserId, emailTo: emailData.to }
+        })
+        return NextResponse.json(
+          { error: 'User not found' },
+          { status: 404 }
+        )
+      }
     }
 
     // Process email content and attachments
-    const { content, mediaUrls, leafType, tags } = await processEmailContent(emailData, supabase, userId)
+    const { content, mediaUrls, leafType, tags } = await processEmailContent(
+      emailData, 
+      supabase, 
+      actualUserId,
+      targetTreeId
+    )
 
     // Create unassigned leaf
     const leaf = await createUnassignedLeaf({
-      author_id: userId,
+      author_id: actualUserId,
       leaf_type: leafType,
       content: content,
       media_urls: mediaUrls,
@@ -143,9 +212,11 @@ export async function POST(req: NextRequest) {
     if (!leaf) {
       logger.error('Failed to create leaf from email', { 
         metadata: {
-          userId, 
+          actualUserId, 
           emailFrom: emailData.from,
-          subject: emailData.subject
+          subject: emailData.subject,
+          routingType,
+          targetTreeId
         }
       })
       return NextResponse.json(
@@ -157,9 +228,11 @@ export async function POST(req: NextRequest) {
     logger.info('Successfully created leaf from SendGrid email', {
       metadata: {
         leafId: leaf.id,
-        userId,
+        actualUserId,
         leafType: leaf.leaf_type,
-        hasMedia: mediaUrls.length > 0
+        hasMedia: mediaUrls.length > 0,
+        routingType,
+        targetTreeId
       }
     })
 
@@ -168,6 +241,8 @@ export async function POST(req: NextRequest) {
       data: {
         leafId: leaf.id,
         leafType: leaf.leaf_type,
+        routingType,
+        ...(targetTreeId && { targetTreeId }),
         hasMedia: mediaUrls.length > 0
       },
       message: 'Email processed successfully via SendGrid'
@@ -219,12 +294,42 @@ function extractUserIdFromEmail(emailTo: string): string | null {
 }
 
 /**
+ * Extract tree ID from person-specific email address
+ * Supports: person-{treeId}@domain.com
+ */
+function extractTreeIdFromEmail(emailTo: string): string | null {
+  try {
+    const [localPart, domain] = emailTo.toLowerCase().split('@')
+    
+    // Check if it's our domain
+    if (!domain.includes('colinrodrigues.com')) {
+      return null
+    }
+    
+    // Person-specific pattern: person-abc123@colinrodrigues.com
+    if (localPart.startsWith('person-')) {
+      const treeId = localPart.replace('person-', '')
+      // Validate it looks like a UUID
+      if (treeId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)) {
+        return treeId
+      }
+    }
+    
+    return null
+  } catch (error) {
+    logger.error('Error extracting tree ID from email', { metadata: { emailTo, error } })
+    return null
+  }
+}
+
+/**
  * Process email content and determine leaf type
  */
 async function processEmailContent(
   email: ParsedEmail,
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  targetTreeId?: string | null
 ): Promise<{
   content: string
   mediaUrls: string[]
@@ -235,6 +340,25 @@ async function processEmailContent(
   const mediaUrls: string[] = []
   let leafType: 'photo' | 'video' | 'audio' | 'text' | 'milestone' = 'text'
   const tags: string[] = []
+
+  // Add person context if this is a person-specific email
+  if (targetTreeId) {
+    try {
+      const { data: treeData } = await supabase
+        .from('trees')
+        .select('person_name')
+        .eq('id', targetTreeId)
+        .single()
+      
+      if (treeData?.person_name) {
+        content += `📧 Email for: ${treeData.person_name}\n\n`
+      }
+    } catch (error) {
+      logger.warn('Could not fetch tree person name for context', { 
+        metadata: { targetTreeId, error }
+      })
+    }
+  }
 
   // Build content from email
   if (email.subject) {
