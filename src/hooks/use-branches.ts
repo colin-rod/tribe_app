@@ -79,13 +79,20 @@ export const useCreateBranch = () => {
     mutationFn: ({ data, userId }: { data: CreateBranchData; userId: string }) =>
       branchService.createBranch(data, userId),
     onSuccess: (newBranch: Branch, { data, userId }) => {
-      // Invalidate branches for the tree
+      // Invalidate branches for the primary tree
       queryClient.invalidateQueries({ queryKey: queryKeys.branches.byTree(data.tree_id) })
       
       // Invalidate user branches
       queryClient.invalidateQueries({ queryKey: queryKeys.branches.byUser(userId) })
       
-      // Optimistically add to cache if we have tree branches data
+      // If this is a cross-tree branch, invalidate branches for all connected trees
+      if (data.connected_trees && data.connected_trees.length > 0) {
+        data.connected_trees.forEach(conn => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.branches.byTree(conn.tree_id) })
+        })
+      }
+      
+      // Optimistically add to cache for primary tree
       queryClient.setQueryData(
         queryKeys.branches.byTree(data.tree_id),
         (oldData: any) => {
@@ -106,7 +113,13 @@ export const useCreateBranch = () => {
         }
       )
 
-      toast.success('Branch created successfully!')
+      // Success message based on branch type
+      const isMultiTree = data.connected_trees && data.connected_trees.length > 0
+      const successMessage = isMultiTree 
+        ? `Cross-tree branch "${data.name}" created successfully!`
+        : `Branch "${data.name}" created successfully!`
+      
+      toast.success(successMessage)
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to create branch')

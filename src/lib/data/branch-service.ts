@@ -16,7 +16,7 @@ export interface BranchQueryOptions extends QueryOptions {
 }
 
 export interface CreateBranchData {
-  tree_id: string
+  tree_id: string  // Primary tree (first selected person's tree)
   name: string
   description?: string
   color: string
@@ -24,6 +24,10 @@ export interface CreateBranchData {
   privacy: 'private' | 'invite_only'
   category?: string
   location?: string
+  connected_trees?: Array<{
+    tree_id: string
+    connection_type: 'owner' | 'shared' | 'viewer'
+  }>  // Additional trees for cross-tree branches
 }
 
 export interface UpdateBranchData {
@@ -142,21 +146,51 @@ class BranchService extends BaseService<Branch> {
   }
 
   /**
-   * Create a new branch
+   * Create a new branch with optional cross-tree connections
    */
   async createBranch(data: CreateBranchData, createdBy: string): Promise<Branch> {
-    return AsyncUtils.supabaseQuery(
+    // First create the branch
+    const branchResult = await AsyncUtils.supabaseQuery(
       () => this.supabase
         .from('branches')
         .insert({
-          ...data,
+          tree_id: data.tree_id,
+          name: data.name,
+          description: data.description,
+          color: data.color,
+          type: data.type,
+          privacy: data.privacy,
+          category: data.category,
+          location: data.location,
           created_by: createdBy,
           member_count: 1 // Creator is automatically a member
         })
         .select()
         .single(),
       'Failed to create branch'
-    ).then(result => result.data as Branch)
+    )
+
+    const branch = branchResult.data as Branch
+
+    // If connected_trees are specified, create cross-tree connections
+    if (data.connected_trees && data.connected_trees.length > 0) {
+      const connections = data.connected_trees.map(conn => ({
+        branch_id: branch.id,
+        tree_id: conn.tree_id,
+        connection_type: conn.connection_type,
+        connected_by: createdBy,
+        connected_at: new Date().toISOString()
+      }))
+
+      await AsyncUtils.supabaseQuery(
+        () => this.supabase
+          .from('tree_branch_connections')
+          .insert(connections),
+        'Failed to create cross-tree connections'
+      )
+    }
+
+    return branch
   }
 
   /**

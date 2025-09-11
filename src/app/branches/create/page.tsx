@@ -6,6 +6,7 @@ import { showSuccess, showErrorWithRetry, showLoading } from '@/lib/toast-servic
 import { handleError } from '@/lib/error-handler'
 import { useCurrentUser, useUserTrees } from '@/hooks'
 import { useCreateBranch } from '@/hooks/use-branches'
+import { PersonTreeSelector } from '@/components/branches/PersonTreeSelector'
 
 export default function CreateBranchPage() {
   const router = useRouter()
@@ -15,11 +16,11 @@ export default function CreateBranchPage() {
   const { data: treesData, isLoading: treesLoading } = useUserTrees(user?.id || '', !!user)
   const createBranchMutation = useCreateBranch()
   
-  // Form state - family branches only
+  // Form state - person-centric branches
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [color, setColor] = useState('#3B82F6')
-  const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null)
+  const [selectedTreeIds, setSelectedTreeIds] = useState<string[]>([])
   
   const loading = userLoading || treesLoading
   const userTrees = useMemo(() => treesData?.data || [], [treesData?.data])
@@ -39,10 +40,10 @@ export default function CreateBranchPage() {
     }
     
     // Set default selected tree to primary tree
-    if (primaryTreeId && !selectedTreeId) {
-      setSelectedTreeId(primaryTreeId)
+    if (primaryTreeId && selectedTreeIds.length === 0) {
+      setSelectedTreeIds([primaryTreeId])
     }
-  }, [user, userLoading, userError, router, loading, userTrees, primaryTreeId, selectedTreeId])
+  }, [user, userLoading, userError, router, loading, userTrees, primaryTreeId, selectedTreeIds])
 
   const colorOptions = [
     '#3B82F6', // Blue
@@ -60,26 +61,37 @@ export default function CreateBranchPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || !name.trim() || !selectedTreeId) return
+    if (!user || !name.trim() || selectedTreeIds.length === 0) return
 
     const loadingToast = showLoading('Creating your branch...')
 
     try {
+      // Primary tree is the first selected tree
+      const primaryTreeId = selectedTreeIds[0]
+      // Additional trees for cross-tree connections
+      const additionalTrees = selectedTreeIds.slice(1).map(treeId => ({
+        tree_id: treeId,
+        connection_type: 'shared' as const
+      }))
+
       await createBranchMutation.mutateAsync({
         data: {
-          tree_id: selectedTreeId,
+          tree_id: primaryTreeId,
           name: name.trim(),
           description: description.trim() || undefined,
           type: 'family',
           privacy: 'private',
           color,
-          created_by: user.id
+          connected_trees: additionalTrees.length > 0 ? additionalTrees : undefined
         },
         userId: user.id
       })
 
       // Success!
-      showSuccess(`"${name}" branch created successfully!`)
+      const branchTypeMsg = selectedTreeIds.length > 1 
+        ? `cross-tree branch connecting ${selectedTreeIds.length} people` 
+        : 'branch'
+      showSuccess(`"${name}" ${branchTypeMsg} created successfully!`)
       router.push('/dashboard')
       
     } catch (error: unknown) {
@@ -136,56 +148,14 @@ export default function CreateBranchPage() {
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow">
           <div className="p-6 space-y-6">
             
-            {/* Branch Info */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                  <span className="text-xl">👨‍👩‍👧‍👦</span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-blue-900">Creating Private Family Branch</h3>
-                  <p className="text-sm text-blue-700">
-                    Share family moments and memories with only the people you invite
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Tree Selection */}
-            {userTrees.length > 1 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Select Tree for this Branch *
-                </label>
-                <div className="space-y-2">
-                  {userTrees.map((treeData) => (
-                    <label key={treeData.tree_id} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="tree"
-                        value={treeData.tree_id}
-                        checked={selectedTreeId === treeData.tree_id}
-                        onChange={(e) => setSelectedTreeId(e.target.value)}
-                        className="mr-3 text-blue-600"
-                      />
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {treeData.trees?.name}
-                          {treeData.tree_id === primaryTreeId && (
-                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                              Primary
-                            </span>
-                          )}
-                        </div>
-                        {treeData.trees?.description && (
-                          <div className="text-sm text-gray-500">{treeData.trees.description}</div>
-                        )}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Person Selection */}
+            <PersonTreeSelector
+              userTrees={userTrees}
+              primaryTreeId={primaryTreeId}
+              selectedTreeIds={selectedTreeIds}
+              onSelectionChange={setSelectedTreeIds}
+              disabled={createBranchMutation.isPending}
+            />
 
             {/* Basic Information */}
             <div>
@@ -257,7 +227,7 @@ export default function CreateBranchPage() {
               </button>
               <button
                 type="submit"
-                disabled={createBranchMutation.isPending || !name.trim() || !selectedTreeId}
+                disabled={createBranchMutation.isPending || !name.trim() || selectedTreeIds.length === 0}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {createBranchMutation.isPending ? 'Creating Branch...' : 'Create Branch'}
