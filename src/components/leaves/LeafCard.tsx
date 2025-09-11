@@ -7,6 +7,7 @@ import { LeafWithDetails, ReactionType } from '@/types/database'
 import { formatDistanceToNow } from 'date-fns'
 import { useTactileCard, useParticleEffect, useHapticFeedback } from '@/hooks/useTactileInteractions'
 import { Card } from '@/components/ui/card'
+import { Icon, getLeafTypeIcon, type IconName } from '@/components/ui/IconLibrary'
 import { motion } from 'framer-motion'
 
 interface LeafCardProps {
@@ -98,17 +99,9 @@ const LeafCard = memo(function LeafCard({
     triggerHaptic('light')
   }, [triggerHaptic])
 
-  const leafTypeIcon = useMemo(() => {
-    switch (leaf.leaf_type) {
-      case 'photo': return '📸'
-      case 'video': return '🎥'
-      case 'audio': return '🎵'
-      case 'milestone': return leaf.milestone_icon || '⭐'
-      case 'memory': return '💭'
-      case 'text': return '📝'
-      default: return '🌿'
-    }
-  }, [leaf.leaf_type, leaf.milestone_icon])
+  const leafTypeIcon = useMemo((): IconName => {
+    return getLeafTypeIcon(leaf.leaf_type)
+  }, [leaf.leaf_type])
 
   const isEmailOrigin = useMemo(() => {
     return leaf.content?.includes('Subject:') && 
@@ -190,7 +183,7 @@ const LeafCard = memo(function LeafCard({
                 <div>
                   <h3 className="font-semibold text-bark-400 font-display">{leaf.author_name}</h3>
                   <div className="flex items-center space-x-2 text-sm text-bark-400">
-                    <span className="text-base">{leafTypeIcon}</span>
+                    <Icon name={leafTypeIcon} size="md" className="text-bark-400" />
                     <span>{formattedDate}</span>
                     {isEmailOrigin && (
                       <span className="px-2 py-1 bg-flower-400 text-bark-400 rounded-full text-xs font-medium border border-flower-400">
@@ -208,7 +201,11 @@ const LeafCard = memo(function LeafCard({
               
               {leaf.milestone_type && (
                 <div className="flex items-center space-x-2 px-3 py-1 bg-fruit-400 text-bark-400 rounded-full text-sm border-3 border-bark-200 shadow-sm">
-                  <span className="text-lg">{leaf.milestone_icon}</span>
+                  {leaf.milestone_icon ? (
+                    <span className="text-lg">{leaf.milestone_icon}</span>
+                  ) : (
+                    <Icon name="star" size="md" className="text-bark-400" />
+                  )}
                   <span className="font-semibold font-display">{leaf.milestone_display_name}</span>
                 </div>
               )}
@@ -381,7 +378,11 @@ const LeafCard = memo(function LeafCard({
                     onClick={handleToggleReactions}
                     className="flex items-center space-x-2 text-bark-400 hover:text-flower-400 transition-colors duration-150 tactile-element"
                   >
-                    <span className="text-xl">{leaf.user_reaction ? REACTION_EMOJIS[leaf.user_reaction] : '❤️'}</span>
+                    {leaf.user_reaction ? (
+                      <span className="text-xl">{REACTION_EMOJIS[leaf.user_reaction]}</span>
+                    ) : (
+                      <Icon name="heart" size="md" className="text-bark-400 hover:text-red-400 transition-colors" />
+                    )}
                     {totalReactions > 0 && (
                       <span className="text-sm font-semibold bg-flower-400/20 px-2 py-1 rounded-full">{totalReactions}</span>
                     )}
@@ -407,7 +408,7 @@ const LeafCard = memo(function LeafCard({
                   onClick={handleToggleComments}
                   className="flex items-center space-x-2 text-bark-400 hover:text-sky-300 transition-colors duration-150 tactile-element"
                 >
-                  <span className="text-xl">💬</span>
+                  <Icon name="messageCircle" size="md" className="text-bark-400" />
                   {leaf.comment_count > 0 && (
                     <span className="text-sm font-semibold bg-sky-300/20 px-2 py-1 rounded-full">{leaf.comment_count}</span>
                   )}

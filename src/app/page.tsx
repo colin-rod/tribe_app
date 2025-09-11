@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useParallax, useShakeDetection, useParticleEffect } from '@/hooks/useTactileInteractions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Icon } from '@/components/ui/IconLibrary'
 import { motion, useAnimation, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
@@ -83,7 +84,7 @@ export default function Home() {
                 tactile={false}
                 className="shadow-xl text-lg px-8 py-4 mb-4 w-full flex items-center justify-center hover:scale-[1.01] transition-transform duration-200"
               >
-                <span className="mr-2">🌳</span>
+                <Icon name="treePine" size="md" className="mr-2" />
                 Start your tree
               </Button>
             </Link>
@@ -94,7 +95,7 @@ export default function Home() {
                 tactile={false}
                 className="shadow-lg text-lg px-8 py-4 mb-4 w-full flex items-center justify-center hover:scale-[1.01] transition-transform duration-200"
               >
-                <span className="mr-2">🌿</span>
+                <Icon name="leaf" size="md" className="mr-2" />
                 Sign in
               </Button>
             </Link>
@@ -148,7 +149,7 @@ export default function Home() {
               className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
               <div className="w-16 h-16 bg-leaf-300 rounded-full flex items-center justify-center mb-6 border-4 border-leaf-500 shadow-lg mx-auto">
-                <span className="text-3xl">🔒</span>
+                <Icon name="lock" size="xl" className="text-bark-400" />
               </div>
               <h3 className="text-xl font-bold text-bark-400 mb-4 font-display text-center">Always Private & Secure</h3>
               <p className="text-bark-400 leading-relaxed text-center">
@@ -162,7 +163,7 @@ export default function Home() {
               className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
               <div className="w-16 h-16 bg-flower-400 rounded-full flex items-center justify-center mb-6 border-4 border-flower-400 shadow-lg mx-auto">
-                <span className="text-3xl">📸</span>
+                <Icon name="camera" size="xl" className="text-bark-400" />
               </div>
               <h3 className="text-xl font-bold text-bark-400 mb-4 font-display text-center">Rich Memories & Milestones</h3>
               <p className="text-bark-400 leading-relaxed text-center">
@@ -176,7 +177,7 @@ export default function Home() {
               className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
               <div className="w-16 h-16 bg-flower-400 rounded-full flex items-center justify-center mb-6 border-4 border-purple-300 shadow-lg mx-auto">
-                <span className="text-3xl">👥</span>
+                <Icon name="users" size="xl" className="text-bark-400" />
               </div>
               <h3 className="text-xl font-bold text-bark-400 mb-4 font-display text-center">Community-Focused Design</h3>
               <p className="text-leaf-100 leading-relaxed text-center">

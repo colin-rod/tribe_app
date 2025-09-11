@@ -63,6 +63,14 @@
   /* Nature textures */
   --texture-organic: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f1fbf3' fill-opacity='0.05'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='47' cy='23' r='1'/%3E%3Ccircle cx='23' cy='43' r='1'/%3E%3C/g%3E%3C/svg%3E");
   --texture-bark: linear-gradient(45deg, rgba(155, 122, 102, 0.1) 25%, transparent 25%, transparent 50%, rgba(155, 122, 102, 0.1) 50%, rgba(155, 122, 102, 0.1) 75%, transparent 75%, transparent);
+  --texture-leaves: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236EC26B' fill-opacity='0.08'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/svg%3E");
+  
+  /* Nature-inspired gradients */
+  --gradient-leaf: linear-gradient(135deg, var(--leaf-300) 0%, var(--leaf-500) 100%);
+  --gradient-bark: linear-gradient(135deg, var(--bark-200) 0%, var(--bark-400) 100%);
+  --gradient-sky: linear-gradient(135deg, var(--sky-100) 0%, var(--sky-300) 100%);
+  --gradient-flower: linear-gradient(135deg, var(--flower-400) 0%, var(--fruit-400) 100%);
+  --gradient-nature: linear-gradient(135deg, var(--leaf-100) 0%, var(--sky-100) 50%, var(--flower-400) 100%);
   
   /* Legacy texture mappings */
   --texture-paper: var(--texture-organic);
@@ -295,4 +303,43 @@ body {
 /* Smooth scroll with offset for fixed header */
 .scroll-mt-20 {
   scroll-margin-top: 5rem;
+}
+
+/* Nature-inspired utility classes */
+.bg-gradient-leaf {
+  background: var(--gradient-leaf);
+}
+
+.bg-gradient-bark {
+  background: var(--gradient-bark);
+}
+
+.bg-gradient-sky {
+  background: var(--gradient-sky);
+}
+
+.bg-gradient-flower {
+  background: var(--gradient-flower);
+}
+
+.bg-gradient-nature {
+  background: var(--gradient-nature);
+}
+
+.bg-texture-leaves {
+  background-image: var(--texture-leaves);
+}
+
+.bg-texture-bark {
+  background-image: var(--texture-bark);
+}
+
+/* Subtle hover effects for nature elements */
+.nature-hover {
+  transition: all 0.3s var(--transition-soft);
+}
+
+.nature-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-floating);
 }

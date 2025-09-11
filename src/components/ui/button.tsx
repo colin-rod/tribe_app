@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useTactileButton, useRippleEffect, useParticleEffect } from '@/hooks/useTactileInteractions'
+import { Icon } from '@/components/ui/IconLibrary'
 import { motion } from 'framer-motion'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -65,12 +66,14 @@ export function Button({
   if (!tactile) {
     return (
       <button className={classes} onClick={handleClick} {...props}>
-        {variant === 'leaf' && <span className="absolute -top-1 -right-1 text-lg">🍃</span>}
+        {variant === 'leaf' && (
+          <Icon name="leaf" size="sm" className="absolute -top-1 -right-1 text-leaf-500 opacity-80" />
+        )}
         {(variant === 'bark' || variant === 'wooden') && (
-          <span className="absolute top-1 left-1 text-xs opacity-60">🌱</span>
+          <Icon name="sprout" size="xs" className="absolute top-1 left-1 text-leaf-300 opacity-60" />
         )}
         {variant === 'branch' && (
-          <span className="absolute -top-1 -left-1 text-sm opacity-70">🌿</span>
+          <Icon name="trees" size="xs" className="absolute -top-1 -left-1 text-leaf-500 opacity-70" />
         )}
         {children}
       </button>
@@ -85,19 +88,19 @@ export function Button({
       {...props}
     >
       {variant === 'leaf' && (
-        <motion.span 
-          className="absolute -top-1 -right-1 text-lg"
+        <motion.div 
+          className="absolute -top-1 -right-1"
           animate={{ rotate: [0, 5, -5, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          🍃
-        </motion.span>
+          <Icon name="leaf" size="sm" className="text-leaf-500 opacity-80" />
+        </motion.div>
       )}
       {(variant === 'bark' || variant === 'wooden') && (
-        <span className="absolute top-1 left-1 text-xs opacity-60">🌱</span>
+        <Icon name="sprout" size="xs" className="absolute top-1 left-1 text-leaf-300 opacity-60" />
       )}
       {variant === 'branch' && (
-        <span className="absolute -top-1 -left-1 text-sm opacity-70">🌿</span>
+        <Icon name="trees" size="xs" className="absolute -top-1 -left-1 text-leaf-500 opacity-70" />
       )}
       {children}
     </motion.button>
