@@ -97,7 +97,7 @@ const TreeExplorer = memo(function TreeExplorer({
         }, 300)
       }
     }
-  }, [selectedBranch, trees, userBranches, headerApi])
+  }, [selectedBranch, trees, userBranches, headerControls])
 
   // Parallax effect on scroll
   useEffect(() => {
