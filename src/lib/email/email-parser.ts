@@ -1,6 +1,6 @@
 /**
  * Email Parser Service
- * Handles parsing different email formats (Mailgun, JSON, etc.)
+ * Handles parsing different email formats (SendGrid, JSON, etc.)
  */
 
 import { NextRequest } from 'next/server'
@@ -22,8 +22,8 @@ export class EmailParser {
   async parseEmail(req: NextRequest, userId?: string): Promise<IncomingEmail> {
     const contentType = req.headers.get('content-type') || ''
     
-    if (contentType.includes('application/x-www-form-urlencoded')) {
-      return this.parseMailgunFormData(req, userId)
+    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+      return this.parseFormData(req, userId)
     } else if (contentType.includes('application/json')) {
       return this.parseJsonData(req)
     } else {
@@ -31,13 +31,13 @@ export class EmailParser {
     }
   }
 
-  private async parseMailgunFormData(req: NextRequest, userId?: string): Promise<IncomingEmail> {
+  private async parseFormData(req: NextRequest, userId?: string): Promise<IncomingEmail> {
     try {
       const formData = await req.formData()
-      return this.convertMailgunFormData(formData, userId)
+      return this.convertFormData(formData, userId)
     } catch (error) {
-      logger.error('Failed to parse Mailgun form data', error)
-      throw new Error('Invalid Mailgun form data')
+      logger.error('Failed to parse form data', error)
+      throw new Error('Invalid form data')
     }
   }
 
@@ -51,7 +51,7 @@ export class EmailParser {
     }
   }
 
-  private async convertMailgunFormData(formData: FormData, userId?: string): Promise<IncomingEmail> {
+  private async convertFormData(formData: FormData, userId?: string): Promise<IncomingEmail> {
     const attachments: EmailAttachment[] = []
     
     // Parse attachments

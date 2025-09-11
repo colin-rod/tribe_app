@@ -20,13 +20,18 @@ export interface IncomingEmail {
   timestamp?: string
 }
 
-export interface MailgunWebhookData {
-  recipient: string
-  sender: string
+export interface WebhookFormData {
+  recipient?: string
+  sender?: string
+  to?: string
+  from?: string
   subject: string
-  'body-plain': string
+  'body-plain'?: string
   'body-html'?: string
+  text?: string
+  html?: string
   'attachment-count'?: string
+  attachments?: string
   timestamp: string
   [key: string]: string | undefined
 }
@@ -48,7 +53,7 @@ export interface EmailProcessingResult {
 
 export interface AuthenticationResult {
   isValid: boolean
-  method?: 'api-key' | 'mailgun-signature' | 'mailgun-ip'
+  method?: 'api-key' | 'sendgrid-webhook'
   error?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }

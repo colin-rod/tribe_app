@@ -67,7 +67,8 @@ Replace your current MX records with SendGrid's:
 Check these work:
 - ✅ Subject line appears in leaf content  
 - ✅ Email body text is captured
-- ✅ Attachments are noted (file upload coming in future update)
+- ✅ **Media attachments are uploaded to Supabase Storage** (images, audio, video)
+- ✅ Media URLs are included in leaf content
 - ✅ Sender information is preserved
 
 ## SendGrid Webhook Format
@@ -117,9 +118,30 @@ If issues occur:
 3. Remove SendGrid environment variables
 4. Keep SendGrid account for future retry
 
+## Media File Support
+
+The SendGrid webhook now supports automatic upload of media attachments:
+
+**Supported Media Types:**
+- 📸 **Images**: JPG, PNG, GIF, WebP → Creates `photo` leaf type
+- 🎵 **Audio**: MP3, WAV, M4A, OGG → Creates `audio` leaf type  
+- 🎥 **Video**: MP4, MOV, AVI, WebM → Creates `video` leaf type
+
+**How It Works:**
+1. User sends email with attachments to their unique email address
+2. SendGrid receives email and sends base64-encoded attachments to webhook
+3. Webhook automatically uploads media files to Supabase Storage
+4. Media URLs are added to the leaf's `media_urls` array
+5. Leaf type is automatically determined based on attachment content type
+
+**Storage Location:**
+- Files stored in: `email-attachments/{userId}/{emailId}/{timestamp}-{filename}`
+- Accessible via Supabase Storage public URLs
+- Files are automatically organized by user and email
+
 ## Next Steps After Migration
 
-1. Remove Mailgun API dependencies
-2. Clean up debug endpoints
-3. Implement attachment upload to Supabase Storage
-4. Add SendGrid for outbound email sending (invitations)
+1. ✅ Remove Mailgun API dependencies (completed)
+2. ✅ Clean up debug endpoints (completed)  
+3. ✅ Implement attachment upload to Supabase Storage (completed)
+4. ✅ Add SendGrid for outbound email sending (completed)

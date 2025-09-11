@@ -6,7 +6,8 @@
       "Bash(npm test:*)",
       "Bash(grep:*)",
       "Bash(npx tsc:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

@@ -102,6 +102,102 @@ export class AttachmentHandler {
     }
   }
 
+  async uploadBase64Attachment(
+    base64Content: string,
+    filename: string,
+    contentType: string,
+    userId: string,
+    emailId: string
+  ): Promise<EmailAttachment | null> {
+    try {
+      // Decode base64 content
+      const buffer = Buffer.from(base64Content, 'base64')
+      const size = buffer.length
+
+      // Generate safe filename
+      const timestamp = Date.now()
+      const safeFileName = this.sanitizeFileName(filename)
+      const storagePath = `email-attachments/${userId}/${emailId}/${timestamp}-${safeFileName}`
+
+      logger.info('Uploading base64 attachment to storage', {
+        metadata: {
+          fileName: filename,
+          fileSize: size,
+          contentType,
+          storagePath,
+          userId,
+          emailId
+        }
+      })
+
+      // Upload to Supabase Storage
+      const { data, error } = await this.supabase.storage
+        .from('media')
+        .upload(storagePath, buffer, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType
+        })
+
+      if (error) {
+        logger.error('Failed to upload base64 attachment to storage', error, {
+          metadata: {
+            fileName: filename,
+            storagePath,
+            userId,
+            emailId
+          }
+        })
+        return null
+      }
+
+      // Get public URL
+      const { data: urlData } = this.supabase.storage
+        .from('media')
+        .getPublicUrl(storagePath)
+
+      if (!urlData.publicUrl) {
+        logger.error('Failed to get public URL for uploaded base64 attachment', {
+          metadata: {
+            fileName: filename,
+            storagePath,
+            userId,
+            emailId
+          }
+        })
+        return null
+      }
+
+      logger.info('Successfully uploaded base64 attachment', {
+        metadata: {
+          fileName: filename,
+          fileSize: size,
+          publicUrl: urlData.publicUrl,
+          storagePath,
+          userId,
+          emailId
+        }
+      })
+
+      return {
+        filename,
+        contentType,
+        size,
+        url: urlData.publicUrl,
+        storagePath: storagePath
+      }
+    } catch (error) {
+      logger.error('Unexpected error uploading base64 attachment', error, {
+        metadata: {
+          fileName: filename,
+          userId,
+          emailId
+        }
+      })
+      return null
+    }
+  }
+
   async uploadMultipleAttachments(
     files: File[],
     userId: string,
@@ -109,6 +205,34 @@ export class AttachmentHandler {
   ): Promise<EmailAttachment[]> {
     const uploadPromises = files.map(file => 
       this.uploadAttachment(file, userId, emailId)
+    )
+
+    const results = await Promise.allSettled(uploadPromises)
+    
+    return results
+      .filter((result): result is PromiseFulfilledResult<EmailAttachment> => 
+        result.status === 'fulfilled' && result.value !== null
+      )
+      .map(result => result.value)
+  }
+
+  async uploadMultipleBase64Attachments(
+    attachments: Array<{
+      content: string
+      filename: string
+      type: string
+    }>,
+    userId: string,
+    emailId: string
+  ): Promise<EmailAttachment[]> {
+    const uploadPromises = attachments.map(attachment => 
+      this.uploadBase64Attachment(
+        attachment.content,
+        attachment.filename,
+        attachment.type,
+        userId,
+        emailId
+      )
     )
 
     const results = await Promise.allSettled(uploadPromises)

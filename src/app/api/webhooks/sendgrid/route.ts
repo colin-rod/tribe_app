@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { createComponentLogger } from '@/lib/logger'
 import { createUnassignedLeaf } from '@/lib/leaf-assignments'
+import { AttachmentHandler } from '@/lib/email/attachment-handler'
+import { SupabaseClient } from '@supabase/supabase-js'
 
 const logger = createComponentLogger('SendGridWebhook')
 
@@ -126,7 +128,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Process email content and attachments
-    const { content, mediaUrls, leafType, tags } = await processEmailContent(emailData)
+    const { content, mediaUrls, leafType, tags } = await processEmailContent(emailData, supabase, userId)
 
     // Create unassigned leaf
     const leaf = await createUnassignedLeaf({
@@ -219,7 +221,11 @@ function extractUserIdFromEmail(emailTo: string): string | null {
 /**
  * Process email content and determine leaf type
  */
-async function processEmailContent(email: ParsedEmail): Promise<{
+async function processEmailContent(
+  email: ParsedEmail,
+  supabase: SupabaseClient,
+  userId: string
+): Promise<{
   content: string
   mediaUrls: string[]
   leafType: 'photo' | 'video' | 'audio' | 'text' | 'milestone'
@@ -242,33 +248,58 @@ async function processEmailContent(email: ParsedEmail): Promise<{
     content += email.html.replace(/<[^>]*>/g, '').trim()
   }
 
-  // Process attachments - for now, we'll log them but not store the base64 content
-  // In a production setup, you'd want to upload these to your storage service
+  // Process attachments - upload base64 content to Supabase Storage
   if (email.attachments && email.attachments.length > 0) {
-    for (const attachment of email.attachments) {
-      // For now, just note that there are attachments
-      // TODO: Upload base64 content to Supabase Storage and get URL
-      logger.info('Email attachment received', {
-        metadata: {
-          filename: attachment.filename,
-          type: attachment.type,
-          size: attachment.content.length
-        }
-      })
+    const attachmentHandler = new AttachmentHandler(supabase)
+    const emailId = `sendgrid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    logger.info('Processing email attachments for upload', {
+      metadata: {
+        attachmentCount: email.attachments.length,
+        userId,
+        emailId
+      }
+    })
+
+    // Upload all attachments
+    const uploadedAttachments = await attachmentHandler.uploadMultipleBase64Attachments(
+      email.attachments,
+      userId,
+      emailId
+    )
+
+    logger.info('Attachment upload results', {
+      metadata: {
+        requested: email.attachments.length,
+        uploaded: uploadedAttachments.length,
+        userId,
+        emailId
+      }
+    })
+
+    // Add URLs to mediaUrls and determine leaf type
+    for (const uploadedAttachment of uploadedAttachments) {
+      mediaUrls.push(uploadedAttachment.url)
       
       // Determine leaf type based on attachment
-      if (attachment.type.startsWith('image/')) {
+      if (uploadedAttachment.contentType.startsWith('image/')) {
         leafType = 'photo'
-      } else if (attachment.type.startsWith('video/')) {
+      } else if (uploadedAttachment.contentType.startsWith('video/')) {
         leafType = 'video'
-      } else if (attachment.type.startsWith('audio/')) {
+      } else if (uploadedAttachment.contentType.startsWith('audio/')) {
         leafType = 'audio'
       }
     }
     
     // Add note about attachments to content
-    if (email.attachments.length > 0) {
-      content += `\n\n[${email.attachments.length} attachment(s) received]`
+    const successCount = uploadedAttachments.length
+    const failedCount = email.attachments.length - successCount
+    
+    if (successCount > 0) {
+      content += `\n\n[${successCount} media file(s) attached]`
+    }
+    if (failedCount > 0) {
+      content += `\n\n[${failedCount} attachment(s) failed to upload]`
     }
   }
 

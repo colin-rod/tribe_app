@@ -1,10 +1,8 @@
 /**
  * Email Service for Sending Invitations
- * Uses Mailgun to send invitation emails to users
+ * Uses SendGrid to send invitation emails to users
  */
 
-import formData from 'form-data'
-import Mailgun from 'mailgun.js'
 import { createComponentLogger } from '@/lib/logger'
 
 const logger = createComponentLogger('InvitationEmailService')
@@ -25,38 +23,31 @@ interface InvitationEmailData {
 
 interface EmailServiceConfig {
   apiKey: string
-  domain: string
   fromEmail: string
 }
 
 export class InvitationEmailService {
-  private mailgun: any
   private config: EmailServiceConfig | null
 
   constructor() {
-    const apiKey = process.env.MAILGUN_API_KEY
-    const domain = process.env.MAILGUN_DOMAIN
-    const fromEmail = process.env.MAILGUN_FROM_EMAIL
+    const apiKey = process.env.SENDGRID_API_KEY
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL
 
     // Allow initialization without config for build time
-    if (!apiKey || !domain || !fromEmail) {
+    if (!apiKey || !fromEmail) {
       const missing = []
-      if (!apiKey) missing.push('MAILGUN_API_KEY')
-      if (!domain) missing.push('MAILGUN_DOMAIN')
-      if (!fromEmail) missing.push('MAILGUN_FROM_EMAIL')
+      if (!apiKey) missing.push('SENDGRID_API_KEY')
+      if (!fromEmail) missing.push('SENDGRID_FROM_EMAIL')
       
-      logger.warn(`Missing Mailgun configuration: ${missing.join(', ')}`)
+      logger.warn(`Missing SendGrid configuration: ${missing.join(', ')}`)
       this.config = null
       return
     }
 
-    this.config = { apiKey, domain, fromEmail }
-    
-    const mg = new Mailgun(formData)
-    this.mailgun = mg.client({ username: 'api', key: apiKey })
+    this.config = { apiKey, fromEmail }
 
     logger.info('InvitationEmailService initialized', {
-      metadata: { domain, fromEmail }
+      metadata: { fromEmail }
     })
   }
 
@@ -65,7 +56,7 @@ export class InvitationEmailService {
    */
   async sendInvitationEmail(invitationData: InvitationEmailData): Promise<boolean> {
     if (!this.config) {
-      logger.error('Cannot send email: Mailgun not configured')
+      logger.error('Cannot send email: SendGrid not configured')
       return false
     }
 
@@ -82,25 +73,38 @@ export class InvitationEmailService {
       const invitationLink = this.generateInvitationLink(invitationData.id)
 
       const emailData = {
-        from: `${this.getAppName()} <${this.config.fromEmail}>`,
-        to: invitationData.email,
-        subject: `You're invited to join ${targetName}`,
-        html: this.generateInvitationHTML({
-          inviterName,
-          targetName,
-          roleName,
-          invitationLink,
-          expiresAt: invitationData.expires_at,
-          isTreeInvitation
-        }),
-        text: this.generateInvitationText({
-          inviterName,
-          targetName,
-          roleName,
-          invitationLink,
-          expiresAt: invitationData.expires_at,
-          isTreeInvitation
-        })
+        personalizations: [{
+          to: [{ email: invitationData.email }],
+          subject: `You're invited to join ${targetName}`
+        }],
+        from: { 
+          email: this.config.fromEmail,
+          name: this.getAppName()
+        },
+        content: [
+          {
+            type: 'text/plain',
+            value: this.generateInvitationText({
+              inviterName,
+              targetName,
+              roleName,
+              invitationLink,
+              expiresAt: invitationData.expires_at,
+              isTreeInvitation
+            })
+          },
+          {
+            type: 'text/html',
+            value: this.generateInvitationHTML({
+              inviterName,
+              targetName,
+              roleName,
+              invitationLink,
+              expiresAt: invitationData.expires_at,
+              isTreeInvitation
+            })
+          }
+        ]
       }
 
       logger.info('Sending invitation email', {
@@ -112,13 +116,25 @@ export class InvitationEmailService {
         }
       })
 
-      const response = await this.mailgun.messages.create(this.config.domain, emailData)
+      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.config.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(emailData)
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`SendGrid API error: ${response.status} - ${errorText}`)
+      }
 
       logger.info('Invitation email sent successfully', {
         metadata: {
-          messageId: response.id,
           invitationId: invitationData.id,
-          to: invitationData.email
+          to: invitationData.email,
+          status: response.status
         }
       })
 

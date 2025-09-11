@@ -109,6 +109,28 @@ const LeafCard = memo(function LeafCard({
     }
   }, [leaf.leaf_type, leaf.milestone_icon])
 
+  const isEmailOrigin = useMemo(() => {
+    return leaf.content?.includes('Subject:') && 
+           (leaf.content?.includes('[') && leaf.content?.includes('media file(s) attached]'))
+  }, [leaf.content])
+
+  const cleanedContent = useMemo(() => {
+    if (!isEmailOrigin || !leaf.content) return leaf.content
+
+    // Extract email subject for display separately
+    const subjectMatch = leaf.content.match(/Subject: (.+?)(?:\n|$)/)
+    const emailSubject = subjectMatch ? subjectMatch[1] : null
+
+    // Clean content by removing subject line and attachment notes
+    let cleaned = leaf.content
+      .replace(/Subject: .+?\n\n?/g, '') // Remove subject line
+      .replace(/\n\n\[.+ media file\(s\) attached\]/g, '') // Remove attachment notes
+      .replace(/\n\n\[.+ attachment\(s\) failed to upload\]/g, '') // Remove failure notes
+      .trim()
+
+    return { cleaned, emailSubject }
+  }, [leaf.content, isEmailOrigin])
+
   const totalReactions = useMemo(() => 
     leaf.heart_count + leaf.smile_count + leaf.laugh_count, 
     [leaf.heart_count, leaf.smile_count, leaf.laugh_count]
@@ -179,6 +201,11 @@ const LeafCard = memo(function LeafCard({
                   <div className="flex items-center space-x-2 text-sm text-ac-brown">
                     <span className="text-base">{leafTypeIcon}</span>
                     <span>{formattedDate}</span>
+                    {isEmailOrigin && (
+                      <span className="px-2 py-1 bg-ac-coral-light text-ac-brown-dark rounded-full text-xs font-medium border border-ac-coral">
+                        📧 Email
+                      </span>
+                    )}
                     {leaf.season && (
                       <span className="px-2 py-1 bg-ac-sage-light text-ac-brown-dark rounded-full text-xs font-medium border border-ac-sage">
                         🌱 {leaf.season}
@@ -201,38 +228,101 @@ const LeafCard = memo(function LeafCard({
           {leaf.media_urls && leaf.media_urls.length > 0 && (
             <div className="relative">
               {leaf.leaf_type === 'photo' && (
-                <div className="aspect-square relative bg-ac-peach-light rounded-2xl overflow-hidden border-4 border-white shadow-inner">
-                  <Image
-                    src={leaf.media_urls[0]}
-                    alt="Memory photo"
-                    fill
-                    className="object-cover"
-                  />
-                  {leaf.media_urls.length > 1 && (
-                    <div className="absolute top-3 right-3 bg-ac-brown/80 text-ac-cream px-3 py-1 rounded-full text-sm font-semibold border border-ac-brown-dark">
-                      +{leaf.media_urls.length - 1} 📸
+                <div className="relative">
+                  <div className="aspect-square relative bg-ac-peach-light rounded-2xl overflow-hidden border-4 border-white shadow-inner">
+                    <Image
+                      src={leaf.media_urls[0]}
+                      alt="Memory photo"
+                      fill
+                      className="object-cover"
+                    />
+                    {leaf.media_urls.length > 1 && (
+                      <div className="absolute top-3 right-3 bg-ac-brown/80 text-ac-cream px-3 py-1 rounded-full text-sm font-semibold border border-ac-brown-dark">
+                        +{leaf.media_urls.length - 1} 📸
+                      </div>
+                    )}
+                    {isEmailOrigin && (
+                      <div className="absolute bottom-3 left-3 bg-ac-coral/90 text-ac-cream px-2 py-1 rounded-full text-xs font-semibold border border-ac-coral-dark">
+                        📧 Email Upload
+                      </div>
+                    )}
+                  </div>
+                  {/* Additional photos preview for email uploads */}
+                  {isEmailOrigin && leaf.media_urls.length > 1 && (
+                    <div className="mt-2 flex space-x-2 overflow-x-auto pb-2">
+                      {leaf.media_urls.slice(1, 4).map((url, index) => (
+                        <div key={index} className="flex-shrink-0 w-16 h-16 relative rounded-lg overflow-hidden border-2 border-ac-peach">
+                          <Image
+                            src={url}
+                            alt={`Additional photo ${index + 2}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ))}
+                      {leaf.media_urls.length > 4 && (
+                        <div className="flex-shrink-0 w-16 h-16 bg-ac-brown/80 text-ac-cream rounded-lg border-2 border-ac-brown-dark flex items-center justify-center text-xs font-bold">
+                          +{leaf.media_urls.length - 4}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               )}
               
               {leaf.leaf_type === 'video' && (
-                <div className="aspect-video relative bg-gradient-to-br from-ac-sky-light to-ac-lavender flex items-center justify-center rounded-2xl border-4 border-ac-sky">
-                  <div className="text-6xl opacity-60">🎥</div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <button className="bg-ac-brown/80 text-ac-cream p-4 rounded-full hover:bg-ac-brown transition-colors duration-150 border-3 border-ac-brown-dark shadow-lg tactile-element">
-                      ▶
-                    </button>
-                  </div>
+                <div className="aspect-video relative bg-gradient-to-br from-ac-sky-light to-ac-lavender rounded-2xl border-4 border-ac-sky overflow-hidden">
+                  <video 
+                    className="w-full h-full object-cover"
+                    controls
+                    poster=""
+                    preload="metadata"
+                  >
+                    <source src={leaf.media_urls[0]} type="video/mp4" />
+                    <source src={leaf.media_urls[0]} type="video/webm" />
+                    <source src={leaf.media_urls[0]} type="video/ogg" />
+                    Your browser does not support the video tag.
+                  </video>
+                  {isEmailOrigin && (
+                    <div className="absolute bottom-3 left-3 bg-ac-coral/90 text-ac-cream px-2 py-1 rounded-full text-xs font-semibold border border-ac-coral-dark">
+                      📧 Email Video
+                    </div>
+                  )}
+                  {leaf.media_urls.length > 1 && (
+                    <div className="absolute top-3 right-3 bg-ac-brown/80 text-ac-cream px-3 py-1 rounded-full text-sm font-semibold border border-ac-brown-dark">
+                      +{leaf.media_urls.length - 1} 🎥
+                    </div>
+                  )}
                 </div>
               )}
               
               {leaf.leaf_type === 'audio' && (
-                <div className="aspect-[3/1] relative bg-gradient-to-br from-ac-lavender to-ac-sky-light flex items-center justify-center rounded-2xl border-4 border-ac-lavender">
-                  <div className="text-4xl mr-4">🎵</div>
-                  <button className="bg-ac-lavender/80 text-ac-brown-dark px-6 py-2 rounded-full hover:bg-ac-lavender transition-colors duration-150 font-display font-semibold border-3 border-ac-brown-light shadow-md tactile-element">
-                    ▶ Play Recording
-                  </button>
+                <div className="relative bg-gradient-to-br from-ac-lavender to-ac-sky-light rounded-2xl border-4 border-ac-lavender p-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-4xl">🎵</div>
+                    <div className="flex-1">
+                      <audio 
+                        className="w-full"
+                        controls
+                        preload="metadata"
+                      >
+                        <source src={leaf.media_urls[0]} type="audio/mpeg" />
+                        <source src={leaf.media_urls[0]} type="audio/ogg" />
+                        <source src={leaf.media_urls[0]} type="audio/wav" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </div>
+                  </div>
+                  {isEmailOrigin && (
+                    <div className="absolute bottom-3 left-3 bg-ac-coral/90 text-ac-cream px-2 py-1 rounded-full text-xs font-semibold border border-ac-coral-dark">
+                      📧 Email Audio
+                    </div>
+                  )}
+                  {leaf.media_urls.length > 1 && (
+                    <div className="absolute top-3 right-3 bg-ac-brown/80 text-ac-cream px-3 py-1 rounded-full text-sm font-semibold border border-ac-brown-dark">
+                      +{leaf.media_urls.length - 1} 🎵
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -242,9 +332,27 @@ const LeafCard = memo(function LeafCard({
           <div className="p-4">
             {(leaf.content || leaf.ai_caption) && (
               <div className="space-y-2">
-                {leaf.content && (
-                  <p className="text-ac-brown-dark leading-relaxed font-medium">{leaf.content}</p>
+                {/* Email Subject Display */}
+                {isEmailOrigin && typeof cleanedContent === 'object' && cleanedContent.emailSubject && (
+                  <div className="bg-ac-coral-light/30 border-l-4 border-ac-coral px-3 py-2 rounded-r-lg">
+                    <p className="text-ac-brown-dark font-semibold text-sm">
+                      📧 {cleanedContent.emailSubject}
+                    </p>
+                  </div>
                 )}
+                
+                {/* Main Content */}
+                {leaf.content && (
+                  <p className="text-ac-brown-dark leading-relaxed font-medium">
+                    {isEmailOrigin && typeof cleanedContent === 'object' 
+                      ? cleanedContent.cleaned 
+                      : typeof cleanedContent === 'string' 
+                        ? cleanedContent 
+                        : leaf.content}
+                  </p>
+                )}
+                
+                {/* AI Caption */}
                 {leaf.ai_caption && leaf.ai_caption !== leaf.content && (
                   <p className="text-ac-brown italic text-sm border-l-4 border-ac-sage pl-3 bg-ac-sage-light/20 rounded-r-lg py-2">
                     🤖 AI: {leaf.ai_caption}

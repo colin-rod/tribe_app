@@ -3,18 +3,12 @@
  */
 
 export const WEBHOOK_CONFIG = {
-  // Mailgun configuration
-  MAILGUN: {
-    USER_AGENT: 'Go-http-client/2.0',
-    IP_PREFIXES: ['35.206.', '35.210.', '35.2'],
-    ALLOWED_DOMAINS: ['colinrodrigues.com']
-  },
-  
   // Email processing
   EMAIL: {
     USER_EMAIL_PREFIX: 'u-',
     MILESTONE_KEYWORDS: ['milestone', 'achievement', 'first', 'birthday', 'anniversary'],
-    MAX_CAPTION_LENGTH: 100
+    MAX_CAPTION_LENGTH: 100,
+    ALLOWED_DOMAINS: ['colinrodrigues.com']
   },
   
   // Validation
