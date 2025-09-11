@@ -46,8 +46,6 @@ const TreeExplorer = memo(function TreeExplorer({
 
   // Parallax animations
   const headerControls = useAnimation()
-  }))
-
   const backgroundControls = useAnimation()
 
   // Shake to shuffle leaves
