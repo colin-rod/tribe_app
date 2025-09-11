@@ -62,19 +62,61 @@ export async function POST(req: NextRequest) {
 
     // Process attachments - SendGrid sends them as separate form fields
     const attachmentCount = parseInt(formData.get('attachments') as string || '0')
-    for (let i = 1; i <= attachmentCount; i++) {
-      const attachment: SendGridAttachment = {
-        filename: formData.get(`attachment${i}`) as string || `attachment${i}`,
-        type: formData.get(`attachment${i}_content_type`) as string || 'application/octet-stream',
-        content: formData.get(`attachment${i}_content`) as string || ''
+    
+    logger.info('Processing SendGrid attachments', {
+      metadata: { 
+        expectedAttachmentCount: attachmentCount,
+        formDataKeys: Array.from(formData.keys()).filter(key => key.startsWith('attachment'))
       }
+    })
+
+    for (let i = 1; i <= attachmentCount; i++) {
+      const filename = formData.get(`attachment${i}`) as string
+      const contentType = formData.get(`attachment${i}_content_type`) as string
+      const content = formData.get(`attachment${i}_content`) as string
+      
+      logger.debug('Processing attachment', {
+        metadata: {
+          index: i,
+          filename: filename || 'missing',
+          contentType: contentType || 'missing',
+          hasContent: !!content,
+          contentLength: content?.length || 0
+        }
+      })
+
+      const attachment: SendGridAttachment = {
+        filename: filename || `attachment${i}`,
+        type: contentType || 'application/octet-stream',
+        content: content || ''
+      }
+      
       if (attachment.content) {
         emailData.attachments.push(attachment)
+        logger.info('Added attachment to processing queue', {
+          metadata: {
+            filename: attachment.filename,
+            type: attachment.type,
+            contentLength: attachment.content.length
+          }
+        })
+      } else {
+        logger.warn('Skipping attachment with empty content', {
+          metadata: {
+            index: i,
+            filename: attachment.filename,
+            type: attachment.type
+          }
+        })
       }
     }
 
-    logger.debug('Processed attachments', {
-      metadata: { attachmentCount: emailData.attachments.length }
+    logger.info('Attachment processing summary', {
+      metadata: { 
+        expectedCount: attachmentCount,
+        actualCount: emailData.attachments.length,
+        skippedCount: attachmentCount - emailData.attachments.length
+      }
     })
 
     // Handle different email types with support for person-specific routing
@@ -396,8 +438,15 @@ async function processEmailContent(
       metadata: {
         requested: email.attachments.length,
         uploaded: uploadedAttachments.length,
+        failed: email.attachments.length - uploadedAttachments.length,
         userId,
-        emailId
+        emailId,
+        uploadedFiles: uploadedAttachments.map(att => ({
+          filename: att.filename,
+          contentType: att.contentType,
+          size: att.size,
+          url: att.url
+        }))
       }
     })
 
@@ -405,13 +454,25 @@ async function processEmailContent(
     for (const uploadedAttachment of uploadedAttachments) {
       mediaUrls.push(uploadedAttachment.url)
       
+      logger.debug('Processing uploaded attachment', {
+        metadata: {
+          filename: uploadedAttachment.filename,
+          contentType: uploadedAttachment.contentType,
+          url: uploadedAttachment.url,
+          currentLeafType: leafType
+        }
+      })
+      
       // Determine leaf type based on attachment
       if (uploadedAttachment.contentType.startsWith('image/')) {
         leafType = 'photo'
+        logger.debug('Set leaf type to photo', { metadata: { contentType: uploadedAttachment.contentType } })
       } else if (uploadedAttachment.contentType.startsWith('video/')) {
         leafType = 'video'
+        logger.debug('Set leaf type to video', { metadata: { contentType: uploadedAttachment.contentType } })
       } else if (uploadedAttachment.contentType.startsWith('audio/')) {
         leafType = 'audio'
+        logger.debug('Set leaf type to audio', { metadata: { contentType: uploadedAttachment.contentType } })
       }
     }
     
