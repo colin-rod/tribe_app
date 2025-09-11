@@ -40,6 +40,17 @@ export async function POST(req: NextRequest) {
     // Parse form data from SendGrid
     const formData = await req.formData()
     
+    // Log ALL form data keys for debugging
+    const allFormKeys = Array.from(formData.keys())
+    logger.info('Complete FormData received from SendGrid', {
+      metadata: {
+        totalKeys: allFormKeys.length,
+        allKeys: allFormKeys,
+        attachmentKeys: allFormKeys.filter(key => key.startsWith('attachment')),
+        attachmentCount: formData.get('attachments') || '0'
+      }
+    })
+    
     // Extract email data - SendGrid sends everything directly
     const emailData: ParsedEmail = {
       to: formData.get('to') as string || '',
@@ -423,7 +434,13 @@ async function processEmailContent(
       metadata: {
         attachmentCount: email.attachments.length,
         userId,
-        emailId
+        emailId,
+        attachmentDetails: email.attachments.map(att => ({
+          filename: att.filename,
+          type: att.type,
+          contentLength: att.content.length,
+          contentPreview: att.content.substring(0, 50) + '...'
+        }))
       }
     })
 
@@ -486,6 +503,15 @@ async function processEmailContent(
     if (failedCount > 0) {
       content += `\n\n[${failedCount} attachment(s) failed to upload]`
     }
+  } else {
+    logger.info('No attachments found in email', {
+      metadata: {
+        attachmentsArray: email.attachments,
+        attachmentsLength: email.attachments ? email.attachments.length : 'null/undefined',
+        userId,
+        emailSubject: email.subject
+      }
+    })
   }
 
   // Extract hashtags from content
