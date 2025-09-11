@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useEffect, useState } from 'react'
-import { motion, useMotionValue, useAnimation, useTransform } from 'framer-motion'
+import { motion, useAnimation, useReducedMotion } from 'framer-motion'
 
 // Haptic feedback for supported devices
 export const useHapticFeedback = () => {
@@ -19,144 +19,89 @@ export const useHapticFeedback = () => {
   return triggerHaptic
 }
 
-// Tactile button interaction
+// Nature-inspired button interaction (performance optimized)
 export const useTactileButton = () => {
-  const controls = useAnimation()
-  const scale = useMotionValue(1)
-  const y = useMotionValue(0)
-  const rotateZ = useMotionValue(0)
-
+  const shouldReduceMotion = useReducedMotion()
   const triggerHaptic = useHapticFeedback()
 
-  const handlePointerDown = useCallback(() => {
-    controls.start({ scale: 0.99, y: 0.5 })
+  const handleTap = useCallback(() => {
     triggerHaptic('light')
-  }, [controls, triggerHaptic])
+  }, [triggerHaptic])
 
-  const handlePointerUp = useCallback(() => {
-    controls.start({ scale: 1.005, y: -0.5 })
-    setTimeout(() => controls.start({ scale: 1, y: 0 }), 100)
-  }, [controls])
-
-  const handlePointerLeave = useCallback(() => {
-    controls.start({ scale: 1, y: 0, rotateZ: 0 })
-  }, [controls])
-
-  const handleHoverStart = useCallback(() => {
-    controls.start({ 
-      scale: 1.01, 
-      y: -0.5, 
-      rotateZ: Math.random() * 0.3 - 0.15 
-    })
-  }, [controls])
-
-  const handleHoverEnd = useCallback(() => {
-    controls.start({ scale: 1, y: 0, rotateZ: 0 })
-  }, [controls])
-
+  // Performance-first motion props using UX manual patterns
   const motionProps = {
-    animate: controls,
-    whileTap: { scale: 0.99, y: 0.5 },
-    whileHover: { scale: 1.01, y: -0.5 },
-    transition: { type: 'spring', stiffness: 300, damping: 10 },
-    onPointerDown: handlePointerDown,
-    onPointerUp: handlePointerUp,
-    onPointerLeave: handlePointerLeave,
-    onHoverStart: handleHoverStart,
-    onHoverEnd: handleHoverEnd
+    whileHover: shouldReduceMotion ? {} : {
+      y: -6,
+      rotate: 2,
+      scale: 1.03,
+      transition: { type: 'spring', stiffness: 400, damping: 28 }
+    },
+    whileTap: shouldReduceMotion ? {} : {
+      scale: 0.98,
+      rotate: -1,
+      transition: { type: 'spring', stiffness: 700, damping: 30 }
+    },
+    initial: { opacity: 0, scale: 0.95 },
+    animate: { opacity: 1, scale: 1 },
+    transition: shouldReduceMotion 
+      ? { duration: 0 }
+      : { delay: 0.06, type: 'spring', stiffness: 220, damping: 18 },
+    onTap: handleTap
   }
 
-  return { motionProps, controls, motion }
+  return { motionProps, motion }
 }
 
-// Card hover and tilt effects
+// Nature-inspired card interaction (simplified for performance)
 export const useTactileCard = () => {
-  const controls = useAnimation()
-  const rotateX = useMotionValue(0)
-  const rotateY = useMotionValue(0)
-  const rotateZ = useMotionValue(0)
+  const shouldReduceMotion = useReducedMotion()
 
-  const handleMouseMove = useCallback((event: React.MouseEvent) => {
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
-    
-    const rotateXValue = (y - rect.height / 2) / rect.height * -3
-    const rotateYValue = (x - rect.width / 2) / rect.width * 3
-    
-    controls.start({
-      rotateX: rotateXValue,
-      rotateY: rotateYValue,
-      rotateZ: Math.random() * 0.5 - 0.25,
-      scale: 1.01,
-      y: -2
-    })
-  }, [controls])
-
-  const handleHoverStart = useCallback(() => {
-    controls.start({
-      rotateZ: Math.random() * 0.5 - 0.25,
-      scale: 1.01,
-      y: -2
-    })
-  }, [controls])
-
-  const handleHoverEnd = useCallback(() => {
-    controls.start({
-      rotateX: 0,
-      rotateY: 0,
-      rotateZ: 0,
-      scale: 1,
-      y: 0
-    })
-  }, [controls])
-
+  // Simplified "shiver" effect from UX manual - much more performant
   const motionProps = {
-    animate: controls,
-    whileHover: { scale: 1.01, y: -2 },
-    transition: { type: 'spring', stiffness: 300, damping: 40 },
-    onMouseMove: handleMouseMove,
-    onHoverStart: handleHoverStart,
-    onHoverEnd: handleHoverEnd
+    whileHover: shouldReduceMotion ? {} : {
+      y: -6,
+      rotate: 2,
+      scale: 1.01,
+      transition: { type: 'spring', stiffness: 300, damping: 40 }
+    },
+    initial: { opacity: 0, scale: 0.95 },
+    animate: { opacity: 1, scale: 1 },
+    transition: shouldReduceMotion 
+      ? { duration: 0 }
+      : { delay: 0.1, type: 'spring', stiffness: 220, damping: 18 }
   }
 
-  return { motionProps, controls, motion }
+  return { motionProps, motion }
 }
 
-// Draggable elements
+// Simplified drag interaction for performance
 export const useTactileDrag = (onDrag?: (info: any) => void) => {
-  const controls = useAnimation()
+  const shouldReduceMotion = useReducedMotion()
   const triggerHaptic = useHapticFeedback()
 
   const handleDragStart = useCallback(() => {
     triggerHaptic('light')
   }, [triggerHaptic])
 
-  const handleDrag = useCallback((event: any, info: any) => {
-    if (onDrag) {
-      onDrag(info)
-    }
-    triggerHaptic('light')
-  }, [onDrag, triggerHaptic])
-
   const handleDragEnd = useCallback(() => {
-    controls.start({ x: 0, y: 0, scale: 1, rotateZ: 0 })
     triggerHaptic('medium')
-  }, [controls, triggerHaptic])
+  }, [triggerHaptic])
 
   const motionProps = {
     drag: true,
     dragConstraints: { left: 0, right: 0, top: 0, bottom: 0 },
-    dragElastic: 0.2,
-    whileDrag: { scale: 1.1, rotateZ: 5 },
-    transition: { type: 'spring', stiffness: 800, damping: 35 },
+    dragElastic: 0.15,
+    whileDrag: shouldReduceMotion ? {} : { scale: 1.05 },
+    transition: { type: 'spring', stiffness: 400, damping: 25 },
     onDragStart: handleDragStart,
-    onDrag: handleDrag,
-    onDragEnd: handleDragEnd,
-    animate: controls
+    onDragEnd: handleDragEnd
   }
 
-  return { motionProps, controls, motion }
+  if (onDrag) {
+    motionProps.onDrag = (event: any, info: any) => onDrag(info)
+  }
+
+  return { motionProps, motion }
 }
 
 // Ripple effect
@@ -208,101 +153,65 @@ export const useParallax = () => {
   return scrollY
 }
 
-// Gesture recognition for special interactions
-export const useGestureRecognition = () => {
-  const gestureRef = useRef<string[]>([])
-  const timeoutRef = useRef<NodeJS.Timeout>()
+// Simple interaction tracking (performance optimized)
+export const useInteractionTracking = () => {
+  const shouldReduceMotion = useReducedMotion()
   
-  const recordGesture = useCallback((gesture: string) => {
-    gestureRef.current.push(gesture)
-    
-    // Clear timeout if it exists
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-    
-    // Set timeout to clear gestures after 2 seconds of inactivity
-    timeoutRef.current = setTimeout(() => {
-      gestureRef.current = []
-    }, 2000)
-    
-    return gestureRef.current.join('-')
-  }, [])
+  const recordInteraction = useCallback((type: 'tap' | 'hover' | 'drag') => {
+    if (shouldReduceMotion) return
+    // Simple interaction logging - could be expanded for analytics
+    console.debug(`Nature interaction: ${type}`)
+  }, [shouldReduceMotion])
   
-  const checkPattern = useCallback((pattern: string) => {
-    const current = gestureRef.current.join('-')
-    return current.includes(pattern)
-  }, [])
-  
-  const clearGestures = useCallback(() => {
-    gestureRef.current = []
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-  }, [])
-  
-  return { recordGesture, checkPattern, clearGestures }
+  return { recordInteraction }
 }
 
-// Shake detection
-export const useShakeDetection = (onShake: () => void, threshold: number = 15) => {
-  const lastUpdate = useRef(0)
-  const lastX = useRef(0)
-  const lastY = useRef(0)
-  const lastZ = useRef(0)
+// Simplified shake detection (optional feature)
+export const useShakeDetection = (onShake: () => void) => {
+  const shouldReduceMotion = useReducedMotion()
   
   useEffect(() => {
-    const handleMotion = (event: DeviceMotionEvent) => {
-      const { accelerationIncludingGravity } = event
-      if (!accelerationIncludingGravity) return
-      
-      const currentTime = new Date().getTime()
-      const timeDifference = currentTime - lastUpdate.current
-      
-      if (timeDifference > 100) {
-        const deltaX = Math.abs(accelerationIncludingGravity.x! - lastX.current)
-        const deltaY = Math.abs(accelerationIncludingGravity.y! - lastY.current)
-        const deltaZ = Math.abs(accelerationIncludingGravity.z! - lastZ.current)
-        
-        if (deltaX + deltaY + deltaZ > threshold) {
-          onShake()
-        }
-        
-        lastUpdate.current = currentTime
-        lastX.current = accelerationIncludingGravity.x!
-        lastY.current = accelerationIncludingGravity.y!
-        lastZ.current = accelerationIncludingGravity.z!
+    if (shouldReduceMotion) return // Skip shake detection if motion is reduced
+    
+    const handleKeyboard = (event: KeyboardEvent) => {
+      // Fallback: trigger on double-tap space for accessibility
+      if (event.code === 'Space' && event.detail === 2) {
+        onShake()
       }
     }
     
-    window.addEventListener('devicemotion', handleMotion)
-    return () => window.removeEventListener('devicemotion', handleMotion)
-  }, [onShake, threshold])
+    window.addEventListener('keydown', handleKeyboard)
+    return () => window.removeEventListener('keydown', handleKeyboard)
+  }, [onShake, shouldReduceMotion])
 }
 
-// Particle effects
+// Simplified nature-inspired particle effect (performance conscious)
 export const useParticleEffect = () => {
-  const createParticles = useCallback((x: number, y: number, count: number = 5) => {
-    for (let i = 0; i < count; i++) {
+  const shouldReduceMotion = useReducedMotion()
+  
+  const createParticles = useCallback((x: number, y: number, count: number = 3) => {
+    if (shouldReduceMotion) return // Skip particles if motion is reduced
+    
+    // Limit to 3 particles max for performance
+    const maxCount = Math.min(count, 3)
+    for (let i = 0; i < maxCount; i++) {
       const particle = document.createElement('div')
-      particle.className = 'sparkle'
+      particle.className = 'opacity-60 pointer-events-none fixed z-50 text-leaf-500'
       particle.style.cssText = `
-        position: fixed;
-        left: ${x + Math.random() * 40 - 20}px;
-        top: ${y + Math.random() * 40 - 20}px;
-        z-index: 1000;
-        pointer-events: none;
-        font-size: ${Math.random() * 8 + 12}px;
+        left: ${x + Math.random() * 20 - 10}px;
+        top: ${y + Math.random() * 20 - 10}px;
+        font-size: 16px;
+        animation: sprout 0.5s ease-out forwards;
       `
-      particle.textContent = ['✨', '🌟', '💫', '⭐'][Math.floor(Math.random() * 4)]
+      particle.textContent = ['🌱', '🍃', '🌿'][Math.floor(Math.random() * 3)]
       
       document.body.appendChild(particle)
       
       setTimeout(() => {
         particle.remove()
-      }, 800)
+      }, 500)
     }
-  }, [])
+  }, [shouldReduceMotion])
 
   return createParticles
 }

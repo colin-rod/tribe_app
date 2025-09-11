@@ -36,13 +36,13 @@ export default function Home() {
   }, [scrollY, backgroundControls, heroControls])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ac-cream via-ac-sky-light to-ac-peach-light relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-leaf-100 via-sky-100 to-flower-400 relative overflow-hidden">
       {/* Background decorative elements */}
       <motion.div className="absolute inset-0" animate={backgroundControls}>
-        <div className="absolute top-20 left-20 w-32 h-32 bg-ac-sage/10 rounded-full animate-pulse"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-ac-peach/15 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-32 left-40 w-40 h-40 bg-ac-lavender/8 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-20 right-20 w-20 h-20 bg-ac-yellow/20 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-leaf-500/10 rounded-full animate-pulse"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-flower-400/15 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-32 left-40 w-40 h-40 bg-flower-400/8 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-20 right-20 w-20 h-20 bg-fruit-400/20 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
         
         {/* Floating emojis */}
         <div className="absolute top-32 left-1/4 text-4xl animate-bounce opacity-20" style={{ animationDelay: '0s' }}>🌸</div>
@@ -54,13 +54,13 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div className="pt-20 pb-16 text-center lg:pt-32" animate={heroControls}>
           <div className="relative">
-            <h1 className="mx-auto max-w-4xl font-display text-5xl font-bold tracking-tight text-ac-brown-dark sm:text-7xl mb-8">
+            <h1 className="mx-auto max-w-4xl font-display text-5xl font-bold tracking-tight text-bark-400 sm:text-7xl mb-8">
               Connect your{' '}
               <span className="relative">
-                <span className="text-ac-brown-dark font-black">
+                <span className="text-bark-400 font-black">
                   community
                 </span>
-                <div className="absolute -bottom-2 left-0 right-0 h-3 bg-ac-yellow/40 rounded-full transform -rotate-1"></div>
+                <div className="absolute -bottom-2 left-0 right-0 h-3 bg-fruit-400/40 rounded-full transform -rotate-1"></div>
               </span>{' '}
               in branches of shared experiences
             </h1>
@@ -70,7 +70,7 @@ export default function Home() {
             <div className="absolute -top-4 right-1/4 text-2xl animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}>🌱</div>
           </div>
           
-          <p className="mx-auto mt-6 max-w-2xl text-xl leading-relaxed text-ac-brown-dark font-medium">
+          <p className="mx-auto mt-6 max-w-2xl text-xl leading-relaxed text-bark-400 font-medium">
             Share precious moments, milestones, and memories in completely private group spaces. 
             Every branch is invite-only, keeping your community memories safe and intimate.
           </p>
@@ -78,7 +78,7 @@ export default function Home() {
           <div className="mt-12 flex justify-center gap-x-6 flex-wrap">
             <Link href="/auth/signup" className="inline-block">
               <Button
-                variant="wooden"
+                variant="bark"
                 size="lg"
                 tactile={false}
                 className="shadow-xl text-lg px-8 py-4 mb-4 w-full flex items-center justify-center hover:scale-[1.01] transition-transform duration-200"
@@ -116,7 +116,7 @@ export default function Home() {
                 >
                   🎉
                 </motion.div>
-                <p className="text-ac-brown font-display text-lg bg-ac-yellow/20 px-4 py-2 rounded-full border-2 border-ac-yellow inline-block">
+                <p className="text-bark-400 font-display text-lg bg-fruit-400/20 px-4 py-2 rounded-full border-2 border-fruit-400 inline-block">
                   You found the secret shake! 🎊
                 </p>
               </motion.div>
@@ -125,7 +125,7 @@ export default function Home() {
         </motion.div>
         
         <div className="mx-auto max-w-6xl mt-20">
-          <h2 className="text-3xl font-bold text-center text-ac-brown-dark font-display mb-12">
+          <h2 className="text-3xl font-bold text-center text-bark-400 font-display mb-12">
             🌸 Why communities love our grove 🌸
           </h2>
           
@@ -147,11 +147,11 @@ export default function Home() {
               variant="bulletin" 
               className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
-              <div className="w-16 h-16 bg-ac-sage-light rounded-full flex items-center justify-center mb-6 border-4 border-ac-sage shadow-lg mx-auto">
+              <div className="w-16 h-16 bg-leaf-300 rounded-full flex items-center justify-center mb-6 border-4 border-leaf-500 shadow-lg mx-auto">
                 <span className="text-3xl">🔒</span>
               </div>
-              <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Always Private & Secure</h3>
-              <p className="text-ac-brown leading-relaxed text-center">
+              <h3 className="text-xl font-bold text-bark-400 mb-4 font-display text-center">Always Private & Secure</h3>
+              <p className="text-bark-400 leading-relaxed text-center">
                 Create separate branches for different topics, projects, or interest groups. 
                 Only invited members can see your precious content.
               </p>
@@ -161,11 +161,11 @@ export default function Home() {
               variant="polaroid" 
               className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
-              <div className="w-16 h-16 bg-ac-peach-light rounded-full flex items-center justify-center mb-6 border-4 border-ac-peach shadow-lg mx-auto">
+              <div className="w-16 h-16 bg-flower-400 rounded-full flex items-center justify-center mb-6 border-4 border-flower-400 shadow-lg mx-auto">
                 <span className="text-3xl">📸</span>
               </div>
-              <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Rich Memories & Milestones</h3>
-              <p className="text-ac-brown leading-relaxed text-center">
+              <h3 className="text-xl font-bold text-bark-400 mb-4 font-display text-center">Rich Memories & Milestones</h3>
+              <p className="text-bark-400 leading-relaxed text-center">
                 Share photos, videos, voice notes, and milestone moments with AI-powered prompts 
                 to help capture every precious memory.
               </p>
@@ -175,11 +175,11 @@ export default function Home() {
               variant="wooden" 
               className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
             >
-              <div className="w-16 h-16 bg-ac-lavender rounded-full flex items-center justify-center mb-6 border-4 border-purple-300 shadow-lg mx-auto">
+              <div className="w-16 h-16 bg-flower-400 rounded-full flex items-center justify-center mb-6 border-4 border-purple-300 shadow-lg mx-auto">
                 <span className="text-3xl">👥</span>
               </div>
-              <h3 className="text-xl font-bold text-ac-brown-dark mb-4 font-display text-center">Community-Focused Design</h3>
-              <p className="text-ac-cream leading-relaxed text-center">
+              <h3 className="text-xl font-bold text-bark-400 mb-4 font-display text-center">Community-Focused Design</h3>
+              <p className="text-leaf-100 leading-relaxed text-center">
                 Easy access for all group members regardless of age or tech experience. 
                 Real-time sharing and simple invitation system.
               </p>
@@ -188,29 +188,29 @@ export default function Home() {
           
           {/* Use Cases Section */}
           <div className="mt-24">
-            <h3 className="text-2xl font-bold text-center text-ac-brown-dark font-display mb-8">
+            <h3 className="text-2xl font-bold text-center text-bark-400 font-display mb-8">
               Perfect for any close-knit group
             </h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <Card variant="leaf" className="p-6 text-center">
                 <div className="text-2xl mb-3">👨‍👩‍👧‍👦</div>
-                <h4 className="font-semibold text-ac-brown-dark font-display mb-2">Families</h4>
-                <p className="text-sm text-ac-brown">Share milestones, photos, and precious moments with your loved ones.</p>
+                <h4 className="font-semibold text-bark-400 font-display mb-2">Families</h4>
+                <p className="text-sm text-bark-400">Share milestones, photos, and precious moments with your loved ones.</p>
               </Card>
               <Card variant="leaf" className="p-6 text-center">
                 <div className="text-2xl mb-3">🎒</div>
-                <h4 className="font-semibold text-ac-brown-dark font-display mb-2">Friend Groups</h4>
-                <p className="text-sm text-ac-brown">Document adventures, trips, and memories with your closest friends.</p>
+                <h4 className="font-semibold text-bark-400 font-display mb-2">Friend Groups</h4>
+                <p className="text-sm text-bark-400">Document adventures, trips, and memories with your closest friends.</p>
               </Card>
               <Card variant="leaf" className="p-6 text-center">
                 <div className="text-2xl mb-3">🚀</div>
-                <h4 className="font-semibold text-ac-brown-dark font-display mb-2">Teams</h4>
-                <p className="text-sm text-ac-brown">Keep your team connected with project highlights and shared achievements.</p>
+                <h4 className="font-semibold text-bark-400 font-display mb-2">Teams</h4>
+                <p className="text-sm text-bark-400">Keep your team connected with project highlights and shared achievements.</p>
               </Card>
               <Card variant="leaf" className="p-6 text-center">
                 <div className="text-2xl mb-3">🎨</div>
-                <h4 className="font-semibold text-ac-brown-dark font-display mb-2">Hobby Groups</h4>
-                <p className="text-sm text-ac-brown">Share your passion projects, creations, and learning journey together.</p>
+                <h4 className="font-semibold text-bark-400 font-display mb-2">Hobby Groups</h4>
+                <p className="text-sm text-bark-400">Share your passion projects, creations, and learning journey together.</p>
               </Card>
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function Home() {
               <span className="animate-bounce" style={{ animationDelay: '0.6s' }}>🌻</span>
               <span className="animate-bounce" style={{ animationDelay: '0.8s' }}>🍃</span>
             </div>
-            <p className="mt-4 text-ac-brown-light font-display text-sm">
+            <p className="mt-4 text-bark-200 font-display text-sm">
               💫 Shake your device for a surprise! 💫
             </p>
           </div>

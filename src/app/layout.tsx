@@ -45,23 +45,23 @@ export default function RootLayout({
                 duration: 4000,
                 style: {
                   background: 'var(--surface)',
-                  color: 'var(--ac-brown-dark)',
+                  color: 'var(--bark-400)',
                   boxShadow: 'var(--shadow-large)',
                   borderRadius: 'var(--radius-large)',
                   fontSize: '14px',
                   maxWidth: '400px',
                   fontFamily: 'var(--font-display)',
-                  border: '3px solid var(--ac-sage-light)',
+                  border: '3px solid var(--leaf-300)',
                 },
                 success: {
                   iconTheme: {
-                    primary: 'var(--ac-sage)',
+                    primary: 'var(--leaf-500)',
                     secondary: 'var(--surface)',
                   },
                 },
                 error: {
                   iconTheme: {
-                    primary: 'var(--ac-coral)',
+                    primary: 'var(--flower-400)',
                     secondary: 'var(--surface)',
                   },
                 },

@@ -7,7 +7,7 @@ import { TreeWithMembers, BranchWithMembers, FilterOption } from '@/types/common
 import LeafCard from '@/components/leaves/LeafCard'
 import { useTreeLeaves, useAddLeafReaction, useAddLeafComment, useShareLeafWithBranches } from '@/hooks/use-leaves'
 import { useTreeStats } from '@/hooks/use-trees'
-import { useParallax, useShakeDetection, useGestureRecognition, useParticleEffect } from '@/hooks/useTactileInteractions'
+import { useParallax, useShakeDetection, useParticleEffect } from '@/hooks/useTactileInteractions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DragDropProvider } from '@/components/common/DragDropProvider'
@@ -42,7 +42,6 @@ const TreeExplorer = memo(function TreeExplorer({
   // Tactile interactions
   const scrollY = useParallax()
   const createParticles = useParticleEffect()
-  const { recordGesture, checkPattern, clearGestures } = useGestureRecognition()
 
   // Parallax animations
   const headerControls = useAnimation()
@@ -112,28 +111,18 @@ const TreeExplorer = memo(function TreeExplorer({
 
   const handleReaction = (leafId: string, reactionType: ReactionType) => {
     addReactionMutation.mutate({ leafId, reactionType })
-    recordGesture('reaction')
-    
-    // Special gesture pattern: 5 reactions in sequence triggers celebration
-    if (checkPattern('reaction-reaction-reaction-reaction-reaction')) {
-      createParticles(window.innerWidth / 2, window.innerHeight / 2, 15)
-      clearGestures()
-    }
   }
 
   const handleComment = (leafId: string, comment: string) => {
     addCommentMutation.mutate({ leafId, comment })
-    recordGesture('comment')
   }
 
   const handleShare = (leafId: string, branchIds: string[]) => {
     shareLeafMutation.mutate({ leafId, branchIds })
-    recordGesture('share')
   }
 
   const handleLeafMove = (leafId: string, targetBranchId: string) => {
     // Handle leaf movement between branches
-    recordGesture('move')
     createParticles(window.innerWidth / 2, 200, 5)
   }
 
@@ -153,7 +142,7 @@ const TreeExplorer = memo(function TreeExplorer({
     return (
       <DragDropProvider>
         <motion.div 
-          className="h-full flex items-center justify-center bg-gradient-to-br from-ac-cream to-ac-sky-light relative overflow-hidden"
+          className="h-full flex items-center justify-center bg-gradient-to-br from-leaf-100 to-sky-100 relative overflow-hidden"
           animate={backgroundControls}
         >
           {/* Background decorative elements */}
@@ -166,11 +155,11 @@ const TreeExplorer = memo(function TreeExplorer({
           
           <Card variant="wooden" className="text-center max-w-md mx-4">
             <div className="p-8">
-              <div className="w-20 h-20 bg-ac-sage-light rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-ac-sage shadow-lg">
+              <div className="w-20 h-20 bg-leaf-300 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-leaf-500 shadow-lg">
                 <span className="text-4xl">🌳</span>
               </div>
-              <h3 className="text-xl font-bold text-ac-brown-dark mb-2 font-display">Welcome to your Community Grove!</h3>
-              <p className="text-ac-brown mb-6 leading-relaxed">Select a branch from the sidebar to explore your precious group leaves and memories.</p>
+              <h3 className="text-xl font-bold text-bark-400 mb-2 font-display">Welcome to your Community Grove!</h3>
+              <p className="text-bark-400 mb-6 leading-relaxed">Select a branch from the sidebar to explore your precious group leaves and memories.</p>
               <Button
                 variant="leaf"
                 size="lg"
@@ -190,18 +179,18 @@ const TreeExplorer = memo(function TreeExplorer({
   if (loading) {
     return (
       <DragDropProvider>
-        <div className="h-full flex items-center justify-center bg-gradient-to-br from-ac-cream to-ac-peach-light">
+        <div className="h-full flex items-center justify-center bg-gradient-to-br from-leaf-100 to-flower-400">
           <Card variant="leaf" className="text-center">
             <div className="p-8">
               <div className="relative mb-6">
                 <div className="animate-spin text-6xl">🍃</div>
                 <div className="absolute inset-0 animate-ping text-4xl flex items-center justify-center opacity-30">🌱</div>
               </div>
-              <p className="text-ac-brown font-display text-lg">Growing your leaves...</p>
+              <p className="text-bark-400 font-display text-lg">Growing your leaves...</p>
               <div className="mt-4 flex justify-center space-x-2">
-                <div className="w-2 h-2 bg-ac-sage rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                <div className="w-2 h-2 bg-ac-sage rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-ac-sage rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-leaf-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="w-2 h-2 bg-leaf-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-leaf-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           </Card>
@@ -215,7 +204,7 @@ const TreeExplorer = memo(function TreeExplorer({
       <div className="h-full flex flex-col relative overflow-hidden">
         {/* Background with parallax */}
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-br from-ac-cream via-ac-sky-light to-ac-peach-light opacity-30"
+          className="absolute inset-0 bg-gradient-to-br from-leaf-100 via-sky-100 to-flower-400 opacity-30"
           animate={backgroundControls}
         />
         
@@ -225,12 +214,12 @@ const TreeExplorer = memo(function TreeExplorer({
           animate={headerControls}
         >
           <Card variant="wooden" className="m-4 overflow-visible">
-            <div className="bg-gradient-to-r from-ac-sage via-ac-sage-light to-ac-sky text-ac-brown-dark p-6 rounded-3xl relative">
+            <div className="bg-gradient-to-r from-leaf-500 via-leaf-300 to-sky-300 text-bark-400 p-6 rounded-3xl relative">
               {/* Decorative elements */}
-              <div className="absolute -top-2 -right-2 w-8 h-8 bg-ac-yellow rounded-full border-4 border-ac-cream shadow-lg flex items-center justify-center text-lg animate-pulse">
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-fruit-400 rounded-full border-4 border-leaf-100 shadow-lg flex items-center justify-center text-lg animate-pulse">
                 🌱
               </div>
-              <div className="absolute -bottom-1 -left-1 w-6 h-6 bg-ac-coral rounded-full border-2 border-ac-cream opacity-80 animate-bounce"></div>
+              <div className="absolute -bottom-1 -left-1 w-6 h-6 bg-flower-400 rounded-full border-2 border-leaf-100 opacity-80 animate-bounce"></div>
               
               <div className="flex items-center justify-between">
                 <div>
@@ -238,7 +227,7 @@ const TreeExplorer = memo(function TreeExplorer({
                     <span className="mr-4 text-4xl">🌳</span>
                     {selectedTree.trees?.name || 'Community Tree'}
                   </h1>
-                  <p className="text-ac-brown-dark/80 mt-1 text-lg leading-relaxed">
+                  <p className="text-bark-400/80 mt-1 text-lg leading-relaxed">
                     {selectedTree.trees?.description || 'A collection of precious group memories'}
                   </p>
                 </div>
@@ -255,20 +244,20 @@ const TreeExplorer = memo(function TreeExplorer({
               {/* Stats Row */}
               <div className="grid grid-cols-4 gap-6 mt-8">
                 <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-[1.01] transition-transform">
-                  <div className="text-3xl font-bold text-ac-brown-dark font-display">{treeStats?.totalLeaves || 0}</div>
-                  <div className="text-sm text-ac-brown font-semibold">🌿 Total Leaves</div>
+                  <div className="text-3xl font-bold text-bark-400 font-display">{treeStats?.totalLeaves || 0}</div>
+                  <div className="text-sm text-bark-400 font-semibold">🌿 Total Leaves</div>
                 </Card>
                 <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-[1.01] transition-transform">
-                  <div className="text-3xl font-bold text-ac-brown-dark font-display">{treeStats?.milestoneCount || 0}</div>
-                  <div className="text-sm text-ac-brown font-semibold">⭐ Milestones</div>
+                  <div className="text-3xl font-bold text-bark-400 font-display">{treeStats?.milestoneCount || 0}</div>
+                  <div className="text-sm text-bark-400 font-semibold">⭐ Milestones</div>
                 </Card>
                 <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-[1.01] transition-transform">
-                  <div className="text-3xl font-bold text-ac-brown-dark font-display">{treeStats?.recentLeaves || 0}</div>
-                  <div className="text-sm text-ac-brown font-semibold">✨ This Week</div>
+                  <div className="text-3xl font-bold text-bark-400 font-display">{treeStats?.recentLeaves || 0}</div>
+                  <div className="text-sm text-bark-400 font-semibold">✨ This Week</div>
                 </Card>
                 <Card variant="bulletin" className="text-center py-4 px-2 transform hover:scale-[1.01] transition-transform">
-                  <div className="text-3xl font-bold text-ac-brown-dark font-display">{Object.keys(treeStats?.seasonBreakdown || {}).length}</div>
-                  <div className="text-sm text-ac-brown font-semibold">🌸 Seasons</div>
+                  <div className="text-3xl font-bold text-bark-400 font-display">{Object.keys(treeStats?.seasonBreakdown || {}).length}</div>
+                  <div className="text-sm text-bark-400 font-semibold">🌸 Seasons</div>
                 </Card>
               </div>
             </div>
@@ -280,7 +269,7 @@ const TreeExplorer = memo(function TreeExplorer({
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-ac-brown-dark font-display font-semibold">🔍 Filter by:</span>
+                <span className="text-sm text-bark-400 font-display font-semibold">🔍 Filter by:</span>
                 {[
                   { key: 'all', label: 'All Leaves', icon: '🌿' },
                   { key: 'recent', label: 'This Week', icon: '✨' },
@@ -306,7 +295,7 @@ const TreeExplorer = memo(function TreeExplorer({
               
               <div className="flex items-center space-x-4">
                 {showShakeHint && (
-                  <div className="text-xs text-ac-brown-light font-display bg-ac-yellow/20 px-3 py-1 rounded-full border border-ac-yellow animate-pulse">
+                  <div className="text-xs text-bark-200 font-display bg-fruit-400/20 px-3 py-1 rounded-full border border-fruit-400 animate-pulse">
                     📱 Shake to shuffle!
                   </div>
                 )}
@@ -329,9 +318,9 @@ const TreeExplorer = memo(function TreeExplorer({
         <div className="flex-1 overflow-auto relative">
           {/* Floating background elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-10 left-10 w-20 h-20 bg-ac-sage/10 rounded-full animate-pulse"></div>
-            <div className="absolute top-32 right-20 w-16 h-16 bg-ac-peach/10 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute bottom-20 left-32 w-24 h-24 bg-ac-sky/10 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-10 left-10 w-20 h-20 bg-leaf-500/10 rounded-full animate-pulse"></div>
+            <div className="absolute top-32 right-20 w-16 h-16 bg-flower-400/10 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute bottom-20 left-32 w-24 h-24 bg-sky-300/10 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
           </div>
           
           {filteredLeaves.length > 0 ? (
@@ -378,19 +367,19 @@ const TreeExplorer = memo(function TreeExplorer({
               
               <Card variant="wooden" className="text-center max-w-lg mx-4 relative z-10">
                 <div className="p-8">
-                  <div className="w-20 h-20 bg-ac-peach-light rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-ac-peach shadow-lg animate-bounce">
+                  <div className="w-20 h-20 bg-flower-400 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-flower-400 shadow-lg animate-bounce">
                     <span className="text-4xl">
                       {filter === 'milestones' ? '⭐' : filter === 'recent' ? '📅' : '🌱'}
                     </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-ac-brown-dark mb-4 font-display">
+                  <h3 className="text-2xl font-bold text-bark-400 mb-4 font-display">
                     {filter === 'milestones' 
                       ? 'No milestones yet' 
                       : filter === 'recent' 
                       ? 'No leaves this week' 
                       : 'No leaves yet'}
                   </h3>
-                  <p className="text-ac-brown mb-8 leading-relaxed">
+                  <p className="text-bark-400 mb-8 leading-relaxed">
                     {filter === 'all' 
                       ? 'Start capturing precious leaves to grow this beautiful tree!' 
                       : 'Try a different filter or create your first magical leaf.'}
@@ -407,7 +396,7 @@ const TreeExplorer = memo(function TreeExplorer({
                   </Button>
                   
                   {/* Hint about shake gesture */}
-                  <div className="mt-6 text-xs text-ac-brown-light font-display bg-ac-sage-light/20 px-4 py-2 rounded-full border border-ac-sage-light">
+                  <div className="mt-6 text-xs text-bark-200 font-display bg-leaf-300/20 px-4 py-2 rounded-full border border-leaf-300">
                     💡 Tip: Shake your device to shuffle leaves!
                   </div>
                 </div>

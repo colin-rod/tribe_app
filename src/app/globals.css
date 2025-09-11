@@ -2,49 +2,77 @@
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Animal Crossing Color Palette */
-  --ac-cream: #FEF7E8;
-  --ac-sage: #B8D4B8;
-  --ac-sage-light: #D4E8D4;
-  --ac-sage-dark: #8FB08F;
-  --ac-brown-light: #D4B5A0;
-  --ac-brown: #A0826D;
-  --ac-brown-dark: #8B6F47;
-  --ac-sky: #C8E6F5;
-  --ac-sky-light: #E8F4FA;
-  --ac-sky-dark: #87CEEB;
-  --ac-peach: #FFD6B3;
-  --ac-peach-light: #FFE8D6;
-  --ac-coral: #FF9F80;
-  --ac-lavender: #E6D7FF;
-  --ac-yellow: #FFE55C;
-  --ac-white: #FFFEF7;
+  /* Nature-Inspired Color Palette */
+  --leaf-100: #F1FBF3;
+  --leaf-300: #C6EAD0;
+  --leaf-500: #6EC26B;
+  --leaf-700: #3F7F3A;
+  --bark-200: #9B7A66;
+  --bark-400: #6B4630;
+  --sky-100: #F5FAFF;
+  --sky-300: #BFE3F8;
+  --flower-400: #F7C6D2;
+  --fruit-400: #FFD66B;
+  --nature-white: #FFFEF7;
   
-  /* Game-like Shadows and Effects */
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12);
-  --shadow-large: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --shadow-wooden: 0 4px 8px rgba(139, 111, 71, 0.3);
+  /* Legacy AC tokens mapped to nature tokens for compatibility */
+  --ac-cream: var(--leaf-100);
+  --ac-sage: var(--leaf-500);
+  --ac-sage-light: var(--leaf-300);
+  --ac-sage-dark: var(--leaf-700);
+  --ac-brown-light: var(--bark-200);
+  --ac-brown: var(--bark-400);
+  --ac-brown-dark: var(--bark-400);
+  --ac-sky: var(--sky-300);
+  --ac-sky-light: var(--sky-100);
+  --ac-sky-dark: var(--sky-300);
+  --ac-peach: var(--flower-400);
+  --ac-peach-light: var(--flower-400);
+  --ac-coral: var(--flower-400);
+  --ac-lavender: var(--flower-400);
+  --ac-yellow: var(--fruit-400);
+  --ac-white: var(--nature-white);
   
-  /* Border Radius */
-  --radius-small: 8px;
-  --radius-medium: 16px;
-  --radius-large: 24px;
-  --radius-xl: 32px;
+  /* Nature-Inspired Shadows and Effects */
+  --shadow-leaf-soft: 0 6px 12px rgba(0, 0, 0, 0.08);
+  --shadow-leaf-press: inset 0 -4px 6px rgba(0, 0, 0, 0.06);
+  --shadow-floating: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow-bark: 0 4px 8px rgba(107, 70, 48, 0.3);
+  
+  /* Legacy shadow mappings */
+  --shadow-soft: var(--shadow-leaf-soft);
+  --shadow-medium: var(--shadow-leaf-soft);
+  --shadow-large: var(--shadow-floating);
+  --shadow-wooden: var(--shadow-bark);
+  
+  /* Nature-Inspired Border Radius */
+  --radius-leaf: 12px;
+  --radius-soft: 20px;
+  --radius-pill: 9999px;
+  
+  /* Legacy radius mappings */
+  --radius-small: var(--radius-leaf);
+  --radius-medium: var(--radius-leaf);
+  --radius-large: var(--radius-soft);
+  --radius-xl: var(--radius-soft);
   
   /* Transitions */
   --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --transition-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   
-  /* Background textures */
-  --texture-paper: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fef7e8' fill-opacity='0.05'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='47' cy='23' r='1'/%3E%3Ccircle cx='23' cy='43' r='1'/%3E%3C/g%3E%3C/svg%3E");
-  --texture-wood: linear-gradient(45deg, rgba(212, 181, 160, 0.1) 25%, transparent 25%, transparent 50%, rgba(212, 181, 160, 0.1) 50%, rgba(212, 181, 160, 0.1) 75%, transparent 75%, transparent);
+  /* Nature textures */
+  --texture-organic: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f1fbf3' fill-opacity='0.05'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='47' cy='23' r='1'/%3E%3Ccircle cx='23' cy='43' r='1'/%3E%3C/g%3E%3C/svg%3E");
+  --texture-bark: linear-gradient(45deg, rgba(155, 122, 102, 0.1) 25%, transparent 25%, transparent 50%, rgba(155, 122, 102, 0.1) 50%, rgba(155, 122, 102, 0.1) 75%, transparent 75%, transparent);
+  
+  /* Legacy texture mappings */
+  --texture-paper: var(--texture-organic);
+  --texture-wood: var(--texture-bark);
   
   /* Main theme colors */
-  --background: var(--ac-cream);
-  --foreground: var(--ac-brown-dark);
-  --surface: var(--ac-white);
-  --surface-soft: var(--ac-peach-light);
+  --background: var(--leaf-100);
+  --foreground: var(--bark-400);
+  --surface: var(--nature-white);
+  --surface-soft: var(--flower-400);
 }
 
 /* Tailwind configuration now handles color and font mappings */
@@ -60,7 +88,7 @@
 
 body {
   background: var(--background);
-  background-image: var(--texture-paper);
+  background-image: var(--texture-organic);
   color: var(--foreground);
   font-family: 'Quicksand', system-ui, sans-serif;
   line-height: 1.6;
@@ -83,28 +111,33 @@ body {
   transform: translateY(0) scale(0.98);
 }
 
-/* Game-like button base */
-.game-button {
+/* Nature-inspired button base */
+.nature-button {
   position: relative;
-  background: var(--ac-brown);
-  color: var(--ac-cream);
-  border: 3px solid var(--ac-brown-dark);
-  border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-wooden);
+  background: var(--bark-400);
+  color: var(--leaf-100);
+  border: 3px solid var(--bark-400);
+  border-radius: var(--radius-leaf);
+  box-shadow: var(--shadow-bark);
   font-family: 'Comic Neue', cursive;
   font-weight: 600;
   transition: all 0.15s var(--transition-bounce);
 }
 
-.game-button:hover {
-  background: var(--ac-brown-light);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-large);
+/* Legacy game-button mapping */
+.game-button {
+  @apply nature-button;
 }
 
-.game-button:active {
+.nature-button:hover, .game-button:hover {
+  background: var(--bark-200);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-floating);
+}
+
+.nature-button:active, .game-button:active {
   transform: translateY(-1px) scale(0.98);
-  box-shadow: var(--shadow-medium);
+  box-shadow: var(--shadow-leaf-soft);
 }
 
 /* Text shadow utilities for better readability */
@@ -120,32 +153,37 @@ body {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Card styles with game-like appearance */
-.game-card {
+/* Card styles with nature-inspired appearance */
+.nature-card {
   background: var(--surface);
-  border: 3px solid var(--ac-brown-light);
-  border-radius: var(--radius-large);
-  box-shadow: var(--shadow-medium);
+  border: 3px solid var(--bark-200);
+  border-radius: var(--radius-soft);
+  box-shadow: var(--shadow-leaf-soft);
   transition: all 0.3s var(--transition-soft);
   position: relative;
   overflow: hidden;
 }
 
-.game-card:before {
+/* Legacy game-card mapping */
+.game-card {
+  @apply nature-card;
+}
+
+.nature-card:before, .game-card:before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--ac-sage);
+  background: var(--leaf-500);
   opacity: 0.7;
 }
 
-.game-card:hover {
+.nature-card:hover, .game-card:hover {
   transform: translateY(-4px) rotate(0.5deg);
-  box-shadow: var(--shadow-large);
-  border-color: var(--ac-sage);
+  box-shadow: var(--shadow-floating);
+  border-color: var(--leaf-500);
 }
 
 /* Leaf-like decorative elements */
@@ -160,9 +198,15 @@ body {
   right: -5px;
   font-size: 1.2em;
   opacity: 0.6;
-  animation: gentle-sway 3s ease-in-out infinite;
+  animation: leaf-sway 3s ease-in-out infinite;
 }
 
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* Legacy animation mapping */
 @keyframes gentle-sway {
   0%, 100% { transform: rotate(-5deg); }
   50% { transform: rotate(5deg); }
@@ -207,7 +251,7 @@ body {
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(184, 212, 184, 0.5);
+  background: rgba(110, 194, 107, 0.5); /* leaf-500 with opacity */
   transform: translate(-50%, -50%);
   transition: width 0.6s, height 0.6s;
 }
