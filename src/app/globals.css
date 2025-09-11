@@ -126,7 +126,15 @@ body {
 
 /* Legacy game-button mapping */
 .game-button {
-  @apply nature-button;
+  position: relative;
+  background: var(--bark-400);
+  color: var(--leaf-100);
+  border: 3px solid var(--bark-400);
+  border-radius: var(--radius-leaf);
+  box-shadow: var(--shadow-bark);
+  font-family: 'Comic Neue', cursive;
+  font-weight: 600;
+  transition: all 0.15s var(--transition-bounce);
 }
 
 .nature-button:hover, .game-button:hover {
@@ -166,7 +174,13 @@ body {
 
 /* Legacy game-card mapping */
 .game-card {
-  @apply nature-card;
+  background: var(--surface);
+  border: 3px solid var(--bark-200);
+  border-radius: var(--radius-soft);
+  box-shadow: var(--shadow-leaf-soft);
+  transition: all 0.3s var(--transition-soft);
+  position: relative;
+  overflow: hidden;
 }
 
 .nature-card:before, .game-card:before {
