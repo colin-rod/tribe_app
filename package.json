@@ -23,6 +23,7 @@
     "dotenv": "^17.2.2",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.542.0",
+    "mailparser": "^3.7.4",
     "next": "15.5.0",
     "react": "19.1.0",
     "react-dnd": "^16.0.1",

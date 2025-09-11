@@ -4,6 +4,7 @@ import { createComponentLogger } from '@/lib/logger'
 import { createUnassignedLeaf } from '@/lib/leaf-assignments'
 import { AttachmentHandler } from '@/lib/email/attachment-handler'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { simpleParser } from 'mailparser'
 
 const logger = createComponentLogger('SendGridWebhook')
 
@@ -47,6 +48,8 @@ export async function POST(req: NextRequest) {
     console.log('All keys:', allFormKeys)
     console.log('Attachment keys:', allFormKeys.filter(key => key.startsWith('attachment')))
     console.log('Attachment count from form:', formData.get('attachments') || '0')
+    console.log('Has "email" field (raw MIME):', formData.has('email'))
+    console.log('Content-Type header:', req.headers.get('content-type'))
     
     logger.info('Complete FormData received from SendGrid', {
       metadata: {
@@ -57,14 +60,74 @@ export async function POST(req: NextRequest) {
       }
     })
     
-    // Extract email data - SendGrid sends everything directly
-    const emailData: ParsedEmail = {
-      to: formData.get('to') as string || '',
-      from: formData.get('from') as string || '',
-      subject: formData.get('subject') as string || '',
-      text: formData.get('text') as string || '',
-      html: formData.get('html') as string || '',
-      attachments: []
+    // Check if SendGrid sent raw MIME data
+    const rawEmail = formData.get('email') as string
+    let emailData: ParsedEmail
+    
+    if (rawEmail) {
+      console.log('📧 Processing raw MIME email data...')
+      console.log('Raw email length:', rawEmail.length)
+      
+      try {
+        // Parse the raw MIME email
+        const parsed = await simpleParser(rawEmail)
+        console.log('📧 MIME parsing results:')
+        console.log('- Subject:', parsed.subject || 'No subject')
+        console.log('- From:', parsed.from?.text || 'Unknown sender')
+        console.log('- To:', parsed.to?.text || 'Unknown recipient')
+        console.log('- Attachments count:', parsed.attachments?.length || 0)
+        
+        emailData = {
+          to: parsed.to?.text || formData.get('to') as string || '',
+          from: parsed.from?.text || formData.get('from') as string || '',
+          subject: parsed.subject || '',
+          text: parsed.text || '',
+          html: parsed.html as string || '',
+          attachments: []
+        }
+        
+        // Process MIME attachments
+        if (parsed.attachments && parsed.attachments.length > 0) {
+          console.log('🔗 Processing MIME attachments...')
+          for (const attachment of parsed.attachments) {
+            console.log(`- ${attachment.filename}: ${attachment.contentType}, ${attachment.size} bytes`)
+            
+            if (attachment.content) {
+              emailData.attachments.push({
+                filename: attachment.filename || 'attachment',
+                type: attachment.contentType || 'application/octet-stream',
+                content: attachment.content.toString('base64')
+              })
+            }
+          }
+        }
+        
+      } catch (error) {
+        console.error('❌ Error parsing MIME email:', error)
+        logger.error('Failed to parse raw MIME email', error)
+        
+        // Fallback to form data parsing
+        emailData = {
+          to: formData.get('to') as string || '',
+          from: formData.get('from') as string || '',
+          subject: formData.get('subject') as string || '',
+          text: formData.get('text') as string || '',
+          html: formData.get('html') as string || '',
+          attachments: []
+        }
+      }
+      
+    } else {
+      console.log('📧 Using standard form data parsing (no raw MIME)')
+      // Extract email data - SendGrid sends everything directly
+      emailData = {
+        to: formData.get('to') as string || '',
+        from: formData.get('from') as string || '',
+        subject: formData.get('subject') as string || '',
+        text: formData.get('text') as string || '',
+        html: formData.get('html') as string || '',
+        attachments: []
+      }
     }
 
     logger.info('Email data received from SendGrid', {
