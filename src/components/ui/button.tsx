@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useTactileButton, useRippleEffect, useParticleEffect } from '@/hooks/useTactileInteractions'
+import { motion } from 'framer-motion'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'wooden' | 'leaf'
@@ -20,7 +21,7 @@ export function Button({
   onClick,
   ...props 
 }: ButtonProps) {
-  const { bind, springs, animated } = useTactileButton()
+  const { motionProps, controls, motion: motionComponent } = useTactileButton()
   const createRipple = useRippleEffect()
   const createParticles = useParticleEffect()
 
@@ -68,30 +69,25 @@ export function Button({
   }
 
   return (
-    <animated.button 
+    <motion.button 
       className={classes} 
       onClick={handleClick}
-      style={{
-        transform: springs.scale.to(s => `scale(${s}) translateY(${springs.y.get()}px) rotateZ(${springs.rotateZ.get()}deg)`),
-        transformOrigin: 'center'
-      }}
-      {...bind()}
+      {...motionProps}
       {...props}
     >
       {variant === 'leaf' && (
-        <animated.span 
+        <motion.span 
           className="absolute -top-1 -right-1 text-lg"
-          style={{
-            transform: springs.rotateZ.to(r => `rotate(${r * 2}deg)`)
-          }}
+          animate={{ rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
           🌿
-        </animated.span>
+        </motion.span>
       )}
       {variant === 'wooden' && (
         <span className="absolute top-1 left-1 text-xs opacity-50">🌳</span>
       )}
       {children}
-    </animated.button>
+    </motion.button>
   )
 }

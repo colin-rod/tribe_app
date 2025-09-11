@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useParallax, useShakeDetection, useParticleEffect } from '@/hooks/useTactileInteractions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { animated, useSpring } from '@react-spring/web'
+import { motion, useAnimation, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
 export default function Home() {
@@ -13,14 +13,8 @@ export default function Home() {
   const [showEasterEgg, setShowEasterEgg] = useState(false)
   
   // Parallax animations
-  const [backgroundSpring, backgroundApi] = useSpring(() => ({
-    transform: 'translateY(0px) scale(1)'
-  }))
-  
-  const [heroSpring, heroApi] = useSpring(() => ({
-    transform: 'translateY(0px)',
-    opacity: 1
-  }))
+  const backgroundControls = useAnimation()
+  const heroControls = useAnimation()
   
   // Shake easter egg
   useShakeDetection(() => {
@@ -31,19 +25,20 @@ export default function Home() {
   
   // Parallax effect on scroll
   useEffect(() => {
-    backgroundApi.start({
-      transform: `translateY(${scrollY * 0.5}px) scale(${1 + scrollY * 0.0001})`
+    backgroundControls.start({
+      y: scrollY * 0.5,
+      scale: 1 + scrollY * 0.0001
     })
-    heroApi.start({
-      transform: `translateY(${scrollY * 0.3}px)`,
+    heroControls.start({
+      y: scrollY * 0.3,
       opacity: Math.max(0.3, 1 - scrollY * 0.001)
     })
-  }, [scrollY, backgroundApi, heroApi])
+  }, [scrollY, backgroundControls, heroControls])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ac-cream via-ac-sky-light to-ac-peach-light relative overflow-hidden">
       {/* Background decorative elements */}
-      <animated.div className="absolute inset-0" style={backgroundSpring}>
+      <motion.div className="absolute inset-0" animate={backgroundControls}>
         <div className="absolute top-20 left-20 w-32 h-32 bg-ac-sage/10 rounded-full animate-pulse"></div>
         <div className="absolute top-40 right-32 w-24 h-24 bg-ac-peach/15 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
         <div className="absolute bottom-32 left-40 w-40 h-40 bg-ac-lavender/8 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
@@ -54,10 +49,10 @@ export default function Home() {
         <div className="absolute top-1/2 right-1/4 text-3xl animate-bounce opacity-15" style={{ animationDelay: '1s' }}>🦋</div>
         <div className="absolute bottom-40 left-1/3 text-5xl animate-bounce opacity-25" style={{ animationDelay: '2s' }}>🌿</div>
         <div className="absolute bottom-1/4 right-1/3 text-2xl animate-bounce opacity-30" style={{ animationDelay: '1.5s' }}>🍃</div>
-      </animated.div>
+      </motion.div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <animated.div className="pt-20 pb-16 text-center lg:pt-32" style={heroSpring}>
+        <motion.div className="pt-20 pb-16 text-center lg:pt-32" animate={heroControls}>
           <div className="relative">
             <h1 className="mx-auto max-w-4xl font-display text-5xl font-bold tracking-tight text-ac-brown-dark sm:text-7xl mb-8">
               Connect your{' '}
@@ -105,22 +100,49 @@ export default function Home() {
             </Link>
           </div>
           
-          {showEasterEgg && (
-            <div className="mt-6 animate-bounce">
-              <div className="text-4xl mb-2">🎉</div>
-              <p className="text-ac-brown font-display text-lg bg-ac-yellow/20 px-4 py-2 rounded-full border-2 border-ac-yellow inline-block">
-                You found the secret shake! 🎊
-              </p>
-            </div>
-          )}
-        </animated.div>
+          <AnimatePresence>
+            {showEasterEgg && (
+              <motion.div 
+                className="mt-6"
+                initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.8 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <motion.div 
+                  className="text-4xl mb-2"
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 0.5, repeat: 2 }}
+                >
+                  🎉
+                </motion.div>
+                <p className="text-ac-brown font-display text-lg bg-ac-yellow/20 px-4 py-2 rounded-full border-2 border-ac-yellow inline-block">
+                  You found the secret shake! 🎊
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
         
         <div className="mx-auto max-w-6xl mt-20">
           <h2 className="text-3xl font-bold text-center text-ac-brown-dark font-display mb-12">
             🌸 Why communities love our grove 🌸
           </h2>
           
-          <div className="grid gap-8 md:grid-cols-3">
+          <motion.div 
+            className="grid gap-8 md:grid-cols-3"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.2
+                }
+              }
+            }}
+          >
             <Card 
               variant="bulletin" 
               className="p-8 hover:rotate-0 transition-all duration-300 transform hover:scale-[1.02]"
@@ -162,7 +184,7 @@ export default function Home() {
                 Real-time sharing and simple invitation system.
               </p>
             </Card>
-          </div>
+          </motion.div>
           
           {/* Use Cases Section */}
           <div className="mt-24">

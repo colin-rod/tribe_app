@@ -7,6 +7,7 @@ import { LeafWithDetails, ReactionType } from '@/types/database'
 import { formatDistanceToNow } from 'date-fns'
 import { useTactileCard, useParticleEffect, useHapticFeedback } from '@/hooks/useTactileInteractions'
 import { Card } from '@/components/ui/card'
+import { motion } from 'framer-motion'
 
 interface LeafCardProps {
   leaf: LeafWithDetails
@@ -40,7 +41,7 @@ const LeafCard = memo(function LeafCard({
   const [newComment, setNewComment] = useState('')
   const [showReactions, setShowReactions] = useState(false)
 
-  const { bind: cardBind, springs: cardSprings, animated } = useTactileCard()
+  const { motionProps: cardMotionProps, controls: cardControls } = useTactileCard()
   const createParticles = useParticleEffect()
   const triggerHaptic = useHapticFeedback()
 
@@ -162,22 +163,12 @@ const LeafCard = memo(function LeafCard({
       }}
       className={`leaf-card transition-all duration-300 ${isDragging ? 'opacity-50 scale-105 rotate-3' : ''} ${isOver ? 'ring-4 ring-ac-sage ring-opacity-50' : ''} ${className}`}
     >
-      <animated.div
+      <motion.div
         style={{
-          transform: cardSprings.rotateX.to(rx => 
-            cardSprings.rotateY.to(ry => 
-              cardSprings.scale.to(s => 
-                cardSprings.y.to(y => 
-                  cardSprings.rotateZ.to(rz => 
-                    `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${s}) translateY(${y}px)`
-                  )
-                )
-              )
-            )
-          ),
-          transformOrigin: 'center center'
+          transformOrigin: 'center center',
+          perspective: 1000
         }}
-        {...cardBind()}
+        {...cardMotionProps}
       >
         <Card variant={cardVariant} className="overflow-hidden">
           {/* Header */}
@@ -476,7 +467,7 @@ const LeafCard = memo(function LeafCard({
             </div>
           )}
         </Card>
-      </animated.div>
+      </motion.div>
     </div>
   )
 })

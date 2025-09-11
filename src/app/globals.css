@@ -47,21 +47,7 @@
   --surface-soft: var(--ac-peach-light);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-ac-sage: var(--ac-sage);
-  --color-ac-brown: var(--ac-brown);
-  --color-ac-sky: var(--ac-sky);
-  --color-ac-peach: var(--ac-peach);
-  --color-ac-coral: var(--ac-coral);
-  --color-ac-lavender: var(--ac-lavender);
-  --color-ac-yellow: var(--ac-yellow);
-  --font-sans: 'Quicksand', var(--font-geist-sans), system-ui;
-  --font-display: 'Comic Neue', cursive;
-  --font-mono: var(--font-geist-mono);
-}
+/* Tailwind configuration now handles color and font mappings */
 
 @media (prefers-color-scheme: dark) {
   :root {

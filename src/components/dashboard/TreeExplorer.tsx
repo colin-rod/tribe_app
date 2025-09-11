@@ -11,7 +11,7 @@ import { useParallax, useShakeDetection, useGestureRecognition, useParticleEffec
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DragDropProvider } from '@/components/common/DragDropProvider'
-import { animated, useSpring } from '@react-spring/web'
+import { motion, useAnimation, AnimatePresence } from 'framer-motion'
 
 interface TreeExplorerProps {
   selectedBranch: Branch | null
@@ -45,14 +45,10 @@ const TreeExplorer = memo(function TreeExplorer({
   const { recordGesture, checkPattern, clearGestures } = useGestureRecognition()
 
   // Parallax animations
-  const [headerSpring, headerApi] = useSpring(() => ({
-    transform: 'translateY(0px)',
-    opacity: 1
+  const headerControls = useAnimation()
   }))
 
-  const [backgroundSpring, backgroundApi] = useSpring(() => ({
-    transform: 'translateY(0px) scale(1)'
-  }))
+  const backgroundControls = useAnimation()
 
   // Shake to shuffle leaves
   useShakeDetection(() => {
@@ -91,13 +87,13 @@ const TreeExplorer = memo(function TreeExplorer({
         setSelectedTree(tree || null)
         
         // Animate tree selection
-        headerApi.start({
-          transform: 'translateY(-10px)',
+        headerControls.start({
+          y: -10,
           opacity: 0.8
         })
         setTimeout(() => {
-          headerApi.start({
-            transform: 'translateY(0px)',
+          headerControls.start({
+            y: 0,
             opacity: 1
           })
         }, 300)
@@ -107,13 +103,14 @@ const TreeExplorer = memo(function TreeExplorer({
 
   // Parallax effect on scroll
   useEffect(() => {
-    backgroundApi.start({
-      transform: `translateY(${scrollY * 0.5}px) scale(${1 + scrollY * 0.0002})`
+    backgroundControls.start({
+      y: scrollY * 0.5,
+      scale: 1 + scrollY * 0.0002
     })
-    headerApi.start({
-      transform: `translateY(${scrollY * 0.3}px)`
+    headerControls.start({
+      y: scrollY * 0.3
     })
-  }, [scrollY, backgroundApi, headerApi])
+  }, [scrollY, backgroundControls, headerControls])
 
   const handleReaction = (leafId: string, reactionType: ReactionType) => {
     addReactionMutation.mutate({ leafId, reactionType })
@@ -157,9 +154,9 @@ const TreeExplorer = memo(function TreeExplorer({
   if (!selectedBranch || !selectedTree) {
     return (
       <DragDropProvider>
-        <animated.div 
+        <motion.div 
           className="h-full flex items-center justify-center bg-gradient-to-br from-ac-cream to-ac-sky-light relative overflow-hidden"
-          style={backgroundSpring}
+          animate={backgroundControls}
         >
           {/* Background decorative elements */}
           <div className="absolute inset-0 opacity-10">
@@ -187,7 +184,7 @@ const TreeExplorer = memo(function TreeExplorer({
               </Button>
             </div>
           </Card>
-        </animated.div>
+        </motion.div>
       </DragDropProvider>
     )
   }
@@ -219,15 +216,15 @@ const TreeExplorer = memo(function TreeExplorer({
     <DragDropProvider>
       <div className="h-full flex flex-col relative overflow-hidden">
         {/* Background with parallax */}
-        <animated.div 
+        <motion.div 
           className="absolute inset-0 bg-gradient-to-br from-ac-cream via-ac-sky-light to-ac-peach-light opacity-30"
-          style={backgroundSpring}
+          animate={backgroundControls}
         />
         
         {/* Tree Header */}
-        <animated.div 
+        <motion.div 
           className="relative z-10"
-          style={headerSpring}
+          animate={headerControls}
         >
           <Card variant="wooden" className="m-4 overflow-visible">
             <div className="bg-gradient-to-r from-ac-sage via-ac-sage-light to-ac-sky text-ac-brown-dark p-6 rounded-3xl relative">
@@ -278,7 +275,7 @@ const TreeExplorer = memo(function TreeExplorer({
               </div>
             </div>
           </Card>
-        </animated.div>
+        </motion.div>
 
         {/* Filter Bar */}
         <Card variant="leaf" className="m-4 relative z-10">
@@ -341,26 +338,37 @@ const TreeExplorer = memo(function TreeExplorer({
           
           {filteredLeaves.length > 0 ? (
             <div className="p-6 relative z-10">
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredLeaves.map((leaf, index) => (
-                  <div 
-                    key={leaf.id}
-                    style={{
-                      animationDelay: `${index * 0.1}s`
-                    }}
-                    className="animate-in slide-in-from-bottom-4 fade-in duration-500"
-                  >
-                    <LeafCard
-                      leaf={leaf}
-                      onReaction={handleReaction}
-                      onShare={handleShare}
-                      onComment={handleComment}
-                      onMove={handleLeafMove}
-                      className="h-full"
-                    />
-                  </div>
-                ))}
-              </div>
+              <motion.div 
+                className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                layout
+              >
+                <AnimatePresence>
+                  {filteredLeaves.map((leaf, index) => (
+                    <motion.div 
+                      key={leaf.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ 
+                        delay: index * 0.1,
+                        duration: 0.5,
+                        type: "spring",
+                        stiffness: 100
+                      }}
+                      layout
+                    >
+                      <LeafCard
+                        leaf={leaf}
+                        onReaction={handleReaction}
+                        onShare={handleShare}
+                        onComment={handleComment}
+                        onMove={handleLeafMove}
+                        className="h-full"
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-full relative">

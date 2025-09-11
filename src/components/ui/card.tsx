@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useTactileCard } from '@/hooks/useTactileInteractions'
+import { motion } from 'framer-motion'
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'bulletin' | 'polaroid' | 'wooden' | 'leaf'
@@ -15,7 +16,7 @@ export function Card({
   tactile = true,
   ...props 
 }: CardProps) {
-  const { bind, springs, animated } = useTactileCard()
+  const { motionProps, controls, motion: motionComponent } = useTactileCard()
 
   const baseClasses = 'game-card relative transition-all duration-300'
   
@@ -38,34 +39,33 @@ export function Card({
   }
 
   return (
-    <animated.div 
+    <motion.div 
       className={classes}
       style={{
-        transform: springs.rotateX.to(rx => 
-          springs.rotateY.to(ry => 
-            springs.scale.to(s => 
-              springs.y.to(y => 
-                springs.rotateZ.to(rz => 
-                  `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${s}) translateY(${y}px)`
-                )
-              )
-            )
-          )
-        ),
-        transformOrigin: 'center center',
-        transformStyle: 'preserve-3d'
+        transformStyle: 'preserve-3d',
+        perspective: 1000
       }}
-      {...bind()}
+      {...motionProps}
       {...props}
     >
       {variant === 'bulletin' && (
         <>
-          <div className="absolute -top-2 left-4 w-4 h-4 bg-ac-yellow rounded-full shadow-sm transform rotate-12"></div>
-          <div className="absolute -top-1 right-6 w-3 h-3 bg-ac-coral rounded-full shadow-sm transform -rotate-45"></div>
+          <motion.div 
+            className="absolute -top-2 left-4 w-4 h-4 bg-ac-yellow rounded-full shadow-sm"
+            initial={{ rotate: 12 }}
+            animate={{ rotate: [12, 20, 12] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div 
+            className="absolute -top-1 right-6 w-3 h-3 bg-ac-coral rounded-full shadow-sm"
+            initial={{ rotate: -45 }}
+            animate={{ rotate: [-45, -35, -45] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
         </>
       )}
       {children}
-    </animated.div>
+    </motion.div>
   )
 }
 

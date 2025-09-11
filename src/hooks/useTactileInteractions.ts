@@ -1,8 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useEffect, useState } from 'react'
-import { useSpring, useSpringValue, animated } from '@react-spring/web'
-import { useGesture } from '@use-gesture/react'
+import { motion, useMotionValue, useAnimation, useTransform } from 'framer-motion'
 
 // Haptic feedback for supported devices
 export const useHapticFeedback = () => {
@@ -22,114 +21,142 @@ export const useHapticFeedback = () => {
 
 // Tactile button interaction
 export const useTactileButton = () => {
-  const [springs, api] = useSpring(() => ({
-    scale: 1,
-    y: 0,
-    rotateZ: 0,
-    config: { tension: 300, friction: 10 }
-  }))
+  const controls = useAnimation()
+  const scale = useMotionValue(1)
+  const y = useMotionValue(0)
+  const rotateZ = useMotionValue(0)
 
   const triggerHaptic = useHapticFeedback()
 
-  const bind = useGesture({
-    onPointerDown: () => {
-      api.start({ scale: 0.99, y: 0.5 })
-      triggerHaptic('light')
-    },
-    onPointerUp: () => {
-      api.start({ scale: 1.005, y: -0.5 })
-      setTimeout(() => api.start({ scale: 1, y: 0 }), 100)
-    },
-    onPointerLeave: () => {
-      api.start({ scale: 1, y: 0, rotateZ: 0 })
-    },
-    onHover: ({ hovering }) => {
-      if (hovering) {
-        api.start({ scale: 1.01, y: -0.5, rotateZ: Math.random() * 0.3 - 0.15 })
-      } else {
-        api.start({ scale: 1, y: 0, rotateZ: 0 })
-      }
-    }
-  })
+  const handlePointerDown = useCallback(() => {
+    controls.start({ scale: 0.99, y: 0.5 })
+    triggerHaptic('light')
+  }, [controls, triggerHaptic])
 
-  return { bind, springs, animated }
+  const handlePointerUp = useCallback(() => {
+    controls.start({ scale: 1.005, y: -0.5 })
+    setTimeout(() => controls.start({ scale: 1, y: 0 }), 100)
+  }, [controls])
+
+  const handlePointerLeave = useCallback(() => {
+    controls.start({ scale: 1, y: 0, rotateZ: 0 })
+  }, [controls])
+
+  const handleHoverStart = useCallback(() => {
+    controls.start({ 
+      scale: 1.01, 
+      y: -0.5, 
+      rotateZ: Math.random() * 0.3 - 0.15 
+    })
+  }, [controls])
+
+  const handleHoverEnd = useCallback(() => {
+    controls.start({ scale: 1, y: 0, rotateZ: 0 })
+  }, [controls])
+
+  const motionProps = {
+    animate: controls,
+    whileTap: { scale: 0.99, y: 0.5 },
+    whileHover: { scale: 1.01, y: -0.5 },
+    transition: { type: 'spring', stiffness: 300, damping: 10 },
+    onPointerDown: handlePointerDown,
+    onPointerUp: handlePointerUp,
+    onPointerLeave: handlePointerLeave,
+    onHoverStart: handleHoverStart,
+    onHoverEnd: handleHoverEnd
+  }
+
+  return { motionProps, controls, motion }
 }
 
 // Card hover and tilt effects
 export const useTactileCard = () => {
-  const [springs, api] = useSpring(() => ({
-    rotateX: 0,
-    rotateY: 0,
-    rotateZ: 0,
-    scale: 1,
-    y: 0,
-    config: { tension: 300, friction: 40 }
-  }))
+  const controls = useAnimation()
+  const rotateX = useMotionValue(0)
+  const rotateY = useMotionValue(0)
+  const rotateZ = useMotionValue(0)
 
-  const bind = useGesture({
-    onMove: ({ xy, hovering }) => {
-      if (!hovering) return
-      
-      const [x, y] = xy
-      const rotateX = (y - window.innerHeight / 2) / window.innerHeight * -3
-      const rotateY = (x - window.innerWidth / 2) / window.innerWidth * 3
-      
-      api.start({
-        rotateX,
-        rotateY,
-        rotateZ: Math.random() * 0.5 - 0.25,
-        scale: 1.01,
-        y: -2
-      })
-    },
-    onHover: ({ hovering }) => {
-      api.start({
-        rotateX: 0,
-        rotateY: 0,
-        rotateZ: hovering ? Math.random() * 0.5 - 0.25 : 0,
-        scale: hovering ? 1.01 : 1,
-        y: hovering ? -2 : 0
-      })
-    }
-  })
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    
+    const rotateXValue = (y - rect.height / 2) / rect.height * -3
+    const rotateYValue = (x - rect.width / 2) / rect.width * 3
+    
+    controls.start({
+      rotateX: rotateXValue,
+      rotateY: rotateYValue,
+      rotateZ: Math.random() * 0.5 - 0.25,
+      scale: 1.01,
+      y: -2
+    })
+  }, [controls])
 
-  return { bind, springs, animated }
+  const handleHoverStart = useCallback(() => {
+    controls.start({
+      rotateZ: Math.random() * 0.5 - 0.25,
+      scale: 1.01,
+      y: -2
+    })
+  }, [controls])
+
+  const handleHoverEnd = useCallback(() => {
+    controls.start({
+      rotateX: 0,
+      rotateY: 0,
+      rotateZ: 0,
+      scale: 1,
+      y: 0
+    })
+  }, [controls])
+
+  const motionProps = {
+    animate: controls,
+    whileHover: { scale: 1.01, y: -2 },
+    transition: { type: 'spring', stiffness: 300, damping: 40 },
+    onMouseMove: handleMouseMove,
+    onHoverStart: handleHoverStart,
+    onHoverEnd: handleHoverEnd
+  }
+
+  return { motionProps, controls, motion }
 }
 
 // Draggable elements
 export const useTactileDrag = (onDrag?: (info: any) => void) => {
-  const [springs, api] = useSpring(() => ({
-    x: 0,
-    y: 0,
-    scale: 1,
-    rotateZ: 0,
-    config: { tension: 800, friction: 35 }
-  }))
-
+  const controls = useAnimation()
   const triggerHaptic = useHapticFeedback()
 
-  const bind = useGesture({
-    onDrag: ({ offset: [x, y], dragging, velocity, direction }) => {
-      const scale = dragging ? 1.1 : 1
-      const rotateZ = dragging ? direction[0] * 5 : 0
-      
-      api.start({ x, y, scale, rotateZ, immediate: dragging })
-      
-      if (dragging && onDrag) {
-        onDrag({ x, y, velocity, direction })
-      }
-      
-      if (dragging) {
-        triggerHaptic('light')
-      }
-    },
-    onDragEnd: () => {
-      api.start({ x: 0, y: 0, scale: 1, rotateZ: 0 })
-      triggerHaptic('medium')
-    }
-  })
+  const handleDragStart = useCallback(() => {
+    triggerHaptic('light')
+  }, [triggerHaptic])
 
-  return { bind, springs, animated }
+  const handleDrag = useCallback((event: any, info: any) => {
+    if (onDrag) {
+      onDrag(info)
+    }
+    triggerHaptic('light')
+  }, [onDrag, triggerHaptic])
+
+  const handleDragEnd = useCallback(() => {
+    controls.start({ x: 0, y: 0, scale: 1, rotateZ: 0 })
+    triggerHaptic('medium')
+  }, [controls, triggerHaptic])
+
+  const motionProps = {
+    drag: true,
+    dragConstraints: { left: 0, right: 0, top: 0, bottom: 0 },
+    dragElastic: 0.2,
+    whileDrag: { scale: 1.1, rotateZ: 5 },
+    transition: { type: 'spring', stiffness: 800, damping: 35 },
+    onDragStart: handleDragStart,
+    onDrag: handleDrag,
+    onDragEnd: handleDragEnd,
+    animate: controls
+  }
+
+  return { motionProps, controls, motion }
 }
 
 // Ripple effect
