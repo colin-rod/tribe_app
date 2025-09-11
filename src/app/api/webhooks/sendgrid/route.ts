@@ -42,6 +42,12 @@ export async function POST(req: NextRequest) {
     
     // Log ALL form data keys for debugging
     const allFormKeys = Array.from(formData.keys())
+    console.log('🔍 SENDGRID WEBHOOK DEBUG:')
+    console.log('Total FormData keys:', allFormKeys.length)
+    console.log('All keys:', allFormKeys)
+    console.log('Attachment keys:', allFormKeys.filter(key => key.startsWith('attachment')))
+    console.log('Attachment count from form:', formData.get('attachments') || '0')
+    
     logger.info('Complete FormData received from SendGrid', {
       metadata: {
         totalKeys: allFormKeys.length,
@@ -504,6 +510,11 @@ async function processEmailContent(
       content += `\n\n[${failedCount} attachment(s) failed to upload]`
     }
   } else {
+    console.log('❌ NO ATTACHMENTS FOUND:')
+    console.log('attachments array:', email.attachments)
+    console.log('attachments length:', email.attachments ? email.attachments.length : 'null/undefined')
+    console.log('email subject:', email.subject)
+    
     logger.info('No attachments found in email', {
       metadata: {
         attachmentsArray: email.attachments,
