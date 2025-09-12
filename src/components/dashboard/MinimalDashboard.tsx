@@ -2,15 +2,12 @@
 
 import { useState, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useGesture } from '@use-gesture/react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import type { Profile } from '@/types/database'
 import { TreeWithMembers, BranchWithMembers } from '@/types/common'
 import { supabase } from '@/lib/supabase/client'
-import { Icon } from '@/components/ui/IconLibrary'
 import { PinterestInboxPanel } from '@/components/leaves/PinterestInboxPanel'
 import { TreeBranchView } from './TreeBranchView'
 import { FloatingActionMenu } from './FloatingActionMenu'
@@ -23,12 +20,21 @@ import { useDashboardNavigation } from '@/hooks/useDashboardNavigation'
 
 interface MinimalDashboardProps {
   user: User
-  profile: Profile
   userBranches: BranchWithMembers[]
   trees: TreeWithMembers[]
 }
 
-export default function MinimalDashboard({ user, profile, userBranches, trees }: MinimalDashboardProps) {
+export default function MinimalDashboard({ user, userBranches, trees }: MinimalDashboardProps) {
+  // Basic prop validation
+  if (!user?.id) {
+    throw new Error('MinimalDashboard: user.id is required')
+  }
+  if (!Array.isArray(userBranches)) {
+    throw new Error('MinimalDashboard: userBranches must be an array')
+  }
+  if (!Array.isArray(trees)) {
+    throw new Error('MinimalDashboard: trees must be an array')
+  }
   const [selectedBranch, setSelectedBranch] = useState<BranchWithMembers['branches'] | null>(null)
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
   const router = useRouter()
@@ -48,12 +54,23 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
   // Memoize dashboard event handlers
   const handlers = useMemo(() => createDashboardHandlers({
     onMemoryAssigned: (leafId, branchIds) => {
-      // Additional logic for memory assignment if needed
+      try {
+        // Handle memory assignment to branches
+        if (!leafId || !branchIds?.length) {
+          console.warn('Invalid memory assignment data:', { leafId, branchIds })
+          return
+        }
+        console.log('Memory assigned:', { leafId, branchIds })
+        // TODO: Implement actual assignment logic
+        inbox.handleRefresh()
+      } catch (error) {
+        console.error('Error assigning memory:', error)
+      }
     },
-    onContentCreation: (type) => {
+    onContentCreation: () => {
       setShowGlobalCreator(true)
     }
-  }), [])
+  }), [inbox])
   
   // Memoize stable callbacks
   const handleCreateMemory = useCallback(() => {
@@ -71,11 +88,17 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
     crystallization.resetCrystallization()
   }, [crystallization])
 
-  // Handle sign out
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-  }
+  // Handle sign out with error handling
+  const handleSignOut = useCallback(async () => {
+    try {
+      await supabase.auth.signOut()
+      router.push('/')
+    } catch (error) {
+      console.error('Sign out error:', error)
+      // Still redirect on error as a fallback
+      router.push('/')
+    }
+  }, [router])
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -84,23 +107,53 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
         className="h-screen flex flex-col overflow-hidden"
         {...navigation.swipeHandlers()}
       >
-        {/* View Indicator */}
+        {/* Header with View Indicator and Sign Out */}
         <motion.div 
-          className="absolute top-4 right-4 flex items-center space-x-2 bg-white/60 rounded-full px-3 py-1 z-40"
+          className="absolute top-4 right-4 flex items-center space-x-3 z-40"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <div
-            className={`w-2 h-2 rounded-full transition-colors ${
-              navigation.isInboxView ? 'bg-blue-500' : 'bg-gray-300'
-            }`}
-          />
-          <div
-            className={`w-2 h-2 rounded-full transition-colors ${
-              navigation.isTreeView ? 'bg-green-500' : 'bg-gray-300'
-            }`}
-          />
+          {/* View Indicator */}
+          <div className="flex items-center space-x-2 bg-white/60 rounded-full px-3 py-1">
+            <div
+              className={`w-2 h-2 rounded-full transition-colors ${
+                navigation.isInboxView ? 'bg-blue-500' : 'bg-gray-300'
+              }`}
+            />
+            <div
+              className={`w-2 h-2 rounded-full transition-colors ${
+                navigation.isTreeView ? 'bg-green-500' : 'bg-gray-300'
+              }`}
+            />
+          </div>
+          
+          {/* User Menu */}
+          <div className="flex items-center space-x-2">
+            <motion.button
+              onClick={() => router.push('/profile')}
+              className="bg-white/60 hover:bg-white/80 rounded-full p-2 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="View profile"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </motion.button>
+            
+            <motion.button
+              onClick={handleSignOut}
+              className="bg-white/60 hover:bg-white/80 rounded-full p-2 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Sign out"
+            >
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </motion.button>
+          </div>
         </motion.div>
 
         {/* Main Content Area */}
@@ -161,8 +214,10 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.5 }}
+          role="status"
+          aria-label="Navigation instructions"
         >
-          Swipe left/right to navigate
+          Swipe left/right to navigate between inbox and trees
         </motion.div>
 
         {/* Floating Action Menu */}
@@ -185,9 +240,11 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
                 onSave={handleMemorySave}
                 onCancel={handleMemoryCancel}
                 userId={user.id}
-                crystallization={crystallization}
                 onCrystallizationStart={() => {
                   // Dashboard will fade during crystallization
+                }}
+                onCrystallizationComplete={() => {
+                  crystallization.completeCrystallization()
                 }}
               />
             </motion.div>
