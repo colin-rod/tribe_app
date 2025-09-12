@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { LeafWithDetails, Milestone, ReactionType } from '@/types/database'
 import LeafCard from './LeafCard'
 import { formatDistanceToNow, format, isThisYear } from 'date-fns'
+import EmptyState from '@/components/ui/EmptyState'
 
 interface TreeTimelineProps {
   treeId: string
@@ -13,6 +14,7 @@ interface TreeTimelineProps {
   onReaction: (leafId: string, reactionType: ReactionType) => void
   onShare: (leafId: string, branchIds: string[]) => void
   onComment: (leafId: string, comment: string) => void
+  onCreateLeaf?: () => void
   onLoadMore?: () => void
   hasMore?: boolean
   isLoading?: boolean
@@ -34,6 +36,7 @@ export default function TreeTimeline({
   onReaction,
   onShare,
   onComment,
+  onCreateLeaf,
   onLoadMore,
   hasMore = false,
   isLoading = false
@@ -278,14 +281,30 @@ export default function TreeTimeline({
   )
 
   const renderEmptyState = () => (
-    <div className="text-center py-12">
-      <div className="text-6xl mb-4">🌱</div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">No leaves yet</h3>
-      <p className="text-gray-600 mb-6">Start capturing precious memories to grow this tree!</p>
-      <button className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors">
-        Create First Leaf 🌿
-      </button>
-    </div>
+    <EmptyState
+      icon="🌱"
+      title={`${treeName} is ready to grow!`}
+      description="This tree is waiting for its first memories. Start by creating a leaf to capture a special moment, milestone, or everyday joy."
+      variant="nature"
+      actions={onCreateLeaf ? [
+        {
+          label: "Create First Leaf",
+          onClick: onCreateLeaf,
+          variant: "primary",
+          icon: "🌿"
+        }
+      ] : []}
+      contextualHelp={{
+        title: "Getting started with leaves:",
+        items: [
+          "📸 Upload photos from special moments",
+          "🎥 Record videos of milestones",
+          "📝 Write about daily experiences",
+          "⭐ Mark important achievements",
+          "🎵 Add voice notes and sounds"
+        ]
+      }}
+    />
   )
 
   if (leaves.length === 0) {

@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 import { Leaf, Camera, Video, Mic, Flag, Hash, Calendar, User, Loader2, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import EmptyState from '@/components/ui/EmptyState'
 
 interface UnassignedLeavesPanelProps {
   userId: string
@@ -338,13 +339,21 @@ export function UnassignedLeavesPanel({ userId, onLeafAssigned }: UnassignedLeav
       )}
 
       {leaves.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <Leaf className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No unassigned leaves</h3>
-            <p className="text-gray-600">All your leaves have been assigned to branches.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={<Leaf className="w-12 h-12 text-leaf-400" />}
+          title="All leaves are organized!"
+          description="Great work! All your leaves have been assigned to branches where family and friends can enjoy them."
+          variant="nature"
+          contextualHelp={{
+            title: "What happens next:",
+            items: [
+              "Your leaves now appear in their assigned branches",
+              "Family members can view, react, and comment on them",
+              "Create new leaves to capture more memories",
+              "Use the timeline view to see your family's story unfold"
+            ]
+          }}
+        />
       )}
     </div>
   )

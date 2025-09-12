@@ -41,15 +41,8 @@ export async function POST(req: NextRequest) {
     // Parse form data from SendGrid
     const formData = await req.formData()
     
-    // Log ALL form data keys for debugging
+    // Log form data keys for monitoring
     const allFormKeys = Array.from(formData.keys())
-    console.log('🔍 SENDGRID WEBHOOK DEBUG:')
-    console.log('Total FormData keys:', allFormKeys.length)
-    console.log('All keys:', allFormKeys)
-    console.log('Attachment keys:', allFormKeys.filter(key => key.startsWith('attachment')))
-    console.log('Attachment count from form:', formData.get('attachments') || '0')
-    console.log('Has "email" field (raw MIME):', formData.has('email'))
-    console.log('Content-Type header:', req.headers.get('content-type'))
     
     logger.info('Complete FormData received from SendGrid', {
       metadata: {
@@ -65,17 +58,19 @@ export async function POST(req: NextRequest) {
     let emailData: ParsedEmail
     
     if (rawEmail) {
-      console.log('📧 Processing raw MIME email data...')
-      console.log('Raw email length:', rawEmail.length)
+      logger.debug('Processing raw MIME email data', { metadata: { emailLength: rawEmail.length } })
       
       try {
         // Parse the raw MIME email
         const parsed = await simpleParser(rawEmail)
-        console.log('📧 MIME parsing results:')
-        console.log('- Subject:', parsed.subject || 'No subject')
-        console.log('- From:', parsed.from?.text || 'Unknown sender')
-        console.log('- To:', parsed.to?.text || 'Unknown recipient')
-        console.log('- Attachments count:', parsed.attachments?.length || 0)
+        logger.debug('MIME parsing results', {
+          metadata: {
+            subject: parsed.subject || 'No subject',
+            from: parsed.from?.text || 'Unknown sender',
+            to: parsed.to?.text || 'Unknown recipient',
+            attachmentCount: parsed.attachments?.length || 0
+          }
+        })
         
         emailData = {
           to: parsed.to?.text || formData.get('to') as string || '',
@@ -88,9 +83,8 @@ export async function POST(req: NextRequest) {
         
         // Process MIME attachments
         if (parsed.attachments && parsed.attachments.length > 0) {
-          console.log('🔗 Processing MIME attachments...')
+          logger.debug('Processing MIME attachments', { metadata: { count: parsed.attachments.length } })
           for (const attachment of parsed.attachments) {
-            console.log(`- ${attachment.filename}: ${attachment.contentType}, ${attachment.size} bytes`)
             
             if (attachment.content) {
               emailData.attachments.push({
@@ -118,7 +112,7 @@ export async function POST(req: NextRequest) {
       }
       
     } else {
-      console.log('📧 Using standard form data parsing (no raw MIME)')
+      logger.debug('Using standard form data parsing (no raw MIME)')
       // Extract email data - SendGrid sends everything directly
       emailData = {
         to: formData.get('to') as string || '',
@@ -573,10 +567,12 @@ async function processEmailContent(
       content += `\n\n[${failedCount} attachment(s) failed to upload]`
     }
   } else {
-    console.log('❌ NO ATTACHMENTS FOUND:')
-    console.log('attachments array:', email.attachments)
-    console.log('attachments length:', email.attachments ? email.attachments.length : 'null/undefined')
-    console.log('email subject:', email.subject)
+    logger.debug('No attachments found', {
+      metadata: {
+        attachmentsLength: email.attachments ? email.attachments.length : 'null/undefined',
+        subject: email.subject
+      }
+    })
     
     logger.info('No attachments found in email', {
       metadata: {

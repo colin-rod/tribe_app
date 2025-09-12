@@ -119,19 +119,6 @@ body {
   transform: translateY(0) scale(0.98);
 }
 
-/* Nature-inspired button base */
-.nature-button {
-  position: relative;
-  background: var(--bark-400);
-  color: var(--leaf-100);
-  border: 3px solid var(--bark-400);
-  border-radius: var(--radius-leaf);
-  box-shadow: var(--shadow-bark);
-  font-family: 'Comic Neue', cursive;
-  font-weight: 600;
-  transition: all 0.15s var(--transition-bounce);
-}
-
 /* Legacy game-button mapping */
 .game-button {
   position: relative;
@@ -145,13 +132,13 @@ body {
   transition: all 0.15s var(--transition-bounce);
 }
 
-.nature-button:hover, .game-button:hover {
+.game-button:hover {
   background: var(--bark-200);
   transform: translateY(-3px);
   box-shadow: var(--shadow-floating);
 }
 
-.nature-button:active, .game-button:active {
+.game-button:active {
   transform: translateY(-1px) scale(0.98);
   box-shadow: var(--shadow-leaf-soft);
 }
@@ -169,17 +156,6 @@ body {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Card styles with nature-inspired appearance */
-.nature-card {
-  background: var(--surface);
-  border: 3px solid var(--bark-200);
-  border-radius: var(--radius-soft);
-  box-shadow: var(--shadow-leaf-soft);
-  transition: all 0.3s var(--transition-soft);
-  position: relative;
-  overflow: hidden;
-}
-
 /* Legacy game-card mapping */
 .game-card {
   background: var(--surface);
@@ -191,7 +167,7 @@ body {
   overflow: hidden;
 }
 
-.nature-card:before, .game-card:before {
+.game-card:before {
   content: '';
   position: absolute;
   top: 0;
@@ -202,7 +178,7 @@ body {
   opacity: 0.7;
 }
 
-.nature-card:hover, .game-card:hover {
+.game-card:hover {
   transform: translateY(-4px) rotate(0.5deg);
   box-shadow: var(--shadow-floating);
   border-color: var(--leaf-500);

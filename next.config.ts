@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     // your project has type errors.
     ignoreBuildErrors: true,
   },
+  outputFileTracingRoot: '/Users/colinrodrigues/tribe_app',
 };
 
 export default nextConfig;

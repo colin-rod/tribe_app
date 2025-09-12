@@ -160,7 +160,9 @@ export const useInteractionTracking = () => {
   const recordInteraction = useCallback((type: 'tap' | 'hover' | 'drag') => {
     if (shouldReduceMotion) return
     // Simple interaction logging - could be expanded for analytics
-    console.debug(`Nature interaction: ${type}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`Nature interaction: ${type}`)
+    }
   }, [shouldReduceMotion])
   
   return { recordInteraction }

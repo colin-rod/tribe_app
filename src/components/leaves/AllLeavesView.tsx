@@ -27,6 +27,7 @@ import {
   Clock
 } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
+import EmptyState from '@/components/ui/EmptyState'
 
 interface AllLeavesViewProps {
   userId: string
@@ -299,13 +300,48 @@ export function AllLeavesView({ userId, userBranches }: AllLeavesViewProps) {
       {/* Leaves Timeline */}
       <div className="space-y-4">
         {filteredLeaves.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <Eye className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No leaves found</h3>
-              <p className="text-gray-600">Try adjusting your filters to see more results.</p>
-            </CardContent>
-          </Card>
+          loading ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-600">Loading your leaves...</p>
+              </CardContent>
+            </Card>
+          ) : leaves.length === 0 ? (
+            <EmptyState
+              icon="🍃"
+              title="Start your family story"
+              description="You haven't created any leaves yet. Begin capturing memories, milestones, and precious moments to build your family's digital tree."
+              variant="nature"
+              contextualHelp={{
+                title: "Ideas for your first leaves:",
+                items: [
+                  "📸 Share a favorite family photo",
+                  "📝 Write about a recent family moment",
+                  "⭐ Record a child's new milestone",
+                  "🎵 Capture sounds of laughter or talking",
+                  "🎥 Create a video message for family"
+                ]
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon={<Eye className="w-12 h-12 text-gray-400" />}
+              title="No leaves match your filters"
+              description="Try adjusting your filters to see more results, or clear all filters to view everything."
+              actions={[
+                {
+                  label: "Clear Filters",
+                  onClick: () => {
+                    setFilter('all')
+                    setLeafTypeFilter('all')
+                    setSelectedBranchFilter('all')
+                  },
+                  variant: "outline"
+                }
+              ]}
+            />
+          )
         ) : (
           filteredLeaves.map((leaf) => (
             <LeafTimelineCard key={leaf.id} leaf={leaf} />

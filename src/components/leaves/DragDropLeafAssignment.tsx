@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { Leaf, Camera, Video, Mic, Flag, Hash, Calendar, User, Loader2, MousePointer, Move3D } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import EmptyState from '@/components/ui/EmptyState'
 
 interface DragDropLeafAssignmentProps {
   userId: string
@@ -155,9 +156,10 @@ export function DragDropLeafAssignment({ userId, onLeafAssigned }: DragDropLeafA
           </CardHeader>
           <CardContent className="space-y-3 max-h-96 overflow-y-auto">
             {leaves.length === 0 ? (
-              <div className="text-center py-8">
-                <Leaf className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600">No unassigned leaves</p>
+              <div className="text-center py-4">
+                <Leaf className="w-8 h-8 mx-auto text-leaf-400 mb-2" />
+                <p className="text-sm text-bark-300">No unassigned leaves</p>
+                <p className="text-xs text-bark-200 mt-1">Create new leaves to see them here</p>
               </div>
             ) : (
               leaves.map((leaf) => (

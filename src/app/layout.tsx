@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 import { QueryProvider } from '@/providers/query-provider';
 import { DragDropProvider } from '@/components/common/DragDropProvider';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,7 +33,9 @@ export default function RootLayout({
       >
         <QueryProvider>
           <DragDropProvider>
-            {children}
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
             <Toaster
               position="top-right"
               reverseOrder={false}

@@ -206,7 +206,7 @@ const config: Config = {
     function({ addComponents }: any) {
       const components = {
         '.btn-leaf': {
-          '@apply relative bg-bark-400 text-leaf-100 border-3 border-bark-400 rounded-leaf shadow-bark font-display font-semibold transition-all duration-150 ease-bounce hover:bg-bark-200 hover:-translate-y-1 hover:shadow-floating active:translate-y-0 active:scale-95 text-shadow': {},
+          '@apply relative bg-bark-400 text-leaf-100 border-2 border-bark-400 rounded-lg shadow-md font-semibold transition-all duration-150 hover:bg-bark-200 hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:scale-95': {},
         },
         '.btn-branch': {
           '@apply btn-leaf bg-leaf-500 text-bark-400 border-leaf-700 hover:bg-leaf-300': {},
@@ -219,7 +219,7 @@ const config: Config = {
           '@apply btn-branch': {},
         },
         '.card-branch': {
-          '@apply relative bg-surface border-3 border-bark-200 rounded-soft shadow-leaf-soft overflow-hidden transition-all duration-300 ease-soft hover:-translate-y-1 hover:rotate-1 hover:shadow-floating hover:border-leaf-500': {},
+          '@apply relative bg-surface border-2 border-bark-200 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:rotate-1 hover:shadow-lg hover:border-leaf-500': {},
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -236,14 +236,14 @@ const config: Config = {
           '@apply card-branch': {},
         },
         '.input-bark': {
-          '@apply bg-surface border-3 border-bark-200 rounded-leaf px-4 py-3 font-sans text-foreground placeholder:text-bark-400 transition-colors focus:outline-none focus:border-leaf-500 focus:shadow-leaf-soft': {},
+          '@apply bg-surface border-2 border-bark-200 rounded-lg px-4 py-3 font-sans text-foreground placeholder:text-bark-400 transition-colors focus:outline-none focus:border-leaf-500 focus:shadow-md': {},
         },
         // Legacy input mapping
         '.input-game': {
           '@apply input-bark': {},
         },
         '.tactile-element': {
-          '@apply transition-all duration-200 ease-bounce cursor-pointer select-none hover:-translate-y-0.5 active:translate-y-0 active:scale-98': {},
+          '@apply transition-all duration-200 cursor-pointer select-none hover:-translate-y-0.5 active:translate-y-0 active:scale-95': {},
         },
       }
       addComponents(components)
