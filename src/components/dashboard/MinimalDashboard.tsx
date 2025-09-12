@@ -29,11 +29,25 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
   const [currentView, setCurrentView] = useState<'inbox' | 'tree'>('inbox')
   const [selectedBranch, setSelectedBranch] = useState<BranchWithMembers['branches'] | null>(null)
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
+  const [inboxRefreshKey, setInboxRefreshKey] = useState(0)
+  const [newlyCreatedMemoryId, setNewlyCreatedMemoryId] = useState<string | null>(null)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   
   // Memory crystallization animation
   const crystallization = useMemoryCrystallization()
+  
+  // Handler to refresh inbox data after new memory creation
+  const handleRefreshInbox = (newMemoryId?: string) => {
+    setInboxRefreshKey(prev => prev + 1)
+    if (newMemoryId) {
+      setNewlyCreatedMemoryId(newMemoryId)
+      // Clear the memory ID after highlighting timeout
+      setTimeout(() => {
+        setNewlyCreatedMemoryId(null)
+      }, 3000)
+    }
+  }
 
   // Group branches by tree
   const branchesByTree = userBranches?.reduce((acc, ub) => {
@@ -125,10 +139,11 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
                   onCreateContent={(type) => {
                     setShowGlobalCreator(true)
                   }}
-                  incomingMemoryId={crystallization.tempMemoryId}
+                  incomingMemoryId={newlyCreatedMemoryId || crystallization.tempMemoryId}
                   onMemoryPositionCalculated={(rect) => {
                     crystallization.setGridPosition(rect)
                   }}
+                  refreshKey={inboxRefreshKey}
                 />
               </motion.div>
             )}
@@ -180,8 +195,9 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
               exit={{ opacity: 0 }}
             >
               <GlobalLeafCreator
-                onSave={() => {
+                onSave={(memoryId) => {
                   setShowGlobalCreator(false)
+                  handleRefreshInbox(memoryId)
                   crystallization.completeCrystallization()
                 }}
                 onCancel={() => {
