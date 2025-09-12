@@ -166,7 +166,6 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
               <GlobalLeafCreator
                 onSave={() => setShowGlobalCreator(false)}
                 onCancel={() => setShowGlobalCreator(false)}
-                userBranches={userBranches}
                 userId={user.id}
               />
             </motion.div>
