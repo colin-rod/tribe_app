@@ -58,8 +58,7 @@ export const useTactileCard = () => {
   // Simplified "shiver" effect from UX manual - much more performant
   const motionProps = {
     whileHover: shouldReduceMotion ? {} : {
-      y: -6,
-      rotate: 2,
+      y: -1,
       scale: 1.01,
       transition: { type: 'spring', stiffness: 300, damping: 40 }
     },
