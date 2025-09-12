@@ -15,7 +15,7 @@ interface FormInputProps {
   className?: string
 }
 
-export default function FormInput({
+export function FormInput({
   id,
   name,
   type,
@@ -68,3 +68,5 @@ export default function FormInput({
     </div>
   )
 }
+
+export default FormInput
