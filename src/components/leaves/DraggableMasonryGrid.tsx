@@ -48,31 +48,6 @@ export default function DraggableMasonryGrid({
   const { toast } = useToast()
   const { containerRef, width } = useContainerResize()
 
-  // Effect for incoming memory animation
-  useEffect(() => {
-    if (incomingMemoryId && leaves.length > 0) {
-      // Find the first leaf position to calculate where incoming memory should land
-      const firstLeaf = filteredAndSortedLeaves[0]
-      if (firstLeaf && containerRef.current) {
-        const firstLeafElement = containerRef.current.querySelector(`[data-leaf-id="${firstLeaf.id}"]`)
-        if (firstLeafElement) {
-          const rect = firstLeafElement.getBoundingClientRect()
-          onMemoryPositionCalculated?.(rect)
-        }
-      }
-      
-      // Set highlight for the incoming memory
-      setHighlightedLeafId(incomingMemoryId)
-      
-      // Remove highlight after animation
-      const timeout = setTimeout(() => {
-        setHighlightedLeafId(null)
-      }, 2000)
-      
-      return () => clearTimeout(timeout)
-    }
-  }, [incomingMemoryId, leaves, filteredAndSortedLeaves, onMemoryPositionCalculated])
-
   // Filter and sort leaves
   const filteredAndSortedLeaves = useMemo(() => {
     let filtered = leaves
@@ -106,6 +81,31 @@ export default function DraggableMasonryGrid({
         return [...filtered].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     }
   }, [leaves, searchQuery, filterType, sortType])
+
+  // Effect for incoming memory animation
+  useEffect(() => {
+    if (incomingMemoryId && leaves.length > 0) {
+      // Find the first leaf position to calculate where incoming memory should land
+      const firstLeaf = filteredAndSortedLeaves[0]
+      if (firstLeaf && containerRef.current) {
+        const firstLeafElement = containerRef.current.querySelector(`[data-leaf-id="${firstLeaf.id}"]`)
+        if (firstLeafElement) {
+          const rect = firstLeafElement.getBoundingClientRect()
+          onMemoryPositionCalculated?.(rect)
+        }
+      }
+      
+      // Set highlight for the incoming memory
+      setHighlightedLeafId(incomingMemoryId)
+      
+      // Remove highlight after animation
+      const timeout = setTimeout(() => {
+        setHighlightedLeafId(null)
+      }, 2000)
+      
+      return () => clearTimeout(timeout)
+    }
+  }, [incomingMemoryId, leaves, filteredAndSortedLeaves, onMemoryPositionCalculated])
 
   const { layout, positions, containerHeight, registerItemRef, recalculate } = useMasonryLayout(
     filteredAndSortedLeaves,
