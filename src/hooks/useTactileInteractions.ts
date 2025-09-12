@@ -31,10 +31,9 @@ export const useTactileButton = () => {
   // Performance-first motion props using UX manual patterns
   const motionProps = {
     whileHover: shouldReduceMotion ? {} : {
-      y: -2,
-      rotate: 2,
-      scale: 1.03,
-      transition: { type: 'spring', stiffness: 400, damping: 28 }
+      y: -1,
+      scale: 1.01,
+      transition: { type: 'spring', stiffness: 200, damping: 25 }
     },
     whileTap: shouldReduceMotion ? {} : {
       scale: 0.98,
