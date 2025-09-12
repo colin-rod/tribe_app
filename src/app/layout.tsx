@@ -5,6 +5,7 @@ import { QueryProvider } from '@/providers/query-provider';
 import { DragDropProvider } from '@/components/common/DragDropProvider';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import "./globals.css";
+import "../styles/masonry-grid.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -11,6 +11,7 @@ import { useBranchPermissions } from '@/hooks/use-branches'
 import TreeExplorer from '@/components/dashboard/TreeExplorer'
 import GlobalLeafCreator from '@/components/leaves/GlobalLeafCreator'
 import { UnassignedLeavesPanel } from '@/components/leaves/UnassignedLeavesPanel'
+import { PinterestInboxPanel } from '@/components/leaves/PinterestInboxPanel'
 import { DragDropLeafAssignment } from '@/components/leaves/DragDropLeafAssignment'
 import { AllLeavesView } from '@/components/leaves/AllLeavesView'
 import { createComponentLogger } from '@/lib/logger'
@@ -34,7 +35,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
     userBranches && userBranches.length > 0 ? userBranches[0]?.branches : null
   )
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
-  const [viewMode, setViewMode] = useState<'branch' | 'all' | 'unassigned'>('branch')
+  const [viewMode, setViewMode] = useState<'branch' | 'all' | 'unassigned' | 'pinterest'>('pinterest')
   const [dragDropMode, setDragDropMode] = useState(false)
   const router = useRouter()
 
@@ -196,6 +197,17 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
               All Leaves
             </button>
             <button
+              onClick={() => setViewMode('pinterest')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === 'pinterest' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <span className="mr-2">📌</span>
+              Pinterest Inbox
+            </button>
+            <button
               onClick={() => setViewMode('unassigned')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 viewMode === 'unassigned' 
@@ -204,7 +216,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
               }`}
             >
               <span className="mr-2">📥</span>
-              Inbox
+              List Inbox
             </button>
           </div>
           
@@ -212,7 +224,8 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
             <div className="text-sm text-gray-600">
               {viewMode === 'branch' && selectedBranch && `Viewing: ${selectedBranch.name}`}
               {viewMode === 'all' && 'Showing all your leaves'}
-              {viewMode === 'unassigned' && 'Leaves waiting for assignment'}
+              {viewMode === 'pinterest' && 'Pinterest-style memory organization'}
+              {viewMode === 'unassigned' && 'List view for assignment'}
             </div>
             
             {viewMode === 'unassigned' && (
@@ -380,6 +393,23 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                     <AllLeavesView 
                       userId={user.id}
                       userBranches={userBranches?.map(ub => ub.branches).filter(Boolean) || []}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {viewMode === 'pinterest' && (
+                <div className="h-full">
+                  <div className="p-6 h-full">
+                    <PinterestInboxPanel
+                      userId={user.id}
+                      onLeafAssigned={(leafId, branchIds) => {
+                        logger.info('Leaf assigned to branches (Pinterest view)', { leafId, branchIds })
+                      }}
+                      onCreateContent={(type) => {
+                        logger.info('Create content triggered from Pinterest FAB', { type })
+                        setShowGlobalCreator(true)
+                      }}
                     />
                   </div>
                 </div>
