@@ -45,11 +45,18 @@ export function FloatingActionMenu({ onCreateLeaf, onSwitchView, currentView }: 
       action: onSwitchView
     },
     {
-      id: 'organize',
-      icon: 'sparkles' as const,
-      label: 'Auto Organize',
-      color: 'bg-purple-500 hover:bg-purple-600',
-      action: () => console.log('Auto organize')
+      id: 'search',
+      icon: 'search' as const,
+      label: 'Search Memories',
+      color: 'bg-gray-500 hover:bg-gray-600',
+      action: () => console.log('Search memories')
+    },
+    {
+      id: 'filter',
+      icon: 'filter' as const,
+      label: 'Filter & Sort',
+      color: 'bg-orange-500 hover:bg-orange-600',
+      action: () => console.log('Filter memories')
     }
   ]
 

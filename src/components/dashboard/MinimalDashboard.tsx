@@ -78,33 +78,28 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
       >
         {/* Minimal Header */}
         <motion.header 
-          className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border-b border-white/20"
+          className="flex items-center justify-between p-4 bg-white/90 backdrop-blur-sm border-b border-white/20 z-40 relative"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <motion.div 
-            className="flex items-center space-x-3"
-            whileHover={{ scale: 1.02 }}
-          >
+          <div className="flex items-center space-x-3">
             <Icon name="trees" size="lg" className="text-leaf-600" />
             <h1 className="text-xl font-semibold text-gray-900">Tribe</h1>
-          </motion.div>
+          </div>
 
           <div className="flex items-center space-x-4">
             {/* View Indicator */}
             <div className="flex items-center space-x-2 bg-white/60 rounded-full px-3 py-1">
-              <motion.div
+              <div
                 className={`w-2 h-2 rounded-full transition-colors ${
                   currentView === 'inbox' ? 'bg-blue-500' : 'bg-gray-300'
                 }`}
-                whileHover={{ scale: 1.2 }}
               />
-              <motion.div
+              <div
                 className={`w-2 h-2 rounded-full transition-colors ${
                   currentView === 'tree' ? 'bg-green-500' : 'bg-gray-300'
                 }`}
-                whileHover={{ scale: 1.2 }}
               />
             </div>
 
@@ -133,7 +128,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
 
               {/* Profile Menu */}
               {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-40 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 py-1 z-50">
                     <button
                       onClick={() => {
                         router.push('/profile')

@@ -130,25 +130,6 @@ export function PinterestInboxPanel({
           </CardContent>
         </Card>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="p-3 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.totalLeaves}</div>
-            <div className="text-xs text-gray-600">Total Memories</div>
-          </Card>
-          <Card className="p-3 text-center">
-            <div className="text-2xl font-bold text-orange-600">{stats.unassignedLeaves}</div>
-            <div className="text-xs text-gray-600">To Organize</div>
-          </Card>
-          <Card className="p-3 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.assignedLeaves}</div>
-            <div className="text-xs text-gray-600">Organized</div>
-          </Card>
-          <Card className="p-3 text-center">
-            <div className="text-2xl font-bold text-purple-600">{stats.multiAssignedLeaves}</div>
-            <div className="text-xs text-gray-600">Shared</div>
-          </Card>
-        </div>
 
         {/* View Title */}
         {leaves.length > 0 && (
@@ -159,10 +140,6 @@ export function PinterestInboxPanel({
                 Discover and organize your precious family moments
               </p>
             </div>
-            <Badge variant="outline" className="text-blue-600 border-blue-300 flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              Pinterest Style
-            </Badge>
           </div>
         )}
       </div>
