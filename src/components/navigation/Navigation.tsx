@@ -82,16 +82,14 @@ export default function Navigation({ user }: NavigationProps) {
   }
 
   return (
-    <nav className="bg-gradient-to-r from-leaf-500 to-leaf-600 shadow-lg border-b-4 border-bark-400">
+    <nav className="bg-white/90 backdrop-blur-sm border-b border-white/20 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Breadcrumbs */}
           <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center">
-              <Icon name="treePine" size="lg" className="text-bark-400" />
-              <span className="ml-2 text-xl font-bold text-bark-400 font-display hidden sm:block">
-                Tribe
-              </span>
+            <Link href="/" className="flex items-center space-x-3">
+              <Icon name="trees" size="lg" className="text-leaf-600" />
+              <h1 className="text-xl font-semibold text-gray-900">Tribe</h1>
             </Link>
             
             {/* Breadcrumb Trail */}
@@ -103,13 +101,13 @@ export default function Navigation({ user }: NavigationProps) {
                       <Icon 
                         name="chevronRight" 
                         size="sm" 
-                        className="text-bark-300 mx-2" 
+                        className="text-gray-400 mx-2" 
                       />
                     )}
                     {breadcrumb.href ? (
                       <Link 
                         href={breadcrumb.href}
-                        className="flex items-center space-x-1 text-bark-300 hover:text-bark-400 transition-colors"
+                        className="flex items-center space-x-1 text-gray-500 hover:text-gray-700 transition-colors"
                       >
                         {breadcrumb.icon && (
                           <Icon name={breadcrumb.icon as any} size="xs" />
@@ -117,7 +115,7 @@ export default function Navigation({ user }: NavigationProps) {
                         <span className="hidden sm:inline">{breadcrumb.label}</span>
                       </Link>
                     ) : (
-                      <div className="flex items-center space-x-1 text-bark-400">
+                      <div className="flex items-center space-x-1 text-gray-700">
                         {breadcrumb.icon && (
                           <Icon name={breadcrumb.icon as any} size="xs" />
                         )}
@@ -134,61 +132,53 @@ export default function Navigation({ user }: NavigationProps) {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                {/* Quick Actions */}
-                <div className="hidden md:flex items-center space-x-3">
-                  <Link href="/dashboard">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="bg-leaf-100/20 border-bark-300 text-bark-400"
-                    >
-                      <Icon name="trees" size="xs" className="mr-1" />
-                      Dashboard
-                    </Button>
-                  </Link>
-                </div>
-
                 {/* User Menu */}
                 <div className="relative">
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="flex items-center space-x-2 text-bark-400 hover:text-bark-300 transition-colors"
+                    className="flex items-center space-x-2 hover:bg-white/20 rounded-full p-2 transition-colors"
                   >
-                    <div className="w-8 h-8 bg-bark-400 rounded-full flex items-center justify-center">
-                      <Icon name="user" size="sm" className="text-leaf-100" />
+                    <div className="w-8 h-8 bg-leaf-100 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-leaf-700">
+                        {user?.user_metadata?.first_name?.[0]}{user?.user_metadata?.last_name?.[0]}
+                      </span>
                     </div>
-                    <Icon name="chevronDown" size="xs" />
                   </button>
 
                   {/* Dropdown Menu */}
                   {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border-2 border-leaf-300 z-50">
-                      <div className="py-2">
-                        <Link 
-                          href="/profile"
-                          className="block px-4 py-2 text-sm text-bark-400 hover:bg-leaf-100 transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Icon name="user" size="xs" className="mr-2" />
-                          Profile
-                        </Link>
-                        <Link 
-                          href="/settings"
-                          className="block px-4 py-2 text-sm text-bark-400 hover:bg-leaf-100 transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Icon name="settings" size="xs" className="mr-2" />
-                          Settings
-                        </Link>
-                        <hr className="my-2 border-leaf-200" />
-                        <button
-                          onClick={handleSignOut}
-                          className="block w-full text-left px-4 py-2 text-sm text-bark-400 hover:bg-leaf-100 transition-colors"
-                        >
-                          <Icon name="x" size="xs" className="mr-2" />
-                          Sign Out
-                        </button>
-                      </div>
+                    <div className="absolute right-0 mt-2 w-40 bg-white backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+                      <button
+                        onClick={() => {
+                          window.location.href = '/profile'
+                          setIsMenuOpen(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2"
+                      >
+                        <Icon name="user" size="sm" className="text-gray-500" />
+                        <span className="text-sm text-gray-700">Profile</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          window.location.href = '/settings'
+                          setIsMenuOpen(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2"
+                      >
+                        <Icon name="settings" size="sm" className="text-gray-500" />
+                        <span className="text-sm text-gray-700">Settings</span>
+                      </button>
+                      <div className="border-t border-gray-100 my-1" />
+                      <button
+                        onClick={() => {
+                          handleSignOut()
+                          setIsMenuOpen(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                      >
+                        <Icon name="logOut" size="sm" className="text-red-500" />
+                        <span className="text-sm">Sign Out</span>
+                      </button>
                     </div>
                   )}
                 </div>
