@@ -58,7 +58,7 @@ export default function AuthForm({
         <button
           type="submit"
           disabled={loading}
-          className="group relative w-full flex justify-center py-3 px-4 border-2 border-transparent text-sm font-bold rounded-lg text-leaf-100 bg-bark-400 hover:bg-bark-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bark-400 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-150 hover:-translate-y-0.5"
+          className="group relative w-full flex justify-center py-3 px-4 border-2 border-bark-200 text-sm font-bold rounded-lg text-leaf-100 bg-bark-400 hover:bg-bark-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bark-400 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-150 hover:-translate-y-0.5"
         >
           <span className="mr-2 text-xl">{submitIcon}</span>
           {loading ? loadingText : submitText}
@@ -71,7 +71,7 @@ export default function AuthForm({
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
+                <span className="px-4 bg-blue-50 text-gray-500 font-medium">Or continue with</span>
               </div>
             </div>
             
