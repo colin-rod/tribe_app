@@ -140,7 +140,7 @@ export default function Navigation({ user }: NavigationProps) {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="bg-leaf-100/20 border-bark-300 text-bark-400 hover:bg-leaf-100/40"
+                      className="bg-leaf-100/20 border-bark-300 text-bark-400"
                     >
                       <Icon name="trees" size="xs" className="mr-1" />
                       Dashboard
@@ -162,7 +162,7 @@ export default function Navigation({ user }: NavigationProps) {
 
                   {/* Dropdown Menu */}
                   {isMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-surface rounded-lg shadow-lg border-2 border-leaf-300 z-50">
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border-2 border-leaf-300 z-50">
                       <div className="py-2">
                         <Link 
                           href="/profile"

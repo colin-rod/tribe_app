@@ -128,7 +128,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
 
               {/* Profile Menu */}
               {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-40 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-40 bg-white backdrop-blur-sm rounded-lg shadow-xl border border-gray-200 py-1 z-50">
                     <button
                       onClick={() => {
                         router.push('/profile')
