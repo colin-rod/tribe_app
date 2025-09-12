@@ -75,9 +75,10 @@ export default function Navigation({ user }: NavigationProps) {
 
   const breadcrumbs = getBreadcrumbs()
   const isAuthPage = pathname.includes('/auth/')
+  const isLandingPage = pathname === '/'
 
-  // Don't show nav on auth pages
-  if (isAuthPage) {
+  // Don't show nav on auth pages or landing page
+  if (isAuthPage || isLandingPage) {
     return null
   }
 
