@@ -1,43 +1,45 @@
-# Tree App 🌳
+# Tribe App
 
-A private family sharing platform built with Next.js 15 and Supabase. Create intimate family branches to share precious memories, milestones, and moments with only your closest loved ones.
+A private family sharing platform built with Next.js 15 and Supabase. Create intimate family trees to share precious memories, milestones, and moments with only your closest loved ones.
 
-**Made with ❤️ for families who want to preserve and share their most precious memories in complete privacy.**
-
----
-
-## ✨ **Features**
-
-### 🏠 **Family-Centered Organization**
-- 🌳 **Private Family Trees** - Your family's home base with organized branches for different topics
-- 👨‍👩‍👧‍👦 **Private Family Branches** - Create dedicated spaces for each child, family events, or interests
-- 🔒 **Complete Privacy by Design** - Only family members you invite can see your content - no public posts, ever
-- 👥 **Flexible Family Roles** - Owner, admin, and member roles with granular permissions
-
-### 📸 **Rich Memory Sharing**
-- 📱 **Rich Media Support** - Share photos, videos, voice notes, and milestone moments
-- 📧 **Email-to-Memory** - Send photos/videos/audio directly via email to create instant memories
-- 🎉 **Milestone Tracking** - Capture and celebrate important family moments with special milestone posts
-- 💬 **Real-time Engagement** - Live comments, likes, and instant notifications when family shares
-- 🏷️ **Smart Organization** - Organize memories by branches, milestones, and family topics
-- ☁️ **Automatic Media Storage** - All email attachments automatically uploaded to secure cloud storage
-
-### 🛡️ **Security & Privacy**
-- 🔐 **Row Level Security** - Database-level security ensuring complete privacy
-- 🎯 **RBAC Permissions** - Role-based access control with granular permissions
-- 📧 **Secure Invitations** - Email-based invitations with role assignments
-- 🛡️ **Protected API Routes** - Server-side authentication checks throughout
-
-### 🎨 **Modern User Experience**
-- 📱 **Responsive Design** - Works beautifully on desktop, tablet, and mobile devices
-- ⚡ **Real-time Updates** - See family activity instantly across all devices
-- 🎯 **Enhanced Error Handling** - User-friendly error messages and loading states
-- 🖼️ **Optimized Media** - Next.js Image optimization for fast loading
-- 🌙 **Accessibility Ready** - Built with accessibility in mind
+**Made with care for families who want to preserve and share their most precious memories in complete privacy.**
 
 ---
 
-## 🚀 **Quick Start**
+## **Features**
+
+### **Person-Centric Organization**
+- **Private Person Trees** - Each family member gets their own dedicated tree for personalized memories
+- **Cross-Tree Branch Sharing** - Connect multiple family members through shared experiences and moments
+- **Complete Privacy by Design** - Only family members you invite can see your content - no public posts, ever
+- **Multi-Tree Management** - Parents can manage multiple children's trees from a unified dashboard
+- **Flexible Family Roles** - Owner, admin, and member roles with granular permissions
+
+### **Rich Memory Sharing**
+- **Rich Media Support** - Share photos, videos, voice notes, and milestone moments
+- **Email-to-Memory** - Send photos/videos/audio directly via email to create instant memories
+- **Person-Specific Email Routing** - Each family member gets their own email address for targeted content
+- **Milestone Tracking** - Capture and celebrate important family moments with special milestone posts
+- **Real-time Engagement** - Live comments, reactions, and instant notifications when family shares
+- **Smart Organization** - Organize memories by person, relationships, and shared experiences
+- **Automatic Media Storage** - All email attachments automatically uploaded to secure cloud storage
+
+### **Security & Privacy**
+- **Row Level Security** - Database-level security ensuring complete privacy
+- **RBAC Permissions** - Role-based access control with granular permissions
+- **Secure Invitations** - Email-based invitations with role assignments
+- **Protected API Routes** - Server-side authentication checks throughout
+
+### **Modern User Experience**
+- **Responsive Design** - Works beautifully on desktop, tablet, and mobile devices
+- **Real-time Updates** - See family activity instantly across all devices
+- **Enhanced Error Handling** - User-friendly error messages and loading states
+- **Optimized Media** - Next.js Image optimization for fast loading
+- **Accessibility Ready** - Built with Lucide React icons and semantic HTML
+
+---
+
+## **Quick Start**
 
 ### Prerequisites
 
@@ -86,7 +88,7 @@ A private family sharing platform built with Next.js 15 and Supabase. Create int
 
 5. **Configure Email Integration (Optional)**
    ```bash
-   # See SENDGRID_SETUP.md for detailed email setup
+   # See docs/EMAIL_SYSTEM.md for comprehensive email setup guide
    # Configure SendGrid Parse API for email-to-memory feature
    # Set up DNS records for your domain
    ```
@@ -99,12 +101,12 @@ A private family sharing platform built with Next.js 15 and Supabase. Create int
 7. **Visit Your App**
    ```
    Open http://localhost:3000
-   Create your account and start growing your family tree! 🌱
+   Create your account and start growing your family tree!
    ```
 
 ---
 
-## 🗂️ **Project Architecture**
+## **Project Architecture**
 
 ### File Structure
 ```
@@ -140,10 +142,13 @@ tree_app/
 ├── supabase/
 │   └── migrations/           # Database schema migrations
 ├── public/                   # Static assets
-├── docs/                     # Documentation
+├── docs/                     # Comprehensive documentation
+│   ├── EMAIL_SYSTEM.md      # Email integration guide
+│   ├── ARCHITECTURE.md      # Technical architecture
+│   ├── DEPLOYMENT.md        # Production deployment guide
+│   └── CONTRIBUTING.md      # Contribution guidelines
 ├── scripts/                  # Utility scripts and tests
-├── SENDGRID_SETUP.md        # Email integration setup guide
-├── TODO.md                   # Comprehensive improvement roadmap
+├── TODO.md                   # Current development priorities
 ├── TESTING.md               # Detailed testing guide
 └── README.md               # This file
 ```
@@ -165,56 +170,58 @@ tree_app/
 
 ---
 
-## 🎯 **Core Concepts**
+## **Core Concepts**
 
-### Family Trees 🌳
-Your family's **home base** where all branches are organized. Each tree represents a family unit and contains multiple branches for different purposes.
-- **Private by Default** - Complete privacy for family memories
-- **RBAC Permissions** - Owner, admin, member roles with specific permissions
-- **Scalable Structure** - Support for extended families and multiple family units
+### Person Trees
+**Individual digital spaces** for each family member where their personal memories are collected and organized.
+- **Person-Centric** - Each tree represents one family member (child, parent, grandparent)
+- **Private by Default** - Complete privacy for personal memories and family content
+- **Managed Access** - Parents can manage multiple children's trees from a unified dashboard
+- **Flexible Sharing** - Content can be shared across multiple person trees through branches
 
-### Family Branches 🌿
-**Dedicated spaces** within your tree for specific topics, children, or family interests.
-- **Always Private** - Every branch is completely private by default
-- **Invite-Only Access** - Only family members you personally invite can join
-- **Organized by Topic** - Separate branches for each child, events, or shared interests
-- **Flexible Permissions** - Granular control over who can view, post, and manage
+### Cross-Tree Branches
+**Shared experiences** that connect multiple family members' trees together.
+- **Multi-Tree Connections** - Branches can span across multiple person trees
+- **Shared Memories** - Family vacations, holidays, and group activities appear in all relevant trees
+- **Relationship-Based** - Organize content by family relationships and shared experiences
+- **Granular Permissions** - Control who can view, contribute, and manage shared content
 
-### Family Leaves (Posts) 📝
-**Individual memories** shared within branches - the heart of your family's story.
+### Leaves (Memories)
+**Individual pieces of content** - the building blocks of your family's digital story.
 - **Rich Content** - Text, photos, videos, voice notes, and milestone tracking
 - **Email Creation** - Send media directly via email to create instant memories
-- **Real-time Sharing** - Family sees updates instantly across all devices
-- **Milestone Support** - Special posts for first words, steps, birthdays, achievements
-- **Interactive** - Comments, likes, and reactions to engage with memories
+- **Person Attribution** - Content automatically attributed to the correct family member
+- **Cross-Tree Sharing** - Memories can appear in multiple family members' timelines
+- **Interactive Engagement** - Comments, reactions, and real-time family interaction
 
-### Email-to-Memory Integration 📧
-**Send memories directly via email** - the easiest way to capture moments on the go.
-- **Unique Email Addresses** - Each user gets a personal email address for their memories
-- **Instant Media Upload** - Photos, videos, and audio automatically uploaded to secure storage
-- **Smart Content Processing** - Email subjects and body text become memory captions
-- **Automatic Organization** - Hashtags and milestone keywords detected automatically
-- **Universal Access** - Works from any device with email capability
+### Email-to-Memory System
+**Seamless content creation** through email - capture moments as they happen.
+- **Person-Specific Routing** - `person-{treeId}@domain.com` sends content directly to that person's tree
+- **Legacy Support** - `u-{userId}@domain.com` creates unassigned content for manual organization
+- **Instant Processing** - Photos, videos, and audio automatically uploaded to secure storage
+- **Smart Content Enhancement** - Email subjects become captions, hashtags automatically detected
+- **Cross-Device Access** - Works from any device with email capability
 
-### User Roles 👥
+### Family Management Roles
 - **Owner** - Full control over trees/branches, member management, settings
-- **Admin** - Manage members, moderate content, configure branch settings  
-- **Member** - Create posts, comment, like, participate in family sharing
+- **Tree Manager** - Can manage specific person trees (typically parents managing children's trees)
+- **Admin** - Moderate content, configure branch settings, invite family members
+- **Member** - Create posts, comment, react, participate in family sharing
 
 ---
 
-## 🧪 **Testing**
+## **Testing**
 
 ### Comprehensive Testing Suite
 This project includes an extensive testing infrastructure with [`TESTING.md`](./TESTING.md) providing detailed testing scenarios.
 
 **Test Infrastructure:**
-- 🧪 **Jest + React Testing Library**: Component and unit testing
-- 🔄 **Integration Tests**: API routes and data flow testing
-- 🛡️ **Security Tests**: Authentication, authorization, and input validation
-- 📱 **Responsive Tests**: Cross-device and cross-browser compatibility
-- ⚡ **Performance Tests**: Load testing and optimization validation
-- 🎯 **Accessibility Tests**: Screen reader and keyboard navigation
+- **Jest + React Testing Library**: Component and unit testing
+- **Integration Tests**: API routes and data flow testing
+- **Security Tests**: Authentication, authorization, and input validation
+- **Responsive Tests**: Cross-device and cross-browser compatibility
+- **Performance Tests**: Load testing and optimization validation
+- **Accessibility Tests**: Screen reader and keyboard navigation
 
 **Test Categories:**
 ```bash
@@ -302,9 +309,11 @@ npm run test:ci
 
 ---
 
-## 🚀 **Deployment**
+## **Deployment**
 
 ### Deploy to Vercel (Recommended)
+
+For comprehensive deployment instructions, see [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md).
 
 1. **Connect Repository**
    ```bash
@@ -348,9 +357,11 @@ npm run test:ci
 
 ---
 
-## 🤝 **Contributing**
+## **Contributing**
 
 We welcome contributions that help families better connect and preserve memories!
+
+For detailed contribution guidelines, please see [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md).
 
 ### Development Process
 1. **Fork & Clone**
@@ -403,9 +414,9 @@ We welcome contributions that help families better connect and preserve memories
 
 ---
 
-## 📋 **Roadmap**
+## **Roadmap**
 
-### 🚨 **Current Focus** (Next 1-2 months)
+### **Current Focus** (Next 1-2 months)
 - [x] **Enhanced Testing Infrastructure** - Comprehensive test suite with Jest and RTL
 - [x] **Improved Error Handling** - Better error boundaries and user feedback
 - [x] **Email Integration** - Complete SendGrid email-to-memory feature with media support
@@ -413,31 +424,31 @@ We welcome contributions that help families better connect and preserve memories
 - [ ] **Performance Optimization** - Bundle size and loading speed improvements
 - [ ] **Mobile Enhancement** - Progressive Web App features
 
-### 🎯 **High Priority** (Next 3-6 months)
-- [ ] **Email Notifications** - Complete invitation and activity notifications
-- [ ] **Family Calendar Integration** - Sync events, birthdays, milestones
+### **High Priority** (Next 3-6 months)
+- [ ] **Enhanced Parent Dashboard** - Unified view of all managed person trees
+- [ ] **AI-Powered Content Management** - Face recognition and smart routing
+- [ ] **Voice Message Integration** - Recording and transcription features
 - [ ] **Progressive Web App** - Offline support, push notifications
-- [ ] **Enhanced Photo Management** - Batch uploads, smart organization
-- [ ] **Multi-Factor Authentication** - Enhanced security options
+- [ ] **Family Relationship Management** - Visual family tree and relationship-based sharing
 
-### 🚀 **Future Features** (6-12 months)
-- [ ] **AI Memory Prompts** - Smart suggestions for family sharing
+### **Future Features** (6-12 months)
+- [ ] **Multi-Channel Integration** - SMS, WhatsApp, and messaging platform support
+- [ ] **Memory Book Generation** - Create beautiful printed family albums
 - [ ] **Advanced Real-time Features** - Live reactions, typing indicators
-- [ ] **Family Analytics** - Privacy-friendly engagement insights
-- [ ] **Video Calling** - Integrated family video chat
-- [ ] **Advanced Search** - Find memories across all family content
+- [ ] **Guest Sharing** - Share memories with users without accounts
+- [ ] **Advanced Search** - Find memories across all family content and trees
 
-See [`TODO.md`](./TODO.md) for the complete roadmap with 150+ improvements.
+See [`docs/ROADMAP.md`](./docs/ROADMAP.md) for the complete development roadmap and [`TODO.md`](./TODO.md) for current development priorities.
 
 ---
 
-## 🐛 **Issues & Support**
+## **Issues & Support**
 
 ### Get Help
-- 📖 **Documentation** - Check [`TESTING.md`](./TESTING.md) for troubleshooting
-- 🐛 **Bug Reports** - [GitHub Issues](https://github.com/colin-rod/tree_app/issues)
-- 💡 **Feature Requests** - [GitHub Issues](https://github.com/colin-rod/tree_app/issues) with enhancement label
-- 📧 **Supabase Questions** - [Supabase Documentation](https://supabase.com/docs)
+- **Documentation** - Check [`docs/`](./docs/) directory for comprehensive guides
+- **Bug Reports** - [GitHub Issues](https://github.com/colin-rod/tree_app/issues)
+- **Feature Requests** - [GitHub Issues](https://github.com/colin-rod/tree_app/issues) with enhancement label
+- **Contributing** - See [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) for contribution guidelines
 
 ### Common Issues
 - **Build Errors** - Check Node.js version (18+ required)

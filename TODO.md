@@ -1,53 +1,56 @@
-# Tree App - Comprehensive TODO List
+# Tree App - Current Development TODO
 
-Based on comprehensive codebase review and analysis conducted on 2025-01-31.
+Last updated: January 2025
 
 ## 🚨 **CRITICAL ISSUES** (Fix Immediately)
 
-### Build-Blocking Errors
-- [x] ~~Fix React unescaped entities in JSX across all files~~
-- [x] ~~Clean up unused imports and variables to reduce warnings~~  
-- [x] ~~Replace img elements with Next.js Image components for better performance~~
-- [ ] **Fix TypeScript 'any' type usage and interface issues for better type safety**
-  - `src/lib/api/error-middleware.ts:85` - Add proper typing
-  - `src/utils/performance.ts` - Multiple 'any' types need proper interfaces
-  - `src/components/common/LazyWrapper.tsx` - Generic type improvements
+### TypeScript & Code Quality
+- [ ] **Fix TypeScript 'any' type usage and improve type safety**
+  - Review and add proper interfaces for utility functions
   - Fix empty interface declarations in settings components
+  - Improve generic type usage in common components
 - [ ] **Fix React Hook dependency warnings**
-  - `src/app/invite/[token]/accept-invite-client.tsx:35` - Add missing 'acceptInvitation' dependency
-  - `src/lib/state/create-store.ts` - Multiple useEffect/useCallback dependency issues
-  - `src/utils/performance.ts` - Hook dependency array issues
+  - Add missing dependencies in useEffect/useCallback hooks
+  - Review and fix hook dependency arrays throughout codebase
 
-### Critical Security & Functionality Fixes
-- [ ] **Implement TODO: Send email notification in invitations API**
-  - `src/app/api/invitations/route.ts:154` - Complete email notification system
-  - Set up email service (SendGrid, Resend, or similar)
-  - Create email templates for invitations
-- [ ] **Fix RBAC role assignment bugs**
-  - Fix role assignment in API routes (branches route:89)
-  - Address potential permission bypass issues
-- [ ] **Implement proper error boundaries**
+### Security & API Enhancements  
+- [ ] **Complete email notification system for invitations**
+  - Email templates for invitations using SendGrid
+  - Notification system integration
+- [ ] **Review and strengthen RBAC permissions**
+  - Audit role assignment in API routes
+  - Test cross-tree permission scenarios
+- [ ] **Implement comprehensive error boundaries**
   - Add error boundaries throughout component tree
-  - Handle edge cases in data loading
-- [ ] **Fix session management issues**
-  - Address potential session mismatch between server/client
-  - Implement proper session timeout
+  - Improve error handling in data loading states
 
 ---
 
 ## 🔧 **HIGH PRIORITY FEATURES & ENHANCEMENTS**
 
+### UI/UX Improvements (Person-Centric Focus)
+- [ ] **Enhanced Parent Dashboard**
+  - Unified view of all managed trees (children, family members)
+  - Quick switching between person contexts
+  - Aggregate family activity feed
+- [ ] **Improved Tree Management Interface**
+  - Streamlined tree creation wizard for new family members
+  - Better visualization of family relationships
+  - Enhanced tree switching and context awareness
+- [ ] **Cross-Tree Content Visualization**
+  - Better indicators for shared content across trees
+  - Improved branch management for multiple trees
+  - Enhanced person attribution in LeafCard components
+
 ### Core Family Features
-- [ ] **Family Calendar Integration**
-  - Sync family events, birthdays, milestones with shared calendar
-  - Integration with Google Calendar, Apple Calendar
-  - Automatic milestone reminders
-- [ ] **Voice Messages for Leaves/Posts**
-  - Native voice recording and playback
-  - Voice-to-text conversion for accessibility
-  - Audio compression and optimization
-- [ ] **Enhanced Photo Management**
-  - Batch photo upload with bulk editing
+- [ ] **Enhanced Email Integration**
+  - Better person-specific email management interface
+  - Improved email content processing and formatting
+  - Multi-person detection in photos (future AI feature)
+- [ ] **Advanced Media Features**
+  - Voice message recording and playback
+  - Enhanced photo management with batch uploads
+  - Video processing and optimization
   - Smart photo recognition and auto-tagging
   - Photo albums organized by events/trips
   - Advanced photo editor (crop, rotate, filters)
