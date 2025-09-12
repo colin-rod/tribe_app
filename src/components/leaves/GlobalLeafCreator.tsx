@@ -424,7 +424,7 @@ export default function GlobalLeafCreator({
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
