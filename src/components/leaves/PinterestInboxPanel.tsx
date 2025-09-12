@@ -6,7 +6,7 @@ import { getUserBranches } from '@/lib/branches'
 import { UnassignedLeaf } from '@/types/common'
 import { BranchWithDetails } from '@/types/database'
 import { useToast } from '@/hooks/use-toast'
-import MasonryLeafGrid from './MasonryLeafGrid'
+import DraggableMasonryGrid from './DraggableMasonryGrid'
 import FloatingActionButton from './FloatingActionButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -169,7 +169,7 @@ export function PinterestInboxPanel({
 
       {/* Main Content Area - Pinterest Grid */}
       <div className="flex-1 min-h-0">
-        <MasonryLeafGrid
+        <DraggableMasonryGrid
           leaves={leaves}
           branches={branches}
           userId={userId}
