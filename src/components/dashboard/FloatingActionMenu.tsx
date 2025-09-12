@@ -163,18 +163,7 @@ export function FloatingActionMenu({ onCreateMemory, onSwitchView, currentView }
             </motion.div>
           </motion.button>
 
-          {/* Long Press Indicator */}
-          <AnimatePresence>
-            {isDragging && !isExpanded && (
-              <motion.div
-                className="absolute inset-0 rounded-full border-2 border-white/50"
-                initial={{ scale: 1.2, opacity: 0 }}
-                animate={{ scale: 1.4, opacity: 1 }}
-                exit={{ scale: 1.2, opacity: 0 }}
-                transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
-              />
-            )}
-          </AnimatePresence>
+          {/* Long Press Indicator - removed since we're using long press instead of drag */}
 
           {/* Tooltip */}
           <AnimatePresence>
