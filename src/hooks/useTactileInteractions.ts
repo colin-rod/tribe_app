@@ -37,8 +37,9 @@ export const useTactileButton = () => {
     },
     whileTap: shouldReduceMotion ? {} : {
       scale: 0.98,
-      rotate: -1,
-      transition: { type: 'spring', stiffness: 700, damping: 30 }
+      rotate: 0,
+      y: 1,
+      transition: { type: 'spring', stiffness: 200, damping: 25 }
     },
     initial: { opacity: 0, scale: 0.95 },
     animate: { opacity: 1, scale: 1 },
