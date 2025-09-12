@@ -102,33 +102,34 @@ export function PinterestInboxPanel({
     <div className="h-full flex flex-col relative">
       {/* Header Section */}
       <div className="flex-shrink-0 space-y-4 pb-6">
-        {/* Email-to-Memory Info Card */}
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <Mail className="w-5 h-5 text-blue-600" />
+        {/* Email-to-Memory Info Bubble */}
+        <div className="relative">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-4 mx-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-sm">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-medium text-blue-900 mb-1 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  Email-to-Memory Magic
-                </h3>
-                <p className="text-sm text-blue-700 mb-2">
-                  Send photos and memories directly to your inbox:
-                  <code className="bg-white/60 px-2 py-1 rounded text-xs font-mono ml-1 mr-1">
-                    u-{userId}@colinrodrigues.com
-                  </code>
-                  <ArrowRight className="w-3 h-3 inline mx-1" />
-                  <span className="font-medium">Instantly appears here!</span>
-                </p>
-                <p className="text-xs text-blue-600">
-                  Organize your memories by dragging them into your family trees and branches below.
-                </p>
+              <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                <Mail className="w-4 h-4 text-blue-600" />
+                Email-to-Memory Magic
+              </h3>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-gray-700">
+                Send photos and memories directly to your inbox:
+              </p>
+              <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                <code className="bg-white/80 px-2 py-1 rounded text-xs font-mono text-blue-800 font-medium">
+                  u-{userId}@colinrodrigues.com
+                </code>
+                <ArrowRight className="w-3 h-3 text-blue-600" />
+                <span className="text-xs font-medium text-blue-700">Instantly appears here!</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          {/* Small bubble tail */}
+          <div className="absolute -bottom-2 left-8 w-4 h-4 bg-white/80 rotate-45 border-r border-b border-white/30"></div>
+        </div>
 
 
         {/* View Title */}
