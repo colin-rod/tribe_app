@@ -110,11 +110,9 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
 
             {/* User Profile */}
             <div className="relative">
-              <motion.button
+              <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center space-x-2 hover:bg-white/20 rounded-full p-2 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 {profile?.avatar_url ? (
                   <Image
@@ -131,18 +129,11 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
                     </span>
                   </div>
                 )}
-              </motion.button>
+              </button>
 
               {/* Profile Menu */}
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
-                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    transition={{ duration: 0.15 }}
-                  >
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                     <button
                       onClick={() => {
                         router.push('/profile')
@@ -174,9 +165,8 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
                       <Icon name="logOut" size="sm" className="text-red-500" />
                       <span className="text-sm">Sign Out</span>
                     </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                </div>
+              )}
             </div>
           </div>
         </motion.header>
@@ -261,18 +251,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
           )}
         </AnimatePresence>
 
-        {/* Background overlay when profile menu is open */}
-        <AnimatePresence>
-          {showProfileMenu && (
-            <motion.div
-              className="fixed inset-0 bg-black/20 z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowProfileMenu(false)}
-            />
-          )}
-        </AnimatePresence>
+{/* Background overlay removed for simpler interaction */}
       </div>
     </DndProvider>
   )

@@ -247,11 +247,6 @@ export default function Home() {
               <Icon name="flower2" size="lg" className="animate-bounce text-flower-400" style={{ animationDelay: '0.6s' }} />
               <Icon name="leaf" size="lg" className="animate-bounce text-leaf-400" style={{ animationDelay: '0.8s' }} />
             </div>
-            <p className="mt-4 text-bark-200 font-display text-sm flex items-center justify-center gap-2">
-              <Icon name="sparkles" size="sm" className="text-flower-400" />
-              Shake your device for a surprise!
-              <Icon name="sparkles" size="sm" className="text-flower-400" />
-            </p>
           </div>
         </div>
       </div>
