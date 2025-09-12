@@ -22,10 +22,10 @@ export function useInboxState(options: UseInboxStateOptions = {}) {
       setNewlyCreatedMemoryId(newMemoryId)
       options.onMemoryCreated?.(newMemoryId)
       
-      // Clear the memory ID after highlighting timeout
+      // Clear the memory ID after highlighting timeout (matches animation duration)
       setTimeout(() => {
         setNewlyCreatedMemoryId(null)
-      }, 3000)
+      }, 5000)
     }
   }, [options])
 

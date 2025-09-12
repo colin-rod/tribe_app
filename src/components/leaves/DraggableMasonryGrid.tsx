@@ -225,19 +225,25 @@ export default function DraggableMasonryGrid({
                       }}
                       animate={{ 
                         opacity: 1, 
-                        scale: isHighlighted ? [1, 1.05, 1] : 1,
+                        scale: isHighlighted ? [1, 1.08, 1.02, 1] : 1,
                         filter: 'blur(0px)',
                         boxShadow: isHighlighted 
-                          ? ['0 0 0 rgba(129, 199, 132, 0)', '0 0 20px rgba(129, 199, 132, 0.6)', '0 0 0 rgba(129, 199, 132, 0)']
-                          : 'none'
+                          ? [
+                              '0 0 0 rgba(34, 197, 94, 0)',
+                              '0 0 30px rgba(34, 197, 94, 0.8), 0 0 60px rgba(34, 197, 94, 0.4)',
+                              '0 0 15px rgba(34, 197, 94, 0.3)',
+                              '0 4px 20px rgba(0, 0, 0, 0.1)'
+                            ]
+                          : '0 4px 20px rgba(0, 0, 0, 0.1)'
                       }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       transition={{ 
-                        duration: isHighlighted ? 1.5 : 0.3,
+                        duration: isHighlighted ? 3.0 : 0.3,
                         delay: Math.min(index * 0.05, 1),
                         type: isHighlighted ? 'spring' : 'tween',
-                        stiffness: isHighlighted ? 200 : undefined,
-                        damping: isHighlighted ? 20 : undefined
+                        stiffness: isHighlighted ? 120 : undefined,
+                        damping: isHighlighted ? 25 : undefined,
+                        ease: isHighlighted ? "easeOut" : "easeInOut"
                       }}
                       layout
                     >
@@ -247,21 +253,76 @@ export default function DraggableMasonryGrid({
                         isSelected={false}
                         isAssigning={assigningLeaves.has(leaf.id)}
                         onAssign={(leafId, branchIds) => handleLeafDrop(leafId, branchIds)}
-                        onSelect={(leafId) => console.log('Selected leaf:', leafId)}
+                        onSelect={(leafId) => {
+                          // Memory selection handled by parent component
+                        }}
                       />
                       
-                      {/* Crystallization highlight overlay */}
+                      {/* Enhanced memory highlight effects */}
                       {isHighlighted && (
-                        <motion.div
-                          className="absolute inset-0 pointer-events-none rounded-2xl"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: [0, 0.3, 0] }}
-                          transition={{ duration: 1.5, repeat: 1 }}
-                          style={{
-                            background: 'radial-gradient(circle, rgba(129, 199, 132, 0.2) 0%, transparent 70%)',
-                            borderRadius: 'inherit'
-                          }}
-                        />
+                        <>
+                          {/* Primary glow overlay */}
+                          <motion.div
+                            className="absolute inset-0 pointer-events-none rounded-2xl"
+                            initial={{ opacity: 0 }}
+                            animate={{ 
+                              opacity: [0, 0.8, 0.4, 0.1, 0],
+                              scale: [1, 1.02, 1.01, 1]
+                            }}
+                            transition={{ 
+                              duration: 4.0,
+                              ease: "easeOut",
+                              times: [0, 0.2, 0.5, 0.8, 1]
+                            }}
+                            style={{
+                              background: 'radial-gradient(circle at center, rgba(34, 197, 94, 0.3) 0%, rgba(34, 197, 94, 0.15) 40%, transparent 70%)',
+                              borderRadius: 'inherit'
+                            }}
+                          />
+                          
+                          {/* Animated border highlight */}
+                          <motion.div
+                            className="absolute inset-0 pointer-events-none rounded-2xl border-2"
+                            initial={{ 
+                              borderColor: 'rgba(34, 197, 94, 0)',
+                              opacity: 0
+                            }}
+                            animate={{ 
+                              borderColor: [
+                                'rgba(34, 197, 94, 0)',
+                                'rgba(34, 197, 94, 0.9)',
+                                'rgba(34, 197, 94, 0.6)',
+                                'rgba(34, 197, 94, 0.3)',
+                                'rgba(34, 197, 94, 0)'
+                              ],
+                              opacity: [0, 1, 0.8, 0.4, 0]
+                            }}
+                            transition={{ 
+                              duration: 4.0,
+                              ease: "easeOut",
+                              times: [0, 0.15, 0.4, 0.75, 1]
+                            }}
+                          />
+                          
+                          {/* Success pulse effect */}
+                          <motion.div
+                            className="absolute inset-0 pointer-events-none rounded-2xl"
+                            initial={{ opacity: 0, scale: 1 }}
+                            animate={{ 
+                              opacity: [0, 0.6, 0.3, 0],
+                              scale: [1, 1.03, 1.015, 1]
+                            }}
+                            transition={{ 
+                              duration: 2.5,
+                              ease: "easeOut",
+                              times: [0, 0.3, 0.7, 1]
+                            }}
+                            style={{
+                              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(74, 222, 128, 0.1) 50%, rgba(34, 197, 94, 0.05) 100%)',
+                              borderRadius: 'inherit'
+                            }}
+                          />
+                        </>
                       )}
                     </motion.div>
                   )

@@ -5,6 +5,7 @@ import { useCallback, useRef } from 'react'
 interface UseLongPressOptions {
   onLongPress: () => void
   onShortPress?: () => void
+  onProgress?: (progress: number) => void
   delay?: number
   preventDefault?: boolean
 }
@@ -25,11 +26,14 @@ interface LongPressHandlers {
 export function useLongPress({
   onLongPress,
   onShortPress,
+  onProgress,
   delay = 500,
   preventDefault = true
 }: UseLongPressOptions): LongPressHandlers {
   const timeoutRef = useRef<NodeJS.Timeout>()
+  const animationFrameRef = useRef<number>()
   const isLongPressRef = useRef(false)
+  const startTimeRef = useRef<number>(0)
 
   const start = useCallback((event: React.MouseEvent | React.TouchEvent) => {
     if (preventDefault) {
@@ -37,17 +41,45 @@ export function useLongPress({
     }
     
     isLongPressRef.current = false
+    startTimeRef.current = Date.now()
+    
+    // Set up progress tracking if callback provided
+    if (onProgress) {
+      onProgress(0) // Start at 0%
+      
+      const updateProgress = () => {
+        const elapsed = Date.now() - startTimeRef.current
+        const progress = Math.min((elapsed / delay) * 100, 100)
+        onProgress(progress)
+        
+        if (progress < 100) {
+          animationFrameRef.current = requestAnimationFrame(updateProgress)
+        }
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(updateProgress)
+    }
     
     timeoutRef.current = setTimeout(() => {
       isLongPressRef.current = true
       onLongPress()
     }, delay)
-  }, [onLongPress, delay, preventDefault])
+  }, [onLongPress, onProgress, delay, preventDefault])
 
   const clear = useCallback((event?: React.MouseEvent | React.TouchEvent) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = undefined
+    }
+    
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = undefined
+    }
+    
+    // Reset progress when clearing
+    if (onProgress && !isLongPressRef.current) {
+      onProgress(0)
     }
     
     // If we haven't triggered long press and there's a short press handler, call it
@@ -56,7 +88,7 @@ export function useLongPress({
     }
     
     isLongPressRef.current = false
-  }, [onShortPress])
+  }, [onShortPress, onProgress])
 
   return {
     onMouseDown: start,

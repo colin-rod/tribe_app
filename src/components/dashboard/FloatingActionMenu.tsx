@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Icon } from '@/components/ui/IconLibrary'
+import { Icon, type IconName } from '@/components/ui/IconLibrary'
 import { useLongPress } from '@/hooks/useLongPress'
 import { SPRING_CONFIGS, COMMON_ANIMATIONS } from '@/lib/animations'
 
@@ -14,7 +14,7 @@ interface FloatingActionMenuProps {
 
 interface MenuItem {
   id: string
-  icon: string
+  icon: IconName
   label: string
   color: string
   action: () => void
@@ -23,11 +23,18 @@ interface MenuItem {
 
 export function FloatingActionMenu({ onCreateMemory, onSwitchView, currentView }: FloatingActionMenuProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [longPressProgress, setLongPressProgress] = useState(0)
+  const [showCompletionPulse, setShowCompletionPulse] = useState(false)
 
-  // Improved long press handling
+  // Improved long press handling with progress tracking
   const longPressHandlers = useLongPress({
     onLongPress: useCallback(() => {
-      setIsExpanded(true)
+      setShowCompletionPulse(true)
+      setTimeout(() => {
+        setIsExpanded(true)
+        setLongPressProgress(0) // Reset progress after completion
+        setShowCompletionPulse(false)
+      }, 150) // Brief delay for completion effect
     }, []),
     onShortPress: useCallback(() => {
       // Short press executes primary action (create memory)
@@ -35,6 +42,9 @@ export function FloatingActionMenu({ onCreateMemory, onSwitchView, currentView }
         onCreateMemory()
       }
     }, [onCreateMemory, isExpanded]),
+    onProgress: useCallback((progress: number) => {
+      setLongPressProgress(progress)
+    }, []),
     delay: 500,
     preventDefault: false
   })
@@ -145,7 +155,13 @@ export function FloatingActionMenu({ onCreateMemory, onSwitchView, currentView }
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             animate={{
-              rotate: isExpanded ? 45 : 0
+              rotate: isExpanded ? 45 : 0,
+              scale: longPressProgress > 0 && longPressProgress < 100 
+                ? 1 + (longPressProgress / 100) * 0.08 
+                : showCompletionPulse ? 1.05 : 1,
+              filter: longPressProgress > 0 && longPressProgress < 100
+                ? `drop-shadow(0 0 ${4 + (longPressProgress / 100) * 8}px rgba(34, 197, 94, ${0.3 + (longPressProgress / 100) * 0.4}))`
+                : undefined
             }}
             transition={SPRING_CONFIGS.responsive}
             aria-label={isExpanded ? 'Close menu' : 'Create memory or long press for menu'}
@@ -163,11 +179,80 @@ export function FloatingActionMenu({ onCreateMemory, onSwitchView, currentView }
             </motion.div>
           </motion.button>
 
-          {/* Long Press Indicator - removed since we're using long press instead of drag */}
+          {/* Circular Progress Indicator */}
+          <AnimatePresence>
+            {longPressProgress > 0 && longPressProgress < 100 && (
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={SPRING_CONFIGS.responsive}
+              >
+                <svg
+                  className="w-full h-full -rotate-90"
+                  viewBox="0 0 64 64"
+                  style={{ overflow: 'visible' }}
+                >
+                  {/* Background circle */}
+                  <circle
+                    cx="32"
+                    cy="32"
+                    r="30"
+                    fill="none"
+                    stroke="rgba(255, 255, 255, 0.2)"
+                    strokeWidth="2"
+                  />
+                  {/* Progress circle */}
+                  <motion.circle
+                    cx="32"
+                    cy="32"
+                    r="30"
+                    fill="none"
+                    stroke="rgba(34, 197, 94, 0.8)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 30}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 30 }}
+                    animate={{ 
+                      strokeDashoffset: 2 * Math.PI * 30 * (1 - longPressProgress / 100),
+                    }}
+                    transition={{ 
+                      strokeDashoffset: { duration: 0.1, ease: "linear" }
+                    }}
+                    style={{
+                      filter: `drop-shadow(0 0 8px rgba(34, 197, 94, ${0.4 + (longPressProgress / 100) * 0.6}))`
+                    }}
+                  />
+                </svg>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Completion Pulse Effect */}
+          <AnimatePresence>
+            {showCompletionPulse && (
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                initial={{ opacity: 0, scale: 1 }}
+                animate={{ 
+                  opacity: [0, 0.8, 0],
+                  scale: [1, 1.3, 1.6]
+                }}
+                exit={{ opacity: 0 }}
+                transition={{ 
+                  duration: 0.4,
+                  ease: "easeOut"
+                }}
+              >
+                <div className="w-full h-full rounded-full border-2 border-leaf-400 bg-leaf-400/20" />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Tooltip */}
           <AnimatePresence>
-            {!isExpanded && (
+            {!isExpanded && longPressProgress === 0 && (
               <motion.div
                 className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap"
                 initial={{ opacity: 0, scale: 0.8, y: 10 }}
