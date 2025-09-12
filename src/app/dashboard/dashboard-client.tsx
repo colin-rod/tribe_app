@@ -15,6 +15,7 @@ import { PinterestInboxPanel } from '@/components/leaves/PinterestInboxPanel'
 import { DragDropLeafAssignment } from '@/components/leaves/DragDropLeafAssignment'
 import { AllLeavesView } from '@/components/leaves/AllLeavesView'
 import { createComponentLogger } from '@/lib/logger'
+import { Icon } from '@/components/ui/IconLibrary'
 
 const logger = createComponentLogger('DashboardClient')
 
@@ -82,7 +83,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <h1 className="text-xl font-semibold text-gray-900 flex items-center">
-                <span className="mr-2">🌳</span>
+                <Icon name="trees" size="md" className="mr-2 text-leaf-500" />
                 Family Trees
               </h1>
             </div>
@@ -93,7 +94,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                 onClick={() => setShowGlobalCreator(true)}
                 className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
               >
-                <span className="mr-2">🌿</span>
+                <Icon name="leaf" size="sm" className="mr-2" />
                 Create Leaf
               </button>
 
@@ -176,46 +177,46 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
           <div className="flex items-center space-x-4 bg-white rounded-lg shadow p-1">
             <button
               onClick={() => setViewMode('branch')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center ${
                 viewMode === 'branch' 
                   ? 'bg-blue-600 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <span className="mr-2">🌳</span>
+              <Icon name="trees" size="sm" className="mr-2" />
               Branch View
             </button>
             <button
               onClick={() => setViewMode('all')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center ${
                 viewMode === 'all' 
                   ? 'bg-blue-600 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <span className="mr-2">🌿</span>
+              <Icon name="leaf" size="sm" className="mr-2" />
               All Leaves
             </button>
             <button
               onClick={() => setViewMode('pinterest')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center ${
                 viewMode === 'pinterest' 
                   ? 'bg-blue-600 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <span className="mr-2">📌</span>
+              <Icon name="mapPin" size="sm" className="mr-2" />
               Pinterest Inbox
             </button>
             <button
               onClick={() => setViewMode('unassigned')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center ${
                 viewMode === 'unassigned' 
                   ? 'bg-blue-600 text-white' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <span className="mr-2">📥</span>
+              <Icon name="mail" size="sm" className="mr-2" />
               List Inbox
             </button>
           </div>
@@ -256,7 +257,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                   onClick={() => setShowGlobalCreator(true)}
                   className="w-full flex items-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  <span className="mr-3">🌿</span>
+                  <Icon name="leaf" size="md" className="mr-3" />
                   <div className="text-left">
                     <div className="font-medium">Create Leaf</div>
                     <div className="text-xs opacity-80">Add new content</div>
@@ -271,7 +272,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                       : 'border border-gray-200 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="mr-3">📚</span>
+                  <Icon name="fileText" size="md" className="mr-3 text-bark-400" />
                   <div className="text-left">
                     <div className="font-medium">All Leaves</div>
                     <div className="text-xs text-gray-500">View everything</div>
@@ -286,7 +287,7 @@ export default function DashboardClient({ user, profile, userBranches, trees }: 
                       : 'border border-gray-200 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="mr-3">📥</span>
+                  <Icon name="mail" size="md" className="mr-3 text-bark-400" />
                   <div className="text-left">
                     <div className="font-medium">Inbox</div>
                     <div className="text-xs text-gray-500">Email & unassigned content</div>

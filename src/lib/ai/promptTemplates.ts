@@ -31,7 +31,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'checkin',
     category: 'daily',
     title: 'Morning Check-in',
-    prompt: 'Good morning! ☀️ I hope everyone\'s having a great start to their day. What\'s on the agenda for {branchName} today?',
+    prompt: 'Good morning! I hope everyone\'s having a great start to their day. What\'s on the agenda for {branchName} today?',
     followUpQuestions: [
       'That sounds exciting! How is everyone feeling about it?',
       'Are there any special preparations you\'re doing?',
@@ -53,7 +53,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'checkin',
     category: 'daily',
     title: 'Evening Reflection',
-    prompt: 'How did the day go for {branchName}? I\'d love to hear about the highlights - or even the challenging moments that made you stronger! 🌟',
+    prompt: 'How did the day go for {branchName}? I\'d love to hear about the highlights - or even the challenging moments that made you stronger!',
     followUpQuestions: [
       'That sounds like it was really meaningful. How did it make you feel?',
       'What was the best part about that experience?',
@@ -76,7 +76,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'celebration',
     category: 'milestone',
     title: 'First Steps Milestone',
-    prompt: 'OH MY GOODNESS! 🎉 First steps are such an incredible milestone! I\'m so excited for your family. Tell me everything - where did it happen? Who saw it? How did everyone react?',
+    prompt: 'OH MY GOODNESS! First steps are such an incredible milestone! I\'m so excited for your family. Tell me everything - where did it happen? Who saw it? How did everyone react?',
     followUpQuestions: [
       'How many steps did they take?',
       'What was their expression like?',
@@ -100,7 +100,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'celebration',
     category: 'milestone',
     title: 'First Word Milestone',
-    prompt: 'What a special moment! 💕 A first word is such a precious milestone. What did they say? Was it what you expected? I bet everyone\'s hearts just melted!',
+    prompt: 'What a special moment! A first word is such a precious milestone. What did they say? Was it what you expected? I bet everyone\'s hearts just melted!',
     followUpQuestions: [
       'Have they said it again since then?',
       'Who were they looking at when they said it?',
@@ -125,7 +125,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'memory',
     category: 'weekly',
     title: 'Weekend Memories',
-    prompt: 'Sunday evening is perfect for reflecting! What was the most memorable part of your weekend with {branchName}? I love hearing about these family moments! 🌅',
+    prompt: 'Sunday evening is perfect for reflecting! What was the most memorable part of your weekend with {branchName}? I love hearing about these family moments!',
     followUpQuestions: [
       'That sounds wonderful! What made it so special?',
       'Did everyone enjoy it equally?',
@@ -147,7 +147,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'memory',
     category: 'special',
     title: 'Photo Memory Sharing',
-    prompt: 'I notice you don\'t share photos very often, but when you do, they\'re always so special! Do you have any recent pictures that capture a sweet family moment? 📸',
+    prompt: 'I notice you don\'t share photos very often, but when you do, they\'re always so special! Do you have any recent pictures that capture a sweet family moment?',
     followUpQuestions: [
       'What\'s the story behind this photo?',
       'Who took the picture?',
@@ -167,7 +167,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'checkin',
     category: 'seasonal',
     title: 'Seasonal Activities',
-    prompt: 'I love how each season brings new opportunities for family fun! What {season} activities have you been enjoying with {branchName} lately? 🍂❄️🌸☀️',
+    prompt: 'I love how each season brings new opportunities for family fun! What {season} activities have you been enjoying with {branchName} lately?',
     followUpQuestions: [
       'That sounds like so much fun! Is this a new tradition for your family?',
       'What did everyone enjoy most about it?',
@@ -187,7 +187,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'followup',
     category: 'special',
     title: 'Growth and Development',
-    prompt: 'I\'ve noticed you mentioned some new developments with the little one recently. How are they doing with {previousTopic}? It\'s amazing how quickly they grow and change! 🌱',
+    prompt: 'I\'ve noticed you mentioned some new developments with the little one recently. How are they doing with {previousTopic}? It\'s amazing how quickly they grow and change!',
     followUpQuestions: [
       'Have you noticed any other new skills emerging?',
       'How are they handling this new phase?',
@@ -207,7 +207,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'celebration',
     category: 'special',
     title: 'Birthday Celebration',
-    prompt: 'HAPPY BIRTHDAY! 🎂🎉 Birthdays are such special family occasions. How are you celebrating? I\'d love to hear about all the birthday magic happening in {branchName}!',
+    prompt: 'HAPPY BIRTHDAY! Birthdays are such special family occasions. How are you celebrating? I\'d love to hear about all the birthday magic happening in {branchName}!',
     followUpQuestions: [
       'What was their favorite part of the celebration?',
       'Did you do anything special or traditional?',
@@ -232,7 +232,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'checkin',
     category: 'special',
     title: 'Supportive Check-in',
-    prompt: 'Some days are tougher than others, and that\'s completely normal in family life. How is everyone holding up? Remember, even the challenging days can become meaningful memories. 💙',
+    prompt: 'Some days are tougher than others, and that\'s completely normal in family life. How is everyone holding up? Remember, even the challenging days can become meaningful memories.',
     followUpQuestions: [
       'What helped you get through the tough moments?',
       'Is there anything that brought a smile despite the challenges?',
@@ -252,7 +252,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'memory',
     category: 'daily',
     title: 'Mealtime Moments',
-    prompt: 'Family meals often create the sweetest memories! Have you had any fun, funny, or heartwarming mealtime moments with {branchName} recently? 🍽️',
+    prompt: 'Family meals often create the sweetest memories! Have you had any fun, funny, or heartwarming mealtime moments with {branchName} recently?',
     followUpQuestions: [
       'What made this mealtime special?',
       'Did anyone try something new?',
@@ -274,7 +274,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     type: 'memory',
     category: 'daily',
     title: 'Bedtime Stories',
-    prompt: 'Bedtime routines can be so precious - all those quiet, cozy moments together. How have bedtimes been going with {branchName}? Any sweet bedtime stories or routines to share? 🌙',
+    prompt: 'Bedtime routines can be so precious - all those quiet, cozy moments together. How have bedtimes been going with {branchName}? Any sweet bedtime stories or routines to share?',
     followUpQuestions: [
       'Do you have favorite bedtime books or songs?',
       'What helps everyone wind down best?',

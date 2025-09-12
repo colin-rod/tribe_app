@@ -417,14 +417,14 @@ class PersonalizedPromptingSystem {
   private getPersonalizedTemplates(pattern: UserPattern, promptType: string): string[] {
     const baseTemplates = {
       checkin: [
-        "Good {timeOfDay}, {userName}! 🌟 How are things going with {person} today? {topic}",
-        "Hi {userName}! ✨ I'm curious about your day - anything special happening with {topic}?",
+        "Good {timeOfDay}, {userName}! How are things going with {person} today? {topic}",
+        "Hi {userName}! I'm curious about your day - anything special happening with {topic}?",
         "{timeOfDay} check-in! How's {person} doing, {userName}? Would love to hear an update! {topic}"
       ],
       memory: [
-        "Hey {userName}! 📖 I was thinking about memories... anything sweet from {topic} lately?",
-        "Memory time, {userName}! ✨ What's a moment with {person} that made you smile recently? {topic}",
-        "Hi {userName}! 💭 Share a special moment from your day - especially anything about {topic}!"
+        "Hey {userName}! I was thinking about memories... anything sweet from {topic} lately?",
+        "Memory time, {userName}! What's a moment with {person} that made you smile recently? {topic}",
+        "Hi {userName}! Share a special moment from your day - especially anything about {topic}!"
       ],
       milestone: [
         "Hi {userName}! 🎉 Any exciting developments or new things {person} is doing? {topic}",

@@ -219,10 +219,14 @@ export function UploadProgress({
             </span>
             <div className="space-x-4">
               {completedFiles > 0 && (
-                <span className="text-green-500">✓ {completedFiles} completed</span>
+                <span className="text-green-500 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> {completedFiles} completed
+                </span>
               )}
               {failedFiles > 0 && (
-                <span className="text-red-500">✗ {failedFiles} failed</span>
+                <span className="text-red-500 flex items-center gap-1">
+                  <XCircle className="w-3 h-3" /> {failedFiles} failed
+                </span>
               )}
             </div>
           </div>

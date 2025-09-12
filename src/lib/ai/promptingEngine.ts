@@ -325,7 +325,7 @@ class SmartPromptingEngine {
         const contextManager = getContextManager()
         const aiContext = await contextManager.getAIContext(message.author_id, branchId)
         
-        const celebrationContent = `🎉 What an amazing milestone! I saw that ${message.profiles?.first_name || 'someone'} reached a special moment with ${message.milestone_type?.replace('_', ' ')}. Tell me all about how this happened - I'd love to capture every detail of this precious memory!`
+        const celebrationContent = `What an amazing milestone! I saw that ${message.profiles?.first_name || 'someone'} reached a special moment with ${message.milestone_type?.replace('_', ' ')}. Tell me all about how this happened - I'd love to capture every detail of this precious memory!`
 
         const celebrationPrompt: SmartPrompt = {
           id: crypto.randomUUID(),

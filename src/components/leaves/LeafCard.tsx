@@ -20,13 +20,13 @@ interface LeafCardProps {
   className?: string
 }
 
-const REACTION_EMOJIS: Record<ReactionType, string> = {
-  heart: '❤️',
-  smile: '😊', 
-  laugh: '😂',
-  wow: '😮',
-  care: '🥰',
-  love: '💕'
+const REACTION_ICONS: Record<ReactionType, IconName> = {
+  heart: 'heart',
+  smile: 'sun', 
+  laugh: 'star',
+  wow: 'sparkles',
+  care: 'flower',
+  love: 'heart'
 }
 
 const LeafCard = memo(function LeafCard({ 
@@ -186,13 +186,15 @@ const LeafCard = memo(function LeafCard({
                     <Icon name={leafTypeIcon} size="md" className="text-bark-400" />
                     <span>{formattedDate}</span>
                     {isEmailOrigin && (
-                      <span className="px-2 py-1 bg-flower-400 text-bark-400 rounded-full text-xs font-medium border border-flower-400">
-                        📧 Email
+                      <span className="flex items-center space-x-1 px-2 py-1 bg-flower-400 text-bark-400 rounded-full text-xs font-medium border border-flower-400">
+                        <Icon name="mail" size="xs" />
+                        <span>Email</span>
                       </span>
                     )}
                     {leaf.season && (
-                      <span className="px-2 py-1 bg-leaf-300 text-bark-400 rounded-full text-xs font-medium border border-leaf-500">
-                        🌱 {leaf.season}
+                      <span className="flex items-center space-x-1 px-2 py-1 bg-leaf-300 text-bark-400 rounded-full text-xs font-medium border border-leaf-500">
+                        <Icon name="sprout" size="xs" />
+                        <span>{leaf.season}</span>
                       </span>
                     )}
                   </div>
@@ -225,13 +227,15 @@ const LeafCard = memo(function LeafCard({
                       className="object-cover"
                     />
                     {leaf.media_urls.length > 1 && (
-                      <div className="absolute top-3 right-3 bg-bark-400/80 text-nature-white px-3 py-1 rounded-full text-sm font-semibold border border-bark-400">
-                        +{leaf.media_urls.length - 1} 📸
+                      <div className="absolute top-3 right-3 bg-bark-400/80 text-nature-white px-3 py-1 rounded-full text-sm font-semibold border border-bark-400 flex items-center space-x-1">
+                        <span>+{leaf.media_urls.length - 1}</span>
+                        <Icon name="camera" size="xs" />
                       </div>
                     )}
                     {isEmailOrigin && (
-                      <div className="absolute bottom-3 left-3 bg-flower-400/90 text-nature-white px-2 py-1 rounded-full text-xs font-semibold border border-flower-400">
-                        📧 Email Upload
+                      <div className="absolute bottom-3 left-3 bg-flower-400/90 text-nature-white px-2 py-1 rounded-full text-xs font-semibold border border-flower-400 flex items-center space-x-1">
+                        <Icon name="mail" size="xs" />
+                        <span>Email Upload</span>
                       </div>
                     )}
                   </div>
@@ -272,13 +276,15 @@ const LeafCard = memo(function LeafCard({
                     Your browser does not support the video tag.
                   </video>
                   {isEmailOrigin && (
-                    <div className="absolute bottom-3 left-3 bg-flower-400/90 text-nature-white px-2 py-1 rounded-full text-xs font-semibold border border-flower-400">
-                      📧 Email Video
+                    <div className="absolute bottom-3 left-3 bg-flower-400/90 text-nature-white px-2 py-1 rounded-full text-xs font-semibold border border-flower-400 flex items-center space-x-1">
+                      <Icon name="mail" size="xs" />
+                      <span>Email Video</span>
                     </div>
                   )}
                   {leaf.media_urls.length > 1 && (
-                    <div className="absolute top-3 right-3 bg-bark-400/80 text-nature-white px-3 py-1 rounded-full text-sm font-semibold border border-bark-400">
-                      +{leaf.media_urls.length - 1} 🎥
+                    <div className="absolute top-3 right-3 bg-bark-400/80 text-nature-white px-3 py-1 rounded-full text-sm font-semibold border border-bark-400 flex items-center space-x-1">
+                      <span>+{leaf.media_urls.length - 1}</span>
+                      <Icon name="video" size="xs" />
                     </div>
                   )}
                 </div>
@@ -287,7 +293,7 @@ const LeafCard = memo(function LeafCard({
               {leaf.leaf_type === 'audio' && (
                 <div className="relative bg-gradient-to-br from-flower-400 to-sky-100 rounded-2xl border-4 border-flower-400 p-4">
                   <div className="flex items-center space-x-4">
-                    <div className="text-4xl">🎵</div>
+                    <Icon name="music" size="3xl" className="text-bark-600" />
                     <div className="flex-1">
                       <audio 
                         className="w-full"
@@ -302,13 +308,15 @@ const LeafCard = memo(function LeafCard({
                     </div>
                   </div>
                   {isEmailOrigin && (
-                    <div className="absolute bottom-3 left-3 bg-flower-400/90 text-nature-white px-2 py-1 rounded-full text-xs font-semibold border border-flower-400">
-                      📧 Email Audio
+                    <div className="absolute bottom-3 left-3 bg-flower-400/90 text-nature-white px-2 py-1 rounded-full text-xs font-semibold border border-flower-400 flex items-center space-x-1">
+                      <Icon name="mail" size="xs" />
+                      <span>Email Audio</span>
                     </div>
                   )}
                   {leaf.media_urls.length > 1 && (
-                    <div className="absolute top-3 right-3 bg-bark-400/80 text-nature-white px-3 py-1 rounded-full text-sm font-semibold border border-bark-400">
-                      +{leaf.media_urls.length - 1} 🎵
+                    <div className="absolute top-3 right-3 bg-bark-400/80 text-nature-white px-3 py-1 rounded-full text-sm font-semibold border border-bark-400 flex items-center space-x-1">
+                      <span>+{leaf.media_urls.length - 1}</span>
+                      <Icon name="music" size="xs" />
                     </div>
                   )}
                 </div>
@@ -323,8 +331,9 @@ const LeafCard = memo(function LeafCard({
                 {/* Email Subject Display */}
                 {isEmailOrigin && typeof cleanedContent === 'object' && cleanedContent.emailSubject && (
                   <div className="bg-flower-400/30 border-l-4 border-flower-400 px-3 py-2 rounded-r-lg">
-                    <p className="text-bark-400 font-semibold text-sm">
-                      📧 {cleanedContent.emailSubject}
+                    <p className="text-bark-400 font-semibold text-sm flex items-center space-x-2">
+                      <Icon name="mail" size="sm" />
+                      <span>{cleanedContent.emailSubject}</span>
                     </p>
                   </div>
                 )}
@@ -379,7 +388,7 @@ const LeafCard = memo(function LeafCard({
                     className="flex items-center space-x-2 text-bark-400 hover:text-flower-400 transition-colors duration-150 tactile-element"
                   >
                     {leaf.user_reaction ? (
-                      <span className="text-xl">{REACTION_EMOJIS[leaf.user_reaction]}</span>
+                      <Icon name={REACTION_ICONS[leaf.user_reaction]} size="md" className="text-flower-400" />
                     ) : (
                       <Icon name="heart" size="md" className="text-bark-400 hover:text-red-400 transition-colors" />
                     )}
@@ -390,13 +399,13 @@ const LeafCard = memo(function LeafCard({
                   
                   {showReactions && (
                     <div className="absolute bottom-full left-0 mb-2 bg-surface shadow-large rounded-2xl p-3 flex space-x-2 border-3 border-leaf-300">
-                      {Object.entries(REACTION_EMOJIS).map(([type, emoji]) => (
+                      {Object.entries(REACTION_ICONS).map(([type, iconName]) => (
                         <button
                           key={type}
                           onClick={(e) => handleReaction(type as ReactionType, e)}
-                          className="text-2xl hover:scale-110 transition-transform duration-150 p-2 rounded-full hover:bg-flower-400 tactile-element"
+                          className="hover:scale-110 transition-transform duration-150 p-2 rounded-full hover:bg-flower-400 tactile-element"
                         >
-                          {emoji}
+                          <Icon name={iconName} size="lg" className="text-bark-600" />
                         </button>
                       ))}
                     </div>
@@ -417,14 +426,18 @@ const LeafCard = memo(function LeafCard({
                 {/* Share Count */}
                 {leaf.share_count > 0 && (
                   <div className="flex items-center space-x-2 text-bark-200">
-                    <span className="text-sm">🔗</span>
+                    <Icon name="share" size="sm" className="text-bark-400" />
                     <span className="text-sm font-medium">{leaf.share_count}</span>
                   </div>
                 )}
               </div>
 
-              <div className="text-xs text-bark-200 font-display">
-                🌳 {leaf.tree_name} • 🌿 {leaf.branch?.name}
+              <div className="text-xs text-bark-200 font-display flex items-center space-x-2">
+                <Icon name="treePine" size="xs" />
+                <span>{leaf.tree_name}</span>
+                <span>•</span>
+                <Icon name="leaf" size="xs" />
+                <span>{leaf.branch?.name}</span>
               </div>
             </div>
           </div>
@@ -461,7 +474,10 @@ const LeafCard = memo(function LeafCard({
                     disabled={!newComment.trim()}
                     className="px-6 py-2 bg-leaf-500 text-bark-400 rounded-full text-sm font-semibold hover:bg-leaf-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 border-3 border-leaf-700 shadow-md tactile-element font-display"
                   >
-                    Send 🌿
+                    <span className="flex items-center space-x-1">
+                      <span>Send</span>
+                      <Icon name="leaf" size="xs" />
+                    </span>
                   </button>
                 </div>
               </form>

@@ -7,6 +7,7 @@
 import React, { Suspense, memo } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { createComponentLogger } from '@/lib/logger'
+import { Icon } from '@/components/ui/IconLibrary'
 
 const logger = createComponentLogger('LazyWrapper')
 
@@ -40,7 +41,7 @@ const DefaultErrorFallback = memo(function DefaultErrorFallback({
   return (
     <div className="flex items-center justify-center min-h-[200px]">
       <div className="text-center space-y-4 p-6">
-        <div className="text-red-500 text-4xl">⚠️</div>
+        <Icon name="alertTriangle" size="3xl" className="text-red-500" />
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h3>
           <p className="text-gray-600 text-sm mb-4">

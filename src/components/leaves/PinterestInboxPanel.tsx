@@ -10,7 +10,7 @@ import MasonryLeafGrid from './MasonryLeafGrid'
 import FloatingActionButton from './FloatingActionButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Mail, ArrowRight, Sparkles } from 'lucide-react'
+import { Loader2, Mail, ArrowRight, Sparkles, MapPin } from 'lucide-react'
 import '../../styles/masonry-grid.css'
 
 interface PinterestInboxPanelProps {
@@ -159,8 +159,9 @@ export function PinterestInboxPanel({
                 Discover and organize your precious family moments
               </p>
             </div>
-            <Badge variant="outline" className="text-blue-600 border-blue-300">
-              Pinterest Style 📌
+            <Badge variant="outline" className="text-blue-600 border-blue-300 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              Pinterest Style
             </Badge>
           </div>
         )}

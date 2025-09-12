@@ -129,9 +129,9 @@ export function getDemoAIResponse(promptType: string, context: { userName: strin
       `I love helping families preserve their precious moments. What would you like to share today?`
     ],
     celebration: [
-      `Congratulations! 🎉 This is such a wonderful achievement. Tell me all about how this milestone happened!`,
+      `Congratulations! This is such a wonderful achievement. Tell me all about how this milestone happened!`,
       `What fantastic news! I'm so happy for your family. Can you share more details about this special moment?`,
-      `This calls for a celebration! 🎊 I'd love to hear the full story behind this amazing milestone.`
+      `This calls for a celebration! I'd love to hear the full story behind this amazing milestone.`
     ],
     followup: [
       `That sounds wonderful! Can you tell me more about how that felt?`,

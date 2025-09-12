@@ -12,6 +12,7 @@ import {
   AccountSettings
 } from '@/components/settings'
 import { createComponentLogger } from '@/lib/logger'
+import { Icon } from '@/components/ui/IconLibrary'
 
 const logger = createComponentLogger('SettingsPage')
 
@@ -205,10 +206,10 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { id: 'profile' as const, name: 'Profile', icon: '👤' },
-    { id: 'privacy' as const, name: 'Privacy', icon: '🔒' },
-    { id: 'notifications' as const, name: 'Notifications', icon: '🔔' },
-    { id: 'account' as const, name: 'Account', icon: '⚙️' }
+    { id: 'profile' as const, name: 'Profile', icon: 'user' },
+    { id: 'privacy' as const, name: 'Privacy', icon: 'lock' },
+    { id: 'notifications' as const, name: 'Notifications', icon: 'bell' },
+    { id: 'account' as const, name: 'Account', icon: 'settings' }
   ]
 
   return (
@@ -272,7 +273,7 @@ export default function SettingsPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <span className="mr-2">{tab.icon}</span>
+                <Icon name={tab.icon} size="sm" className="mr-2" />
                 {tab.name}
               </button>
             ))}

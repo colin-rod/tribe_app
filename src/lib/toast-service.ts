@@ -39,7 +39,7 @@ class ToastService {
 
   warning(message: string, options?: ToastOptions): string {
     return toast(message, {
-      icon: '⚠️',
+      icon: '⚠',
       duration: options?.duration || 5000,
       style: {
         background: '#FEF3C7',

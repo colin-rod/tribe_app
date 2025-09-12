@@ -189,11 +189,11 @@ class ResponseAnalyzer {
     })
 
     // Check for emotional indicators
-    if (content.includes('!') || content.includes('😊') || content.includes('❤️')) {
+    if (content.includes('!') || content.includes('happy') || content.includes('love') || content.includes('great') || content.includes('wonderful')) {
       positiveScore++
     }
 
-    if (content.includes('😢') || content.includes('😰') || content.includes('💔')) {
+    if (content.includes('sad') || content.includes('difficult') || content.includes('hard') || content.includes('tough') || content.includes('challenging')) {
       negativeScore++
     }
 

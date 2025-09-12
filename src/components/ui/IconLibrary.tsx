@@ -54,6 +54,22 @@ import {
   Square,
   Triangle,
   
+  // Communication & Notification
+  Mail,
+  Bell,
+  AlertTriangle,
+  
+  // Additional Icons
+  FileText,
+  Package,
+  Rocket,
+  Palette,
+  Sparkles,
+  Award,
+  CalendarDays,
+  MapPin,
+  Shield,
+  
   type LucideIcon
 } from 'lucide-react'
 
@@ -125,6 +141,9 @@ export const SYSTEM_ICONS = {
   search: Search,
   settings: Settings,
   lock: Lock,
+  bell: Bell,
+  alertTriangle: AlertTriangle,
+  shield: Shield,
 } as const
 
 export const DECORATIVE_ICONS = {
@@ -132,6 +151,21 @@ export const DECORATIVE_ICONS = {
   circle: Circle,
   square: Square,
   triangle: Triangle,
+  sparkles: Sparkles,
+  award: Award,
+} as const
+
+export const COMMUNICATION_ICONS = {
+  mail: Mail,
+} as const
+
+export const CONTENT_ICONS = {
+  fileText: FileText,
+  package: Package,
+  rocket: Rocket,
+  palette: Palette,
+  calendarDays: CalendarDays,
+  mapPin: MapPin,
 } as const
 
 // Combined icon library
@@ -142,6 +176,8 @@ export const ICON_LIBRARY = {
   ...ACTION_ICONS,
   ...SYSTEM_ICONS,
   ...DECORATIVE_ICONS,
+  ...COMMUNICATION_ICONS,
+  ...CONTENT_ICONS,
 } as const
 
 export type IconName = keyof typeof ICON_LIBRARY

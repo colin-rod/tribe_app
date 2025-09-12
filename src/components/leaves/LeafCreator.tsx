@@ -15,6 +15,7 @@ import { useRetryOperation } from '@/hooks/useRetryOperation'
 import { LoadingButton, LoadingOverlay } from '@/components/ui/LoadingSpinner'
 import { ErrorDisplay, InlineError } from '@/components/ui/ErrorDisplay'
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
+import { Icon } from '@/components/ui/IconLibrary'
 
 const logger = createComponentLogger('LeafCreator')
 
@@ -107,11 +108,11 @@ export default function LeafCreator({
   }, [])
 
   const leafTypeOptions: { type: LeafType; icon: string; label: string; description: string }[] = [
-    { type: 'photo', icon: '📸', label: 'Photo', description: 'Capture a special moment' },
-    { type: 'video', icon: '🎥', label: 'Video', description: 'Record a moment in motion' },
-    { type: 'audio', icon: '🎵', label: 'Voice Note', description: 'Record thoughts or sounds' },
-    { type: 'text', icon: '📝', label: 'Written Leaf', description: 'Write about a moment' },
-    { type: 'milestone', icon: '⭐', label: 'Milestone', description: 'Mark a special achievement' }
+    { type: 'photo', icon: 'camera', label: 'Photo', description: 'Capture a special moment' },
+    { type: 'video', icon: 'video', label: 'Video', description: 'Record a moment in motion' },
+    { type: 'audio', icon: 'music', label: 'Voice Note', description: 'Record thoughts or sounds' },
+    { type: 'text', icon: 'fileText', label: 'Written Leaf', description: 'Write about a moment' },
+    { type: 'milestone', icon: 'star', label: 'Milestone', description: 'Mark a special achievement' }
   ]
 
   const handleMediaCapture = (files: File[]) => {
@@ -295,7 +296,9 @@ export default function LeafCreator({
 
   const renderCaptureStep = () => (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">Create a New Leaf 🌿</h2>
+      <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+        Create a New Leaf <Icon name="leaf" size="md" className="text-leaf-500" />
+      </h2>
       
       {/* Branch Selection */}
       <div>
@@ -327,7 +330,9 @@ export default function LeafCreator({
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="text-2xl mb-1">{option.icon}</div>
+              <div className="mb-1 flex justify-center">
+                <Icon name={option.icon} size="xl" className="text-bark-400" />
+              </div>
               <div className="font-medium text-sm">{option.label}</div>
               <div className="text-xs text-gray-500 mt-1">{option.description}</div>
             </button>
@@ -362,7 +367,8 @@ export default function LeafCreator({
                 onClick={leafType === 'photo' ? startCameraCapture : () => fileInputRef.current?.click()}
                 className="px-3 py-1 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors"
               >
-                {leafType === 'photo' ? '📷 Camera' : leafType === 'video' ? '🎥 Record' : '🎤 Record'}
+                <Icon name={leafType === 'photo' ? 'camera' : leafType === 'video' ? 'video' : 'mic'} size="sm" className="mr-2" />
+                {leafType === 'photo' ? 'Camera' : leafType === 'video' ? 'Record' : 'Record'}
               </button>
             </div>
           </div>
@@ -437,7 +443,8 @@ export default function LeafCreator({
           disabled={!content.trim() && fileUpload.files.length === 0}
           className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Next: Enhance ✨
+          <Icon name="sparkles" size="sm" className="mr-2" />
+          Next: Enhance
         </button>
       </div>
     </div>
@@ -446,13 +453,23 @@ export default function LeafCreator({
   const renderEnhanceStep = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Enhance Your Leaf ✨</h2>
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          Enhance Your Leaf <Icon name="sparkles" size="md" className="text-flower-400" />
+        </h2>
         <button
           onClick={handleAIEnhance}
           disabled={isEnhancing}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-colors"
         >
-          {isEnhancing ? '🤔 AI Thinking...' : '🧠 AI Enhance'}
+          {isEnhancing ? (
+            <span className="flex items-center gap-2">
+              <Icon name="sparkles" size="sm" className="animate-pulse" /> AI Thinking...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Icon name="sparkles" size="sm" /> AI Enhance
+            </span>
+          )}
         </button>
       </div>
 
@@ -566,7 +583,11 @@ export default function LeafCreator({
           disabled={isSaving}
           className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
         >
-          {isSaving ? 'Saving...' : 'Save Leaf 🌿'}
+          {isSaving ? 'Saving...' : (
+            <span className="flex items-center gap-2">
+              Save Leaf <Icon name="leaf" size="sm" />
+            </span>
+          )}
         </button>
       </div>
     </div>

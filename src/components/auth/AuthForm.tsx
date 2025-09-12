@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { Icon } from '@/components/ui/IconLibrary'
 
 interface AuthFormProps {
   onSubmit: (e: React.FormEvent) => void
@@ -36,15 +37,15 @@ export default function AuthForm({
   return (
     <form className="space-y-6" onSubmit={onSubmit}>
       {error && (
-        <div className="bg-flower-400/10 border-2 border-flower-400 text-bark-400 px-4 py-3 rounded-lg font-medium">
-          <span className="mr-2">🍂</span>
+        <div className="bg-flower-400/10 border-2 border-flower-400 text-bark-400 px-4 py-3 rounded-lg font-medium flex items-center">
+          <Icon name="alertTriangle" size="sm" className="mr-2 text-flower-400" />
           {error}
         </div>
       )}
       
       {message && (
-        <div className="bg-leaf-500/10 border-2 border-leaf-500 text-bark-400 px-4 py-3 rounded-lg font-medium">
-          <span className="mr-2">🌿</span>
+        <div className="bg-leaf-500/10 border-2 border-leaf-500 text-bark-400 px-4 py-3 rounded-lg font-medium flex items-center">
+          <Icon name="check" size="sm" className="mr-2 text-leaf-500" />
           {message}
         </div>
       )}
@@ -59,7 +60,7 @@ export default function AuthForm({
           disabled={loading}
           className="group relative w-full flex justify-center py-3 px-4 border-2 border-transparent text-sm font-bold rounded-lg text-leaf-100 bg-bark-400 hover:bg-bark-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bark-400 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-150 hover:-translate-y-0.5"
         >
-          <span className="mr-2">{submitIcon}</span>
+          <span className="mr-2 text-xl">{submitIcon}</span>
           {loading ? loadingText : submitText}
         </button>
         

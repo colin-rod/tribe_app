@@ -45,11 +45,19 @@ export default function Home() {
         <div className="absolute bottom-32 left-40 w-40 h-40 bg-flower-400/8 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
         <div className="absolute bottom-20 right-20 w-20 h-20 bg-fruit-400/20 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
         
-        {/* Floating emojis */}
-        <div className="absolute top-32 left-1/4 text-4xl animate-bounce opacity-20" style={{ animationDelay: '0s' }}>🌸</div>
-        <div className="absolute top-1/2 right-1/4 text-3xl animate-bounce opacity-15" style={{ animationDelay: '1s' }}>🦋</div>
-        <div className="absolute bottom-40 left-1/3 text-5xl animate-bounce opacity-25" style={{ animationDelay: '2s' }}>🌿</div>
-        <div className="absolute bottom-1/4 right-1/3 text-2xl animate-bounce opacity-30" style={{ animationDelay: '1.5s' }}>🍃</div>
+        {/* Floating icons */}
+        <div className="absolute top-32 left-1/4 animate-bounce opacity-20" style={{ animationDelay: '0s' }}>
+          <Icon name="flower" size="3xl" className="text-flower-400" />
+        </div>
+        <div className="absolute top-1/2 right-1/4 animate-bounce opacity-15" style={{ animationDelay: '1s' }}>
+          <Icon name="bug" size="xl" className="text-flower-400" />
+        </div>
+        <div className="absolute bottom-40 left-1/3 animate-bounce opacity-25" style={{ animationDelay: '2s' }}>
+          <Icon name="leaf" size="3xl" className="text-leaf-500" />
+        </div>
+        <div className="absolute bottom-1/4 right-1/3 animate-bounce opacity-30" style={{ animationDelay: '1.5s' }}>
+          <Icon name="leaf" size="lg" className="text-leaf-400" />
+        </div>
       </motion.div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -67,8 +75,12 @@ export default function Home() {
             </h1>
             
             {/* Decorative elements around title */}
-            <div className="absolute -top-8 left-1/4 text-3xl animate-spin" style={{ animationDuration: '8s' }}>🌻</div>
-            <div className="absolute -top-4 right-1/4 text-2xl animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}>🌱</div>
+            <div className="absolute -top-8 left-1/4 animate-spin" style={{ animationDuration: '8s' }}>
+              <Icon name="flower2" size="xl" className="text-flower-400" />
+            </div>
+            <div className="absolute -top-4 right-1/4 animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}>
+              <Icon name="sprout" size="lg" className="text-leaf-500" />
+            </div>
           </div>
           
           <p className="mx-auto mt-6 max-w-2xl text-xl leading-relaxed text-bark-400 font-medium">
@@ -111,14 +123,14 @@ export default function Home() {
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
                 <motion.div 
-                  className="text-4xl mb-2"
+                  className="mb-2 flex justify-center"
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 0.5, repeat: 2 }}
                 >
-                  🎉
+                  <Icon name="award" size="3xl" className="text-flower-400" />
                 </motion.div>
-                <p className="text-bark-400 font-display text-lg bg-fruit-400/20 px-4 py-2 rounded-full border-2 border-fruit-400 inline-block">
-                  You found the secret shake! 🎊
+                <p className="text-bark-400 font-display text-lg bg-fruit-400/20 px-4 py-2 rounded-full border-2 border-fruit-400 inline-block flex items-center gap-2">
+                  You found the secret shake! <Icon name="sparkles" size="md" className="text-flower-400" />
                 </p>
               </motion.div>
             )}
@@ -126,8 +138,10 @@ export default function Home() {
         </motion.div>
         
         <div className="mx-auto max-w-6xl mt-20">
-          <h2 className="text-3xl font-bold text-center text-bark-400 font-display mb-12">
-            🌸 Why communities love our grove 🌸
+          <h2 className="text-3xl font-bold text-center text-bark-400 font-display mb-12 flex items-center justify-center gap-3">
+            <Icon name="flower" size="lg" className="text-flower-400" />
+            Why communities love our grove
+            <Icon name="flower" size="lg" className="text-flower-400" />
           </h2>
           
           <motion.div 
@@ -194,22 +208,30 @@ export default function Home() {
             </h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <Card variant="leaf" className="p-6 text-center">
-                <div className="text-2xl mb-3">👨‍👩‍👧‍👦</div>
+                <div className="mb-3 flex justify-center">
+                  <Icon name="users" size="xl" className="text-bark-400" />
+                </div>
                 <h4 className="font-semibold text-bark-400 font-display mb-2">Families</h4>
                 <p className="text-sm text-bark-400">Share milestones, photos, and precious moments with your loved ones.</p>
               </Card>
               <Card variant="leaf" className="p-6 text-center">
-                <div className="text-2xl mb-3">🎒</div>
+                <div className="mb-3 flex justify-center">
+                  <Icon name="package" size="xl" className="text-bark-400" />
+                </div>
                 <h4 className="font-semibold text-bark-400 font-display mb-2">Friend Groups</h4>
                 <p className="text-sm text-bark-400">Document adventures, trips, and memories with your closest friends.</p>
               </Card>
               <Card variant="leaf" className="p-6 text-center">
-                <div className="text-2xl mb-3">🚀</div>
+                <div className="mb-3 flex justify-center">
+                  <Icon name="rocket" size="xl" className="text-bark-400" />
+                </div>
                 <h4 className="font-semibold text-bark-400 font-display mb-2">Teams</h4>
                 <p className="text-sm text-bark-400">Keep your team connected with project highlights and shared achievements.</p>
               </Card>
               <Card variant="leaf" className="p-6 text-center">
-                <div className="text-2xl mb-3">🎨</div>
+                <div className="mb-3 flex justify-center">
+                  <Icon name="palette" size="xl" className="text-bark-400" />
+                </div>
                 <h4 className="font-semibold text-bark-400 font-display mb-2">Hobby Groups</h4>
                 <p className="text-sm text-bark-400">Share your passion projects, creations, and learning journey together.</p>
               </Card>
@@ -218,15 +240,17 @@ export default function Home() {
 
           {/* Bottom decoration */}
           <div className="text-center mt-16 opacity-60">
-            <div className="flex justify-center items-center space-x-4 text-2xl">
-              <span className="animate-bounce" style={{ animationDelay: '0s' }}>🌿</span>
-              <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🌸</span>
-              <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🦋</span>
-              <span className="animate-bounce" style={{ animationDelay: '0.6s' }}>🌻</span>
-              <span className="animate-bounce" style={{ animationDelay: '0.8s' }}>🍃</span>
+            <div className="flex justify-center items-center space-x-4">
+              <Icon name="leaf" size="lg" className="animate-bounce text-leaf-500" style={{ animationDelay: '0s' }} />
+              <Icon name="flower" size="lg" className="animate-bounce text-flower-400" style={{ animationDelay: '0.2s' }} />
+              <Icon name="bug" size="lg" className="animate-bounce text-flower-400" style={{ animationDelay: '0.4s' }} />
+              <Icon name="flower2" size="lg" className="animate-bounce text-flower-400" style={{ animationDelay: '0.6s' }} />
+              <Icon name="leaf" size="lg" className="animate-bounce text-leaf-400" style={{ animationDelay: '0.8s' }} />
             </div>
-            <p className="mt-4 text-bark-200 font-display text-sm">
-              💫 Shake your device for a surprise! 💫
+            <p className="mt-4 text-bark-200 font-display text-sm flex items-center justify-center gap-2">
+              <Icon name="sparkles" size="sm" className="text-flower-400" />
+              Shake your device for a surprise!
+              <Icon name="sparkles" size="sm" className="text-flower-400" />
             </p>
           </div>
         </div>
