@@ -187,7 +187,6 @@ export default function GlobalLeafCreator({
             </div>
             <div>
               <h2 className="text-lg font-semibold text-bark-400 font-display">Share a Memory</h2>
-              <p className="text-sm text-bark-400/70">Create a new memory leaf</p>
             </div>
           </div>
           <button
@@ -202,34 +201,22 @@ export default function GlobalLeafCreator({
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
           {!isLoading ? (
             <>
-              {/* Auto-detected Type Display */}
-              {(formData.content || formData.media_files.length > 0) && (
-                <motion.div 
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-leaf-100/50 to-flower-100/50 rounded-xl border border-leaf-200/50"
-                  {...COMMON_ANIMATIONS.slideInFromBottom}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-leaf-500/20 rounded-full flex items-center justify-center">
-                      <Icon name={getLeafTypeIcon(detectionResult.leafType)} size="sm" className="text-leaf-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-bark-400">{getLeafTypeDescription(detectionResult.leafType)}</p>
-                      <p className="text-xs text-bark-400/70">{detectionResult.reason}</p>
-                    </div>
-                  </div>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    detectionResult.confidence === 'high' ? 'bg-green-100 text-green-700' :
-                    detectionResult.confidence === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-600'
-                  }`}>
-                    {detectionResult.confidence}
-                  </div>
-                </motion.div>
-              )}
 
               {/* Share a memory */}
               <div>
-                <label className="block text-sm font-medium text-bark-400 mb-3 font-display">Share a memory</label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-bark-400 font-display">Share a memory</label>
+                  {(formData.content || formData.media_files.length > 0) && (
+                    <motion.div 
+                      className="flex items-center space-x-1"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    >
+                      <Icon name={getLeafTypeIcon(detectionResult.leafType)} size="xs" className="text-leaf-600/70" />
+                    </motion.div>
+                  )}
+                </div>
                 <textarea
                   value={formData.content}
                   onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
@@ -397,10 +384,7 @@ export default function GlobalLeafCreator({
 
         {/* Footer */}
         {!isLoading && (
-          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-leaf-50/50 to-flower-50/50 border-t border-leaf-200/50">
-            <div className="text-sm text-bark-400/70">
-              {canProceed() ? 'Ready to save your memory' : 'Add content or media to continue'}
-            </div>
+          <div className="flex items-center justify-end px-6 py-4 bg-gradient-to-r from-leaf-50/50 to-flower-50/50 border-t border-leaf-200/50">
             <div className="flex space-x-3">
               <Button
                 onClick={onCancel}
