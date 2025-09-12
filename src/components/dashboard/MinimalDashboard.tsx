@@ -71,7 +71,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
     <DndProvider backend={HTML5Backend}>
       <div 
         ref={containerRef}
-        className="h-screen bg-gradient-to-br from-sky-50 to-leaf-50 flex flex-col overflow-hidden"
+        className="h-screen flex flex-col overflow-hidden"
         {...bind()}
       >
         {/* View Indicator */}

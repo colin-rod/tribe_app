@@ -2,6 +2,12 @@
 
 import { useCallback, useRef, useEffect, useState } from 'react'
 import { motion, useAnimation, useReducedMotion } from 'framer-motion'
+import { 
+  SPRING_CONFIGS, 
+  SCALE_VALUES, 
+  MOVEMENT_VALUES, 
+  OPACITY_VALUES
+} from '@/lib/animations'
 
 // Haptic feedback for supported devices
 export const useHapticFeedback = () => {
@@ -28,24 +34,24 @@ export const useTactileButton = () => {
     triggerHaptic('light')
   }, [triggerHaptic])
 
-  // Performance-first motion props using UX manual patterns
+  // Performance-first motion props using standardized values
   const motionProps = {
     whileHover: shouldReduceMotion ? {} : {
-      y: -1,
-      scale: 1.01,
-      transition: { type: 'spring', stiffness: 200, damping: 25 }
+      y: MOVEMENT_VALUES.hoverY,
+      scale: SCALE_VALUES.hoverScaleSmall,
+      transition: SPRING_CONFIGS.gentle
     },
     whileTap: shouldReduceMotion ? {} : {
-      scale: 0.98,
+      scale: SCALE_VALUES.tapScale,
       rotate: 0,
-      y: 1,
-      transition: { type: 'spring', stiffness: 200, damping: 25 }
+      y: MOVEMENT_VALUES.tapY,
+      transition: SPRING_CONFIGS.gentle
     },
-    initial: { opacity: 0, scale: 0.95 },
-    animate: { opacity: 1, scale: 1 },
+    initial: { opacity: OPACITY_VALUES.hidden, scale: 0.95 },
+    animate: { opacity: OPACITY_VALUES.visible, scale: 1 },
     transition: shouldReduceMotion 
       ? { duration: 0 }
-      : { delay: 0.06, type: 'spring', stiffness: 220, damping: 18 },
+      : { delay: 0.06, ...SPRING_CONFIGS.responsive },
     onTap: handleTap
   }
 
@@ -56,18 +62,18 @@ export const useTactileButton = () => {
 export const useTactileCard = () => {
   const shouldReduceMotion = useReducedMotion()
 
-  // Simplified "shiver" effect from UX manual - much more performant
+  // Simplified "shiver" effect using standardized values
   const motionProps = {
     whileHover: shouldReduceMotion ? {} : {
-      y: -1,
-      scale: 1.01,
-      transition: { type: 'spring', stiffness: 300, damping: 40 }
+      y: MOVEMENT_VALUES.hoverY,
+      scale: SCALE_VALUES.hoverScaleSmall,
+      transition: SPRING_CONFIGS.responsive
     },
-    initial: { opacity: 0, scale: 0.95 },
-    animate: { opacity: 1, scale: 1 },
+    initial: { opacity: OPACITY_VALUES.hidden, scale: 0.95 },
+    animate: { opacity: OPACITY_VALUES.visible, scale: 1 },
     transition: shouldReduceMotion 
       ? { duration: 0 }
-      : { delay: 0.1, type: 'spring', stiffness: 220, damping: 18 }
+      : { delay: 0.1, ...SPRING_CONFIGS.responsive }
   }
 
   return { motionProps, motion }
@@ -86,18 +92,18 @@ export const useTactileDrag = (onDrag?: (info: any) => void) => {
     triggerHaptic('medium')
   }, [triggerHaptic])
 
-  const motionProps = {
+  const motionProps: any = {
     drag: true,
     dragConstraints: { left: 0, right: 0, top: 0, bottom: 0 },
     dragElastic: 0.15,
-    whileDrag: shouldReduceMotion ? {} : { scale: 1.05 },
-    transition: { type: 'spring', stiffness: 400, damping: 25 },
+    whileDrag: shouldReduceMotion ? {} : { scale: SCALE_VALUES.dragScale },
+    transition: SPRING_CONFIGS.bouncy,
     onDragStart: handleDragStart,
     onDragEnd: handleDragEnd
   }
 
   if (onDrag) {
-    motionProps.onDrag = (event: any, info: any) => onDrag(info)
+    motionProps.onDrag = (_: any, info: any) => onDrag(info)
   }
 
   return { motionProps, motion }

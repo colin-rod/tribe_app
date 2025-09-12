@@ -57,18 +57,11 @@ export function Button({
 
   const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`.trim()
 
-  // Motion config for subtle hover/tap
-  const subtleMotion = shouldReduceMotion ? {} : {
-    whileHover: { scale: 1.02, transition: { type: 'spring', stiffness: 200, damping: 25 } },
-    whileTap: { scale: 0.985, y: 0, rotate: 0, transition: { type: 'spring', stiffness: 250, damping: 30 } }
-  }
-
   return (
     <motion.button
       className={classes}
       onClick={handleClick}
-      {...motionProps}      // from useTactileButton
-      {...subtleMotion}     // ensures hover/tap is gentle
+      {...(tactile ? motionProps : {})}  // Only apply tactile motion if enabled
       {...props}
     >
       {/* Optional leaf icon motion */}
