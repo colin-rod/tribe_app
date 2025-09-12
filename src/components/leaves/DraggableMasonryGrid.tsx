@@ -253,13 +253,13 @@ export default function DraggableMasonryGrid({
             >
               <AnimatePresence mode="popLayout">
                 {filteredAndSortedLeaves.map((leaf, index) => {
-                  const position = positions[index]
+                  const position = positions.get(leaf.id)
                   if (!position) return null
 
                   return (
                     <motion.div
                       key={leaf.id}
-                      ref={(el) => registerItemRef(index, el)}
+                      ref={(el) => registerItemRef(leaf.id, el)}
                       className="absolute masonry-item"
                       style={{
                         left: position.x,
