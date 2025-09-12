@@ -15,6 +15,8 @@ import { PinterestInboxPanel } from '@/components/leaves/PinterestInboxPanel'
 import { TreeBranchView } from './TreeBranchView'
 import { FloatingActionMenu } from './FloatingActionMenu'
 import GlobalLeafCreator from '@/components/leaves/GlobalLeafCreator'
+import MemoryCrystallizationPortal from '@/components/leaves/MemoryCrystallizationPortal'
+import { useMemoryCrystallization } from '@/hooks/useMemoryCrystallization'
 
 interface MinimalDashboardProps {
   user: User
@@ -29,6 +31,9 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
+  
+  // Memory crystallization animation
+  const crystallization = useMemoryCrystallization()
 
   // Group branches by tree
   const branchesByTree = userBranches?.reduce((acc, ub) => {
@@ -94,7 +99,14 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
         </motion.div>
 
         {/* Main Content Area */}
-        <div className="flex-1 relative overflow-hidden">
+        <motion.div 
+          className="flex-1 relative overflow-hidden"
+          animate={{
+            opacity: crystallization.state === 'flying' ? 0.3 : 1,
+            filter: crystallization.state === 'flying' ? 'blur(2px)' : 'blur(0px)'
+          }}
+          transition={{ duration: 0.3 }}
+        >
           <AnimatePresence mode="wait">
             {currentView === 'inbox' && (
               <motion.div
@@ -112,6 +124,10 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
                   }}
                   onCreateContent={(type) => {
                     setShowGlobalCreator(true)
+                  }}
+                  incomingMemoryId={crystallization.tempMemoryId}
+                  onMemoryPositionCalculated={(rect) => {
+                    crystallization.setGridPosition(rect)
                   }}
                 />
               </motion.div>
@@ -135,7 +151,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
 
         {/* Navigation Hints */}
         <motion.div
@@ -164,13 +180,34 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
               exit={{ opacity: 0 }}
             >
               <GlobalLeafCreator
-                onSave={() => setShowGlobalCreator(false)}
-                onCancel={() => setShowGlobalCreator(false)}
+                onSave={() => {
+                  setShowGlobalCreator(false)
+                  crystallization.completeCrystallization()
+                }}
+                onCancel={() => {
+                  setShowGlobalCreator(false)
+                  crystallization.resetCrystallization()
+                }}
                 userId={user.id}
+                crystallization={crystallization}
+                onCrystallizationStart={() => {
+                  // Dashboard will fade during crystallization
+                }}
               />
             </motion.div>
           )}
         </AnimatePresence>
+        
+        {/* Memory Crystallization Portal */}
+        <MemoryCrystallizationPortal
+          isVisible={crystallization.state === 'flying'}
+          memoryPreview={crystallization.memoryPreview}
+          coordinates={crystallization.coordinates}
+          tempMemoryId={crystallization.tempMemoryId}
+          onAnimationComplete={() => {
+            crystallization.completeCrystallization()
+          }}
+        />
 
 {/* Background overlay removed for simpler interaction */}
       </div>

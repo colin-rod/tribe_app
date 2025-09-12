@@ -20,6 +20,8 @@ interface DraggableMasonryGridProps {
   onLeafAssigned?: (leafId: string, branchIds: string[]) => void
   onRefresh?: () => void
   loading?: boolean
+  incomingMemoryId?: string | null
+  onMemoryPositionCalculated?: (rect: DOMRect) => void
 }
 
 type FilterType = 'all' | 'photo' | 'video' | 'audio' | 'text' | 'milestone'
@@ -31,7 +33,9 @@ export default function DraggableMasonryGrid({
   userId, 
   onLeafAssigned,
   onRefresh,
-  loading = false
+  loading = false,
+  incomingMemoryId,
+  onMemoryPositionCalculated
 }: DraggableMasonryGridProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<FilterType>('all')
@@ -39,9 +43,35 @@ export default function DraggableMasonryGrid({
   const [showFilters, setShowFilters] = useState(false)
   const [assigningLeaves, setAssigningLeaves] = useState<Set<string>>(new Set())
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [highlightedLeafId, setHighlightedLeafId] = useState<string | null>(null)
   
   const { toast } = useToast()
   const { containerRef, width } = useContainerResize()
+
+  // Effect for incoming memory animation
+  useEffect(() => {
+    if (incomingMemoryId && leaves.length > 0) {
+      // Find the first leaf position to calculate where incoming memory should land
+      const firstLeaf = filteredAndSortedLeaves[0]
+      if (firstLeaf && containerRef.current) {
+        const firstLeafElement = containerRef.current.querySelector(`[data-leaf-id="${firstLeaf.id}"]`)
+        if (firstLeafElement) {
+          const rect = firstLeafElement.getBoundingClientRect()
+          onMemoryPositionCalculated?.(rect)
+        }
+      }
+      
+      // Set highlight for the incoming memory
+      setHighlightedLeafId(incomingMemoryId)
+      
+      // Remove highlight after animation
+      const timeout = setTimeout(() => {
+        setHighlightedLeafId(null)
+      }, 2000)
+      
+      return () => clearTimeout(timeout)
+    }
+  }, [incomingMemoryId, leaves, filteredAndSortedLeaves, onMemoryPositionCalculated])
 
   // Filter and sort leaves
   const filteredAndSortedLeaves = useMemo(() => {
@@ -174,23 +204,40 @@ export default function DraggableMasonryGrid({
                   const position = positions.get(leaf.id)
                   if (!position) return null
 
+                  const isHighlighted = highlightedLeafId === leaf.id
+                  
                   return (
                     <motion.div
                       key={leaf.id}
                       ref={(el) => registerItemRef(leaf.id, el)}
                       className="absolute masonry-item"
+                      data-leaf-id={leaf.id}
                       style={{
                         left: position.x,
                         top: position.y,
                         width: position.width,
                         height: 'auto'
                       }}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      initial={{ 
+                        opacity: 0, 
+                        scale: 0.8,
+                        filter: 'blur(2px)'
+                      }}
+                      animate={{ 
+                        opacity: 1, 
+                        scale: isHighlighted ? [1, 1.05, 1] : 1,
+                        filter: 'blur(0px)',
+                        boxShadow: isHighlighted 
+                          ? ['0 0 0 rgba(129, 199, 132, 0)', '0 0 20px rgba(129, 199, 132, 0.6)', '0 0 0 rgba(129, 199, 132, 0)']
+                          : 'none'
+                      }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       transition={{ 
-                        duration: 0.3,
-                        delay: Math.min(index * 0.05, 1) 
+                        duration: isHighlighted ? 1.5 : 0.3,
+                        delay: Math.min(index * 0.05, 1),
+                        type: isHighlighted ? 'spring' : 'tween',
+                        stiffness: isHighlighted ? 200 : undefined,
+                        damping: isHighlighted ? 20 : undefined
                       }}
                       layout
                     >
@@ -202,6 +249,20 @@ export default function DraggableMasonryGrid({
                         onAssign={(leafId, branchIds) => handleLeafDrop(leafId, branchIds)}
                         onSelect={(leafId) => console.log('Selected leaf:', leafId)}
                       />
+                      
+                      {/* Crystallization highlight overlay */}
+                      {isHighlighted && (
+                        <motion.div
+                          className="absolute inset-0 pointer-events-none rounded-2xl"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: [0, 0.3, 0] }}
+                          transition={{ duration: 1.5, repeat: 1 }}
+                          style={{
+                            background: 'radial-gradient(circle, rgba(129, 199, 132, 0.2) 0%, transparent 70%)',
+                            borderRadius: 'inherit'
+                          }}
+                        />
+                      )}
                     </motion.div>
                   )
                 })}

@@ -15,6 +15,8 @@ import { showError } from '@/lib/toast-service'
 import { useCreateUnassignedLeaf } from '@/hooks/use-leaves'
 import { detectLeafType, getLeafTypeDescription, getLeafTypeIcon } from '@/lib/leaf-type-detection'
 import { extractAllTags, isMilestoneTag, getMilestoneTagDisplayName } from '@/lib/milestone-tags'
+import { useMemoryCrystallization, createMemoryPreview, CRYSTALLIZATION_SPRINGS } from '@/hooks/useMemoryCrystallization'
+import MemoryCrystallizationPortal from './MemoryCrystallizationPortal'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/IconLibrary'
 import { COMMON_ANIMATIONS } from '@/lib/animations'
@@ -22,9 +24,11 @@ import { COMMON_ANIMATIONS } from '@/lib/animations'
 const logger = createComponentLogger('GlobalLeafCreator')
 
 interface GlobalLeafCreatorProps {
-  onSave: () => void
+  onSave: (memoryId?: string) => void
   onCancel: () => void
   userId: string
+  onCrystallizationStart?: () => void
+  onCrystallizationComplete?: () => void
 }
 
 interface LeafFormData {
@@ -36,7 +40,9 @@ interface LeafFormData {
 export default function GlobalLeafCreator({ 
   onSave, 
   onCancel,
-  userId 
+  userId,
+  onCrystallizationStart,
+  onCrystallizationComplete
 }: GlobalLeafCreatorProps) {
   const [formData, setFormData] = useState<LeafFormData>({
     content: '',
@@ -48,9 +54,13 @@ export default function GlobalLeafCreator({
   const [newTag, setNewTag] = useState('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const formContainerRef = useRef<HTMLDivElement>(null)
   
   // React Query hooks
   const createLeafMutation = useCreateUnassignedLeaf()
+  
+  // Crystallization animation
+  const crystallization = useMemoryCrystallization()
 
   // Automatic leaf type detection
   const detectionResult = useMemo(() => {
@@ -120,7 +130,22 @@ export default function GlobalLeafCreator({
   }
 
   const handleSave = async () => {
+    if (!formContainerRef.current) return
+    
     setIsLoading(true)
+    
+    // Start crystallization animation
+    const formRect = formContainerRef.current.getBoundingClientRect()
+    const memoryPreview = createMemoryPreview(
+      formData.content,
+      formData.media_files,
+      allTags,
+      detectionResult.leafType,
+      detectionResult.confidence
+    )
+    
+    crystallization.startCrystallization(memoryPreview, formRect)
+    onCrystallizationStart?.()
 
     try {
       // Upload media files if any
@@ -151,15 +176,22 @@ export default function GlobalLeafCreator({
           leafId: createdLeaf.id,
           detectedType: detectionResult.leafType,
           confidence: detectionResult.confidence,
-          tagCount: allTags.length
+          tagCount: allTags.length,
+          hasAnimation: true
         }
       })
 
-      onSave()
+      // Wait a moment for save confirmation, then complete crystallization
+      setTimeout(() => {
+        crystallization.completeCrystallization()
+        onCrystallizationComplete?.()
+        onSave(createdLeaf.id)
+      }, 800)
+
     } catch (error: unknown) {
       logger.error('Failed to create memory', error, { action: 'createMemory' })
       showError(`Failed to create memory: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
+      crystallization.resetCrystallization()
       setIsLoading(false)
     }
   }
@@ -203,7 +235,12 @@ export default function GlobalLeafCreator({
             <>
 
               {/* Share a memory */}
-              <div>
+              <motion.div 
+                ref={formContainerRef}
+                layoutId={crystallization.tempMemoryId || undefined}
+                animate={crystallization.formControls}
+                transition={CRYSTALLIZATION_SPRINGS.transform}
+              >
                 <div className="flex items-center justify-between mb-3">
                   <label className="text-sm font-medium text-bark-400 font-display">Share a memory</label>
                   {(formData.content || formData.media_files.length > 0) && (
@@ -224,7 +261,7 @@ export default function GlobalLeafCreator({
                   rows={4}
                   className="block w-full px-4 py-3 border-2 border-leaf-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-leaf-500 focus:border-leaf-500 bg-white/80 backdrop-blur-sm resize-none text-bark-400 placeholder-bark-400/50"
                 />
-              </div>
+              </motion.div>
 
               {/* Media Upload */}
               <div>
@@ -409,6 +446,15 @@ export default function GlobalLeafCreator({
           </div>
         )}
       </motion.div>
+
+      {/* Crystallization Portal */}
+      <MemoryCrystallizationPortal
+        isVisible={crystallization.state === 'flying'}
+        memoryPreview={crystallization.memoryPreview}
+        coordinates={crystallization.coordinates}
+        tempMemoryId={crystallization.tempMemoryId}
+        onAnimationComplete={() => crystallization.onPhaseComplete('integrating')}
+      />
     </motion.div>
   )
 }

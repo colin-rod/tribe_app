@@ -17,12 +17,16 @@ interface PinterestInboxPanelProps {
   userId: string
   onLeafAssigned?: (leafId: string, branchIds: string[]) => void
   onCreateContent?: (type: 'photo' | 'video' | 'audio' | 'text' | 'milestone') => void
+  incomingMemoryId?: string | null
+  onMemoryPositionCalculated?: (rect: DOMRect) => void
 }
 
 export function PinterestInboxPanel({ 
   userId, 
   onLeafAssigned, 
-  onCreateContent 
+  onCreateContent,
+  incomingMemoryId,
+  onMemoryPositionCalculated
 }: PinterestInboxPanelProps) {
   const [leaves, setLeaves] = useState<UnassignedLeaf[]>([])
   const [branches, setBranches] = useState<BranchWithDetails[]>([])
@@ -154,6 +158,8 @@ export function PinterestInboxPanel({
           onLeafAssigned={handleLeafAssigned}
           onRefresh={handleRefresh}
           loading={loading}
+          incomingMemoryId={incomingMemoryId}
+          onMemoryPositionCalculated={onMemoryPositionCalculated}
         />
       </div>
 
