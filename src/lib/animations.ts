@@ -110,3 +110,29 @@ export const STAGGER_DELAYS = {
   normal: 0.1,
   slow: 0.15
 } as const
+
+// Memory crystallization specific animations
+export const CRYSTALLIZATION_ANIMATIONS = {
+  transform: {
+    type: 'spring' as const,
+    damping: 25,
+    stiffness: 200,
+    mass: 0.8
+  },
+  flight: {
+    type: 'spring' as const,
+    damping: 20,
+    stiffness: 300,
+    mass: 0.6
+  },
+  integration: {
+    type: 'spring' as const,
+    damping: 30,
+    stiffness: 400,
+    mass: 0.4
+  },
+  dashboardFade: {
+    duration: 0.3,
+    ease: "easeInOut" as const
+  }
+} as const

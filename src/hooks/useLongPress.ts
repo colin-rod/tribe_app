@@ -1,0 +1,95 @@
+'use client'
+
+import { useCallback, useRef } from 'react'
+
+interface UseLongPressOptions {
+  onLongPress: () => void
+  onShortPress?: () => void
+  delay?: number
+  preventDefault?: boolean
+}
+
+interface LongPressHandlers {
+  onMouseDown: (event: React.MouseEvent) => void
+  onMouseUp: (event: React.MouseEvent) => void
+  onMouseLeave: (event: React.MouseEvent) => void
+  onTouchStart: (event: React.TouchEvent) => void
+  onTouchEnd: (event: React.TouchEvent) => void
+  onTouchCancel: (event: React.TouchEvent) => void
+}
+
+/**
+ * Custom hook for handling long press gestures with proper cleanup
+ * Supports both mouse and touch events
+ */
+export function useLongPress({
+  onLongPress,
+  onShortPress,
+  delay = 500,
+  preventDefault = true
+}: UseLongPressOptions): LongPressHandlers {
+  const timeoutRef = useRef<NodeJS.Timeout>()
+  const isLongPressRef = useRef(false)
+
+  const start = useCallback((event: React.MouseEvent | React.TouchEvent) => {
+    if (preventDefault) {
+      event.preventDefault()
+    }
+    
+    isLongPressRef.current = false
+    
+    timeoutRef.current = setTimeout(() => {
+      isLongPressRef.current = true
+      onLongPress()
+    }, delay)
+  }, [onLongPress, delay, preventDefault])
+
+  const clear = useCallback((event?: React.MouseEvent | React.TouchEvent) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = undefined
+    }
+    
+    // If we haven't triggered long press and there's a short press handler, call it
+    if (!isLongPressRef.current && onShortPress && event) {
+      onShortPress()
+    }
+    
+    isLongPressRef.current = false
+  }, [onShortPress])
+
+  return {
+    onMouseDown: start,
+    onMouseUp: clear,
+    onMouseLeave: clear,
+    onTouchStart: start,
+    onTouchEnd: clear,
+    onTouchCancel: clear,
+  }
+}
+
+/**
+ * Simplified version for touch-only long press
+ */
+export function useTouchLongPress(
+  onLongPress: () => void,
+  delay: number = 500
+) {
+  const timeoutRef = useRef<NodeJS.Timeout>()
+
+  const handleTouchStart = useCallback(() => {
+    timeoutRef.current = setTimeout(onLongPress, delay)
+  }, [onLongPress, delay])
+
+  const handleTouchEnd = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+  }, [])
+
+  return {
+    onTouchStart: handleTouchStart,
+    onTouchEnd: handleTouchEnd,
+    onTouchCancel: handleTouchEnd,
+  }
+}

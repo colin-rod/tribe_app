@@ -200,26 +200,5 @@ export function createMemoryPreview(
   }
 }
 
-/**
- * Spring animation configurations for different phases
- */
-export const CRYSTALLIZATION_SPRINGS = {
-  transform: {
-    type: 'spring' as const,
-    damping: 25,
-    stiffness: 200,
-    mass: 0.8
-  },
-  flight: {
-    type: 'spring' as const,
-    damping: 20,
-    stiffness: 300,
-    mass: 0.6
-  },
-  integration: {
-    type: 'spring' as const,
-    damping: 30,
-    stiffness: 400,
-    mass: 0.4
-  }
-}
+// Export crystallization springs for backward compatibility
+export { CRYSTALLIZATION_ANIMATIONS as CRYSTALLIZATION_SPRINGS } from '@/lib/animations'

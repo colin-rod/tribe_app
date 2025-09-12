@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGesture } from '@use-gesture/react'
 import { DndProvider } from 'react-dnd'
@@ -17,6 +17,9 @@ import { FloatingActionMenu } from './FloatingActionMenu'
 import GlobalLeafCreator from '@/components/leaves/GlobalLeafCreator'
 import MemoryCrystallizationPortal from '@/components/leaves/MemoryCrystallizationPortal'
 import { useMemoryCrystallization } from '@/hooks/useMemoryCrystallization'
+import { groupBranchesByTree, createDashboardHandlers } from '@/lib/dashboard-utils'
+import { useInboxState } from '@/hooks/useInboxState'
+import { useDashboardNavigation } from '@/hooks/useDashboardNavigation'
 
 interface MinimalDashboardProps {
   user: User
@@ -26,61 +29,49 @@ interface MinimalDashboardProps {
 }
 
 export default function MinimalDashboard({ user, profile, userBranches, trees }: MinimalDashboardProps) {
-  const [currentView, setCurrentView] = useState<'inbox' | 'tree'>('inbox')
   const [selectedBranch, setSelectedBranch] = useState<BranchWithMembers['branches'] | null>(null)
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
-  const [inboxRefreshKey, setInboxRefreshKey] = useState(0)
-  const [newlyCreatedMemoryId, setNewlyCreatedMemoryId] = useState<string | null>(null)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   
-  // Memory crystallization animation
+  // Custom hooks for state management
+  const navigation = useDashboardNavigation({ initialView: 'inbox' })
+  const inbox = useInboxState()
   const crystallization = useMemoryCrystallization()
+
+  // Memoize expensive computations
+  const branchesByTree = useMemo(() => 
+    groupBranchesByTree(userBranches, trees), 
+    [userBranches, trees]
+  )
   
-  // Handler to refresh inbox data after new memory creation
-  const handleRefreshInbox = (newMemoryId?: string) => {
-    setInboxRefreshKey(prev => prev + 1)
-    if (newMemoryId) {
-      setNewlyCreatedMemoryId(newMemoryId)
-      // Clear the memory ID after highlighting timeout
-      setTimeout(() => {
-        setNewlyCreatedMemoryId(null)
-      }, 3000)
-    }
-  }
-
-  // Group branches by tree
-  const branchesByTree = userBranches?.reduce((acc, ub) => {
-    const treeId = ub.branches?.tree_id
-    if (!treeId) return acc
-    
-    const treeName = trees.find(t => t.tree_id === treeId)?.trees?.name || 'Unknown Tree'
-    
-    if (!acc[treeId]) {
-      acc[treeId] = {
-        tree: trees.find(t => t.tree_id === treeId)?.trees || { name: treeName, id: treeId },
-        branches: []
-      }
-    }
-    acc[treeId].branches.push(ub)
-    return acc
-  }, {} as Record<string, { tree: any, branches: BranchWithMembers[] }>) || {}
-
-  // Gesture handling for swipe navigation
-  const bind = useGesture({
-    onDrag: ({ direction: [dx], distance, cancel }) => {
-      if (distance > 100) {
-        if (dx > 0 && currentView === 'tree') {
-          setCurrentView('inbox')
-          cancel()
-        } else if (dx < 0 && currentView === 'inbox') {
-          setCurrentView('tree')
-          cancel()
-        }
-      }
+  // Memoize dashboard event handlers
+  const handlers = useMemo(() => createDashboardHandlers({
+    onMemoryAssigned: (leafId, branchIds) => {
+      // Additional logic for memory assignment if needed
     },
-  })
+    onContentCreation: (type) => {
+      setShowGlobalCreator(true)
+    }
+  }), [])
+  
+  // Memoize stable callbacks
+  const handleCreateMemory = useCallback(() => {
+    setShowGlobalCreator(true)
+  }, [])
+  
+  const handleMemorySave = useCallback((memoryId?: string) => {
+    setShowGlobalCreator(false)
+    inbox.handleRefresh(memoryId)
+    crystallization.completeCrystallization()
+  }, [inbox, crystallization])
+  
+  const handleMemoryCancel = useCallback(() => {
+    setShowGlobalCreator(false)
+    crystallization.resetCrystallization()
+  }, [crystallization])
 
+  // Handle sign out
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/')
@@ -91,7 +82,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
       <div 
         ref={containerRef}
         className="h-screen flex flex-col overflow-hidden"
-        {...bind()}
+        {...navigation.swipeHandlers()}
       >
         {/* View Indicator */}
         <motion.div 
@@ -102,12 +93,12 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
         >
           <div
             className={`w-2 h-2 rounded-full transition-colors ${
-              currentView === 'inbox' ? 'bg-blue-500' : 'bg-gray-300'
+              navigation.isInboxView ? 'bg-blue-500' : 'bg-gray-300'
             }`}
           />
           <div
             className={`w-2 h-2 rounded-full transition-colors ${
-              currentView === 'tree' ? 'bg-green-500' : 'bg-gray-300'
+              navigation.isTreeView ? 'bg-green-500' : 'bg-gray-300'
             }`}
           />
         </motion.div>
@@ -122,7 +113,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
           transition={{ duration: 0.3 }}
         >
           <AnimatePresence mode="wait">
-            {currentView === 'inbox' && (
+            {navigation.isInboxView && (
               <motion.div
                 key="inbox"
                 className="absolute inset-0"
@@ -133,22 +124,18 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
               >
                 <PinterestInboxPanel
                   userId={user.id}
-                  onLeafAssigned={(leafId, branchIds) => {
-                    console.log('Leaf assigned:', leafId, branchIds)
-                  }}
-                  onCreateContent={(type) => {
-                    setShowGlobalCreator(true)
-                  }}
-                  incomingMemoryId={newlyCreatedMemoryId || crystallization.tempMemoryId}
+                  onLeafAssigned={handlers.handleMemoryAssigned}
+                  onCreateContent={handlers.handleContentCreation}
+                  incomingMemoryId={inbox.newlyCreatedMemoryId || crystallization.tempMemoryId}
                   onMemoryPositionCalculated={(rect) => {
                     crystallization.setGridPosition(rect)
                   }}
-                  refreshKey={inboxRefreshKey}
+                  refreshKey={inbox.refreshKey}
                 />
               </motion.div>
             )}
 
-            {currentView === 'tree' && (
+            {navigation.isTreeView && (
               <motion.div
                 key="tree"
                 className="absolute inset-0"
@@ -180,9 +167,9 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
 
         {/* Floating Action Menu */}
         <FloatingActionMenu
-          onCreateLeaf={() => setShowGlobalCreator(true)}
-          onSwitchView={() => setCurrentView(currentView === 'inbox' ? 'tree' : 'inbox')}
-          currentView={currentView}
+          onCreateMemory={handleCreateMemory}
+          onSwitchView={navigation.switchView}
+          currentView={navigation.currentView}
         />
 
         {/* Global Leaf Creator Modal */}
@@ -195,15 +182,8 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
               exit={{ opacity: 0 }}
             >
               <GlobalLeafCreator
-                onSave={(memoryId) => {
-                  setShowGlobalCreator(false)
-                  handleRefreshInbox(memoryId)
-                  crystallization.completeCrystallization()
-                }}
-                onCancel={() => {
-                  setShowGlobalCreator(false)
-                  crystallization.resetCrystallization()
-                }}
+                onSave={handleMemorySave}
+                onCancel={handleMemoryCancel}
                 userId={user.id}
                 crystallization={crystallization}
                 onCrystallizationStart={() => {

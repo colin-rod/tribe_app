@@ -1,64 +1,78 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useGesture } from '@use-gesture/react'
 import { Icon } from '@/components/ui/IconLibrary'
+import { useLongPress } from '@/hooks/useLongPress'
+import { SPRING_CONFIGS, COMMON_ANIMATIONS } from '@/lib/animations'
 
 interface FloatingActionMenuProps {
-  onCreateLeaf: () => void
+  onCreateMemory: () => void
   onSwitchView: () => void
   currentView: 'inbox' | 'tree'
 }
 
-export function FloatingActionMenu({ onCreateLeaf, onSwitchView, currentView }: FloatingActionMenuProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
+interface MenuItem {
+  id: string
+  icon: string
+  label: string
+  color: string
+  action: () => void
+  ariaLabel: string
+}
 
-  // Gesture handling for long press
-  const bind = useGesture({
-    onDragStart: () => setIsDragging(true),
-    onDragEnd: () => setIsDragging(false),
-    onPointerDown: () => {
-      // Long press detection
-      const timer = setTimeout(() => {
-        setIsExpanded(true)
-      }, 500)
-      
-      return () => clearTimeout(timer)
-    },
+export function FloatingActionMenu({ onCreateMemory, onSwitchView, currentView }: FloatingActionMenuProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  // Improved long press handling
+  const longPressHandlers = useLongPress({
+    onLongPress: useCallback(() => {
+      setIsExpanded(true)
+    }, []),
+    onShortPress: useCallback(() => {
+      // Short press executes primary action (create memory)
+      if (!isExpanded) {
+        onCreateMemory()
+      }
+    }, [onCreateMemory, isExpanded]),
+    delay: 500,
+    preventDefault: false
   })
 
-  const menuItems = [
+  // Close menu on escape key
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isExpanded) {
+        setIsExpanded(false)
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isExpanded])
+
+  // Memoize menu items to prevent unnecessary re-renders
+  const menuItems = useMemo((): MenuItem[] => [
     {
       id: 'create',
-      icon: 'leaf' as const,
+      icon: 'leaf',
       label: 'Create Memory',
       color: 'bg-leaf-500 hover:bg-leaf-600',
-      action: onCreateLeaf
+      action: onCreateMemory,
+      ariaLabel: 'Create new memory'
     },
     {
       id: 'switch',
-      icon: currentView === 'inbox' ? 'trees' as const : 'mapPin' as const,
+      icon: currentView === 'inbox' ? 'trees' : 'mapPin',
       label: currentView === 'inbox' ? 'View Trees' : 'View Inbox',
-      color: 'bg-blue-500 hover:bg-blue-600',
-      action: onSwitchView
-    },
-    {
-      id: 'search',
-      icon: 'search' as const,
-      label: 'Search Memories',
-      color: 'bg-gray-500 hover:bg-gray-600',
-      action: () => console.log('Search memories')
-    },
-    {
-      id: 'filter',
-      icon: 'filter' as const,
-      label: 'Filter & Sort',
-      color: 'bg-orange-500 hover:bg-orange-600',
-      action: () => console.log('Filter memories')
+      color: 'bg-blue-500 hover:bg-blue-600', 
+      action: onSwitchView,
+      ariaLabel: `Switch to ${currentView === 'inbox' ? 'trees' : 'inbox'} view`
     }
-  ]
+  ], [currentView, onCreateMemory, onSwitchView])
+
+  const handleBackdropClick = useCallback(() => {
+    setIsExpanded(false)
+  }, [])
 
   return (
     <>
@@ -70,7 +84,10 @@ export function FloatingActionMenu({ onCreateLeaf, onSwitchView, currentView }: 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setIsExpanded(false)}
+            onClick={handleBackdropClick}
+            role="button"
+            aria-label="Close menu"
+            tabIndex={-1}
           />
         )}
       </AnimatePresence>
@@ -81,7 +98,7 @@ export function FloatingActionMenu({ onCreateLeaf, onSwitchView, currentView }: 
           className="relative"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          transition={SPRING_CONFIGS.bouncy}
         >
           {/* Expanded Menu Items */}
           <AnimatePresence>
@@ -91,7 +108,7 @@ export function FloatingActionMenu({ onCreateLeaf, onSwitchView, currentView }: 
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                transition={SPRING_CONFIGS.bouncy}
               >
                 {menuItems.map((item, index) => (
                   <motion.button
@@ -104,9 +121,10 @@ export function FloatingActionMenu({ onCreateLeaf, onSwitchView, currentView }: 
                     initial={{ x: 50, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: 50, opacity: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    transition={{ delay: index * 0.1, ...SPRING_CONFIGS.responsive }}
                     whileHover={{ scale: 1.05, x: -5 }}
                     whileTap={{ scale: 0.95 }}
+                    aria-label={item.ariaLabel}
                   >
                     <Icon name={item.icon} size="sm" />
                     <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
@@ -118,26 +136,20 @@ export function FloatingActionMenu({ onCreateLeaf, onSwitchView, currentView }: 
 
           {/* Main FAB */}
           <motion.button
-            className={`w-14 h-14 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ${
+            className={`w-14 h-14 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 flex items-center justify-center ${
               isExpanded 
                 ? 'bg-red-500 hover:bg-red-600' 
                 : 'bg-leaf-600 hover:bg-leaf-700'
             }`}
-            onClick={() => {
-              if (isExpanded) {
-                setIsExpanded(false)
-              } else {
-                onCreateLeaf()
-              }
-            }}
+            {...longPressHandlers}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             animate={{
-              rotate: isExpanded ? 45 : 0,
-              scale: isDragging ? 1.1 : 1
+              rotate: isExpanded ? 45 : 0
             }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            {...bind()}
+            transition={SPRING_CONFIGS.responsive}
+            aria-label={isExpanded ? 'Close menu' : 'Create memory or long press for menu'}
+            role="button"
           >
             <motion.div
               className="flex items-center justify-center w-full h-full"
