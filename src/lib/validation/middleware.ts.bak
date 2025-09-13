@@ -185,7 +185,7 @@ export function createRateLimitMiddleware(options: RateLimitOptions) {
   const {
     maxRequests,
     windowMs,
-    keyGenerator = (req) => req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown' || 'unknown',
+    keyGenerator = (req) => req.ip || 'unknown',
     skipSuccessfulRequests = false,
     skipFailedRequests = false,
   } = options

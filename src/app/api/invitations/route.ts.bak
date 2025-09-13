@@ -16,7 +16,7 @@ const rateLimitMiddleware = createRateLimitMiddleware({
   windowMs: 60 * 1000, // 1 minute
   keyGenerator: (req) => {
     const userId = req.headers.get('x-user-id')
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+    const ip = req.ip || 'unknown'
     return userId ? `user:${userId}` : `ip:${ip}`
   },
 })
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
-        logger.warn('Unauthorized invitation attempt', { metadata: { userError } })
+        logger.warn('Unauthorized invitation attempt', { userError })
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 401 }
@@ -59,13 +59,13 @@ export async function POST(req: NextRequest) {
       const validationResult = schema.safeParse(requestData)
       if (!validationResult.success) {
         logger.warn('Invitation validation failed', { 
-          userId: user.id,
-          metadata: { errors: validationResult.error.issues }
+          errors: validationResult.error.errors,
+          userId: user.id 
         })
         return NextResponse.json(
           {
             error: 'Validation failed',
-            details: validationResult.error.issues.map(err => 
+            details: validationResult.error.errors.map(err => 
               `${err.path.join('.')}: ${err.message}`
             ),
           },

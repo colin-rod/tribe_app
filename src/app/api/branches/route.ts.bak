@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser()
         if (userError || !user) {
-          logger.warn('Unauthorized branch creation attempt', { metadata: { userError } })
+          logger.warn('Unauthorized branch creation attempt', { userError })
           return NextResponse.json(
             { error: 'Unauthorized' },
             { status: 401 }
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         if (!permissions.canCreatePosts) {
           logger.warn('User lacks permission to create branch', { 
             userId: user.id, 
-            metadata: { tree_id: validatedData.tree_id }
+            treeId: validatedData.tree_id 
           })
           return NextResponse.json(
             { error: 'Insufficient permissions' },
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         if (branchError) {
           logger.error('Failed to create branch', branchError, { 
             userId: user.id, 
-            metadata: { data: validatedData }
+            data: validatedData 
           })
           return NextResponse.json(
             { error: 'Failed to create branch' },
@@ -95,14 +95,15 @@ export async function POST(req: NextRequest) {
         if (roleError) {
           logger.error('Failed to assign owner role', roleError, { 
             userId: user.id, 
-            metadata: { branch_id: branch.id }
+            branchId: branch.id 
           })
           // Continue anyway - branch was created successfully
         }
 
         logger.info('Branch created successfully', { 
+          branchId: branch.id, 
           userId: user.id, 
-          metadata: { branch_id: branch.id, tree_id: validatedData.tree_id }
+          treeId: validatedData.tree_id 
         })
 
         return NextResponse.json(

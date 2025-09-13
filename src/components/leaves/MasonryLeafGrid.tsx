@@ -391,7 +391,7 @@ export default function MasonryLeafGrid({
         </span>
         {searchQuery && (
           <Badge variant="outline">
-            Searching: "{searchQuery}"
+            Searching: &quot;{searchQuery}&quot;
           </Badge>
         )}
       </div>

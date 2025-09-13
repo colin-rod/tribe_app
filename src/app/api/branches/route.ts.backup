@@ -95,14 +95,15 @@ export async function POST(req: NextRequest) {
         if (roleError) {
           logger.error('Failed to assign owner role', roleError, { 
             userId: user.id, 
-            metadata: { branch_id: branch.id }
+            branchId: branch.id 
           })
           // Continue anyway - branch was created successfully
         }
 
         logger.info('Branch created successfully', { 
+          branchId: branch.id, 
           userId: user.id, 
-          metadata: { branch_id: branch.id, tree_id: validatedData.tree_id }
+          treeId: validatedData.tree_id 
         })
 
         return NextResponse.json(

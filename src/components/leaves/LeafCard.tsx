@@ -116,7 +116,7 @@ const LeafCard = memo(function LeafCard({
     const emailSubject = subjectMatch ? subjectMatch[1] : null
 
     // Clean content by removing subject line and attachment notes
-    let cleaned = leaf.content
+    const cleaned = leaf.content
       .replace(/Subject: .+?\n\n?/g, '') // Remove subject line
       .replace(/\n\n\[.+ media file\(s\) attached\]/g, '') // Remove attachment notes
       .replace(/\n\n\[.+ attachment\(s\) failed to upload\]/g, '') // Remove failure notes

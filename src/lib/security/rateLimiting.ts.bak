@@ -155,7 +155,7 @@ const rateLimiter = new RedisRateLimiter()
 function defaultKeyGenerator(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for')
   const realIP = req.headers.get('x-real-ip')
-  const ip = forwarded?.split(',')[0].trim() || realIP || 'unknown'
+  const ip = forwarded?.split(',')[0].trim() || realIP || req.ip || 'unknown'
   return `ip:${ip}`
 }
 

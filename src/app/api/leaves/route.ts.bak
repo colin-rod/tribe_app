@@ -13,7 +13,7 @@ const rateLimitMiddleware = createRateLimitMiddleware({
   windowMs: 60 * 1000, // 1 minute
   keyGenerator: (req) => {
     const userId = req.headers.get('x-user-id')
-    return userId || req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown' || 'anonymous'
+    return userId || req.ip || 'anonymous'
   },
 })
 
