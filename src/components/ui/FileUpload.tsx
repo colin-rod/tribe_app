@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useCallback } from 'react'
-import { Upload, X, Image, Video, Music, File, AlertCircle } from 'lucide-react'
+import { Upload, X, Image, Music, File, AlertCircle } from 'lucide-react'
 import { fileUploadSchema } from '@/lib/validation/schemas'
 import { validateData } from '@/lib/validation/schemas'
 import { createComponentLogger } from '@/lib/logger'
@@ -32,9 +32,6 @@ const DEFAULT_ACCEPTED_TYPES = [
   'image/png', 
   'image/gif',
   'image/webp',
-  'video/mp4',
-  'video/quicktime',
-  'video/webm',
   'audio/mpeg',
   'audio/wav',
   'audio/ogg'
@@ -203,7 +200,6 @@ export function FileUpload({
 
   const getFileIcon = (file: File) => {
     if (file.type.startsWith('image/')) return <Image className="w-5 h-5" />
-    if (file.type.startsWith('video/')) return <Video className="w-5 h-5" />
     if (file.type.startsWith('audio/')) return <Music className="w-5 h-5" />
     return <File className="w-5 h-5" />
   }
@@ -289,17 +285,6 @@ export function FileUpload({
                   />
                 )}
 
-                {/* Video Preview */}
-                {file.type.startsWith('video/') && file.preview && (
-                  <div className="relative w-full h-full">
-                    <video className="w-full h-full object-cover">
-                      <source src={file.preview} type={file.type} />
-                    </video>
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-                      <Video className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                )}
 
                 {/* File Icon for non-previewable files */}
                 {!file.preview && (

@@ -28,14 +28,6 @@ export function detectLeafType(content: string, mediaFiles: File[]): DetectionRe
       }
     }
     
-    // If we have videos, it's a video leaf
-    if (mediaTypes.videos > 0) {
-      return {
-        leafType: 'video',
-        confidence: 'high',
-        reason: `${mediaTypes.videos} video${mediaTypes.videos > 1 ? 's' : ''} uploaded`
-      }
-    }
     
     // If we have audio, it's an audio leaf
     if (mediaTypes.audio > 0) {
@@ -80,7 +72,6 @@ export function detectLeafType(content: string, mediaFiles: File[]): DetectionRe
 function analyzeMediaFiles(files: File[]) {
   const mediaTypes = {
     images: 0,
-    videos: 0,
     audio: 0,
     other: 0
   }
@@ -90,8 +81,6 @@ function analyzeMediaFiles(files: File[]) {
     
     if (type.startsWith('image/')) {
       mediaTypes.images++
-    } else if (type.startsWith('video/')) {
-      mediaTypes.videos++
     } else if (type.startsWith('audio/')) {
       mediaTypes.audio++
     } else {
@@ -166,7 +155,6 @@ function detectMilestoneContent(content: string): { isMilestone: boolean; keywor
 export function getLeafTypeDescription(leafType: LeafType): string {
   const descriptions = {
     photo: 'Photo Memory',
-    video: 'Video Memory', 
     audio: 'Voice Memory',
     text: 'Written Memory',
     milestone: 'Milestone Memory'
@@ -181,7 +169,6 @@ export function getLeafTypeDescription(leafType: LeafType): string {
 export function getLeafTypeIcon(leafType: LeafType): string {
   const icons = {
     photo: 'camera',
-    video: 'video',
     audio: 'mic',
     text: 'pencil',
     milestone: 'star'

@@ -5,6 +5,7 @@ import { createUnassignedLeaf } from '@/lib/leaf-assignments'
 import { AttachmentHandler } from '@/lib/email/attachment-handler'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { simpleParser } from 'mailparser'
+import { withSecurity, withWebhookSecurity } from '@/lib/security/middleware'
 
 const logger = createComponentLogger('SendGridWebhook')
 
@@ -24,11 +25,9 @@ interface ParsedEmail {
 }
 
 /**
- * POST /api/webhooks/sendgrid
- * Receive emails from SendGrid Parse Webhook
- * SendGrid sends complete email content directly in the webhook payload
+ * Secure SendGrid webhook handler
  */
-export async function POST(req: NextRequest) {
+async function handleSendGridWebhook(req: NextRequest): Promise<NextResponse> {
   try {
     logger.info('SendGrid webhook request received', {
       metadata: {
@@ -372,6 +371,29 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+
+/**
+ * POST /api/webhooks/sendgrid
+ * Secure SendGrid webhook endpoint with rate limiting and validation
+ */
+export const POST = withSecurity(
+  withWebhookSecurity(handleSendGridWebhook, {
+    // Verify SendGrid API key if provided
+    secretHeader: 'x-sendgrid-api-key',
+    expectedSecret: process.env.SENDGRID_API_KEY,
+    // TODO: Add HMAC verification when SendGrid provides webhook secrets
+    // hmacHeader: 'x-sendgrid-signature',
+    // hmacSecret: process.env.SENDGRID_WEBHOOK_SECRET
+  }),
+  {
+    rateLimit: 'webhooks',
+    allowedMethods: ['POST'],
+    // Allow SendGrid IPs (add specific IPs in production)
+    corsOrigins: process.env.NODE_ENV === 'production' 
+      ? [] // Add SendGrid IPs here
+      : ['*'] // Allow all in development
+  }
+)
 
 /**
  * Extract user ID from email address

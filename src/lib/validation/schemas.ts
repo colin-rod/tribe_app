@@ -149,7 +149,6 @@ export const fileUploadSchema = z.object({
   file_size: z.number().max(10 * 1024 * 1024, 'File must be smaller than 10MB'), // 10MB limit
   file_type: z.enum([
     'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-    'video/mp4', 'video/quicktime', 'video/webm',
     'audio/mpeg', 'audio/wav', 'audio/ogg',
     'application/pdf'
   ]),
