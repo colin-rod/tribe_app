@@ -291,9 +291,9 @@ export default function OnboardingPage() {
                 {selectedTemplate && selectedTemplate.id !== 'custom' && (
                   <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="flex items-center">
-                      <Icon name={selectedTemplate.icon as any} size="sm" className="text-blue-600 mr-2" />
+                      <Icon name={selectedTemplate.icon as never} size="sm" className="text-blue-600 mr-2" />
                       <span className="text-sm font-medium text-blue-900">
-                        Using "{selectedTemplate.name}" template
+                        Using &quot;{selectedTemplate.name}&quot; template
                       </span>
                     </div>
                   </div>
@@ -357,9 +357,9 @@ export default function OnboardingPage() {
                 {selectedTemplate && selectedTemplate.id !== 'custom' && (
                   <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="flex items-center">
-                      <Icon name={selectedTemplate.icon as any} size="sm" className="text-blue-600 mr-2" />
+                      <Icon name={selectedTemplate.icon as never} size="sm" className="text-blue-600 mr-2" />
                       <span className="text-sm font-medium text-blue-900">
-                        Using "{selectedTemplate.name}" template
+                        Using &quot;{selectedTemplate.name}&quot; template
                       </span>
                     </div>
                   </div>

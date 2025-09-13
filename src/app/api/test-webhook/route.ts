@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
-    const data: Record<string, any> = {}
+    const data: Record<string, unknown> = {}
     
     for (const [key, value] of formData.entries()) {
       data[key] = value

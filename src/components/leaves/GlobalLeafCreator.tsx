@@ -414,7 +414,7 @@ export default function GlobalLeafCreator({
                 <Icon name="leaf" size="lg" className="text-white" />
               </motion.div>
               <p className="text-bark-400 font-display">Creating your memory...</p>
-              <p className="text-sm text-bark-400/60 mt-1">This won't take long</p>
+              <p className="text-sm text-bark-400/60 mt-1">This won&apos;t take long</p>
             </div>
           )}
         </div>

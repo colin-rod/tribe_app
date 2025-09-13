@@ -3,7 +3,7 @@
  * Helpers to add loading states to existing components and operations
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { AppError, ErrorCodes, createError } from './error-handler'
 import { formatErrorForUser, FormattedError } from './error-messages'
 import { showError, showSuccess, toastService } from './toast-service'

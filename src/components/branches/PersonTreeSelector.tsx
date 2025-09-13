@@ -163,7 +163,7 @@ export function PersonTreeSelector({
             </div>
             <div className="text-sm">
               <span className="font-medium text-green-800">Cross-tree branch</span>
-              <span className="text-green-700"> - This branch will be shared across {selectedTreeIds.length} people's trees</span>
+              <span className="text-green-700"> - This branch will be shared across {selectedTreeIds.length} people&apos;s trees</span>
             </div>
           </div>
         </div>

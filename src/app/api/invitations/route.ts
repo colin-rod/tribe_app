@@ -297,7 +297,7 @@ async function getUserIdByEmail(supabase: ReturnType<typeof createClient>, email
  */
 async function getInvitationEmailData(
   supabase: ReturnType<typeof createClient>, 
-  invitation: any, 
+  invitation: { inviter_id: string; tree_id?: string; branch_id?: string; email: string; message?: string }, 
   isBranchInvitation: boolean
 ) {
   // Get inviter name
