@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Security checks
-      await performSecurityChecks(supabase, user.id, validatedData, sanitizedEmail)
+      await performSecurityChecks(Promise.resolve(supabase), user.id, validatedData, sanitizedEmail)
 
       // Check permissions
       if (isBranchInvitation) {
