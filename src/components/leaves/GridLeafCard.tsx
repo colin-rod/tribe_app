@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useCallback, forwardRef } from 'react'
-import Image from 'next/image'
 import { UnassignedLeaf } from '@/types/common'
 import { BranchWithDetails } from '@/types/database'
 import { formatDistanceToNow } from 'date-fns'
@@ -10,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
 import MemoryDetailPopup from './MemoryDetailPopup'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 interface GridLeafCardProps {
   leaf: UnassignedLeaf
@@ -48,6 +48,17 @@ const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
     const hasLongContent = leaf.content && leaf.content.length > 150
     const cardHeight = hasMedia ? 'auto' : hasLongContent ? 'auto' : 'auto'
 
+    // Debug media URLs
+    if (hasMedia && process.env.NODE_ENV === 'development') {
+      console.log('Leaf with media:', {
+        id: leaf.id,
+        leaf_type: leaf.leaf_type,
+        media_urls: leaf.media_urls,
+        hasMedia,
+        isEmailOrigin: leaf.content?.includes('Subject:')
+      })
+    }
+
     // Clean email content for display
     const cleanContent = leaf.content?.replace(/Subject: .+?\n\n?/g, '').replace(/\n\n\[.+ media file\(s\) attached\]/g, '').trim()
     const isEmailOrigin = leaf.content?.includes('Subject:')
@@ -81,7 +92,7 @@ const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
               <div className="relative">
                 {leaf.leaf_type === 'photo' && (
                   <div className="aspect-auto relative">
-                    <Image
+                    <OptimizedImage
                       src={leaf.media_urls![0]}
                       alt="Memory content"
                       width={300}

@@ -6,8 +6,8 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { UnassignedLeaf } from '@/types/common'
 import { BranchWithDetails } from '@/types/database'
 import { Camera, Video, Mic, Flag, Hash, X, Tag, MapPin, Calendar, User } from 'lucide-react'
@@ -173,11 +173,12 @@ export default function MemoryDetailPopup({
                       {leaf.media_urls!.slice(0, 4).map((url, index) => (
                         <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
                           {leaf.leaf_type === 'photo' ? (
-                            <Image
+                            <OptimizedImage
                               src={url}
                               alt={`Media ${index + 1}`}
-                              fill
-                              className="object-cover"
+                              width={200}
+                              height={200}
+                              className="object-cover w-full h-full"
                             />
                           ) : leaf.leaf_type === 'video' ? (
                             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
