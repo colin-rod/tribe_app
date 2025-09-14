@@ -65,17 +65,18 @@ class TreeService extends BaseService<Tree> {
       .range(offset, offset + limit - 1)
 
     return AsyncUtils.supabaseQuery(
-      () => query,
+      async () => query,
       'Failed to fetch user trees'
     ).then(result => {
-      const data = (result.data?.data || []).map((item: { tree_id: string; trees: Tree | null; role: string; permissions: string[] }) => ({
+      const data = (Array.isArray(result.data) ? result.data : []).map((item: any) => ({
         tree_id: item.tree_id,
-        trees: item.trees,
+        trees: Array.isArray(item.trees) ? item.trees[0] : item.trees,
+        member_count: (Array.isArray(item.trees) ? item.trees[0]?.member_count : (item.trees as any)?.member_count) || 0,
         role: item.role,
         permissions: item.permissions
       }))
 
-      const total = result.data?.count || 0
+      const total = (result as any)?.count || 0
 
       return {
         data,
@@ -92,7 +93,7 @@ class TreeService extends BaseService<Tree> {
    */
   async findWithRelations(treeId: string): Promise<TreeWithRelations | null> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('trees')
         .select(`
           *,
@@ -121,7 +122,7 @@ class TreeService extends BaseService<Tree> {
    */
   async createTree(data: CreateTreeData, createdBy: string): Promise<Tree> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('trees')
         .insert({
           ...data,
@@ -132,7 +133,7 @@ class TreeService extends BaseService<Tree> {
         .select()
         .single(),
       'Failed to create tree'
-    ).then(result => result.data as Tree)
+    ).then(result => result.data as unknown as Tree)
   }
 
   /**
@@ -151,7 +152,7 @@ class TreeService extends BaseService<Tree> {
     role: string = 'member'
   ): Promise<TreeMember> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('tree_members')
         .insert({
           tree_id: treeId,
@@ -169,7 +170,7 @@ class TreeService extends BaseService<Tree> {
    */
   async removeMember(treeId: string, userId: string): Promise<void> {
     await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('tree_members')
         .delete()
         .eq('tree_id', treeId)
@@ -183,7 +184,7 @@ class TreeService extends BaseService<Tree> {
    */
   async updateMemberRole(treeId: string, userId: string, role: string): Promise<TreeMember> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('tree_members')
         .update({ role })
         .eq('tree_id', treeId)
@@ -199,7 +200,7 @@ class TreeService extends BaseService<Tree> {
    */
   async getMembers(treeId: string): Promise<Array<TreeMember & { profiles: Profile }>> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('tree_members')
         .select(`
           *,
@@ -223,7 +224,7 @@ class TreeService extends BaseService<Tree> {
    */
   async isMember(treeId: string, userId: string): Promise<boolean> {
     const result = await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('tree_members')
         .select('id')
         .eq('tree_id', treeId)
@@ -240,7 +241,7 @@ class TreeService extends BaseService<Tree> {
    */
   async getUserRole(treeId: string, userId: string): Promise<string | null> {
     const result = await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('tree_members')
         .select('role')
         .eq('tree_id', treeId)
@@ -276,14 +277,14 @@ class TreeService extends BaseService<Tree> {
   }> {
     const [memberResult, branchResult] = await Promise.all([
       AsyncUtils.supabaseQuery(
-        () => this.supabase
+        async () => this.supabase
           .from('tree_members')
           .select('id', { count: 'exact' })
           .eq('tree_id', treeId),
         'Failed to count tree members'
       ),
       AsyncUtils.supabaseQuery(
-        () => this.supabase
+        async () => this.supabase
           .from('branches')
           .select('id', { count: 'exact' })
           .eq('tree_id', treeId),

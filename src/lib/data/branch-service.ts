@@ -90,12 +90,12 @@ class BranchService extends BaseService<Branch> {
       async () => query,
       'Failed to fetch branches'
     ).then(result => {
-      const data = (Array.isArray(result.data) ? result.data : []).map((item: { branch_id: string; branches: Branch | null; role: string; permissions: string[] }) => ({
+      const data = (Array.isArray(result.data) ? result.data : []).map((item: any) => ({
         branch_id: item.branch_id,
-        branches: item.branches,
+        branches: Array.isArray(item.branches) ? item.branches[0] : item.branches,
         role: item.role,
         permissions: item.permissions,
-        member_count: item.branches?.member_count || 0
+        member_count: (Array.isArray(item.branches) ? item.branches[0]?.member_count : item.branches?.member_count) || 0
       }))
 
       const total = (result as any)?.count || 0
@@ -115,7 +115,7 @@ class BranchService extends BaseService<Branch> {
    */
   async findWithRelations(branchId: string): Promise<BranchWithRelations | null> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('branches')
         .select(`
           *,
@@ -142,7 +142,7 @@ class BranchService extends BaseService<Branch> {
         .eq('id', branchId)
         .single(),
       'Failed to fetch branch details'
-    ).then(result => result.data)
+    ).then(result => result.data as unknown as BranchWithRelations | null)
   }
 
   /**
@@ -151,7 +151,7 @@ class BranchService extends BaseService<Branch> {
   async createBranch(data: CreateBranchData, createdBy: string): Promise<Branch> {
     // First create the branch
     const branchResult = await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('branches')
         .insert({
           tree_id: data.tree_id,
@@ -170,7 +170,7 @@ class BranchService extends BaseService<Branch> {
       'Failed to create branch'
     )
 
-    const branch = branchResult.data as Branch
+    const branch = branchResult.data as unknown as Branch
 
     // If connected_trees are specified, create cross-tree connections
     if (data.connected_trees && data.connected_trees.length > 0) {
@@ -183,7 +183,7 @@ class BranchService extends BaseService<Branch> {
       }))
 
       await AsyncUtils.supabaseQuery(
-        () => this.supabase
+        async () => this.supabase
           .from('tree_branch_connections')
           .insert(connections),
         'Failed to create cross-tree connections'
@@ -211,7 +211,7 @@ class BranchService extends BaseService<Branch> {
     addedBy?: string
   ): Promise<BranchMember> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('branch_members')
         .insert({
           branch_id: branchId,
@@ -225,7 +225,7 @@ class BranchService extends BaseService<Branch> {
         .select()
         .single(),
       'Failed to add member to branch'
-    ).then(result => result.data as BranchMember)
+    ).then(result => result.data as unknown as BranchMember)
   }
 
   /**
@@ -233,7 +233,7 @@ class BranchService extends BaseService<Branch> {
    */
   async removeMember(branchId: string, userId: string): Promise<void> {
     await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('branch_members')
         .delete()
         .eq('branch_id', branchId)
@@ -247,7 +247,7 @@ class BranchService extends BaseService<Branch> {
    */
   async updateMemberRole(branchId: string, userId: string, role: string): Promise<BranchMember> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('branch_members')
         .update({ role })
         .eq('branch_id', branchId)
@@ -255,7 +255,7 @@ class BranchService extends BaseService<Branch> {
         .select()
         .single(),
       'Failed to update member role'
-    ).then(result => result.data as BranchMember)
+    ).then(result => result.data as unknown as BranchMember)
   }
 
   /**
@@ -263,7 +263,7 @@ class BranchService extends BaseService<Branch> {
    */
   async getMembers(branchId: string): Promise<Array<BranchMember & { profiles: Profile }>> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('branch_members')
         .select(`
           *,
@@ -288,7 +288,7 @@ class BranchService extends BaseService<Branch> {
    */
   async isMember(branchId: string, userId: string): Promise<boolean> {
     const result = await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('branch_members')
         .select('id')
         .eq('branch_id', branchId)
@@ -306,7 +306,7 @@ class BranchService extends BaseService<Branch> {
    */
   async getUserRole(branchId: string, userId: string): Promise<string | null> {
     const result = await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from('branch_members')
         .select('role')
         .eq('branch_id', branchId)
@@ -316,7 +316,7 @@ class BranchService extends BaseService<Branch> {
       'Failed to get user role in branch'
     )
 
-    return result.data?.role || null
+    return (result.data as any)?.role || null
   }
 }
 
