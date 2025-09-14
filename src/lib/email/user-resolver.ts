@@ -33,7 +33,7 @@ export class UserResolver {
   }
 
   private isAllowedDomain(domain: string): boolean {
-    return WEBHOOK_CONFIG.MAILGUN.ALLOWED_DOMAINS.some(allowedDomain => 
+    return WEBHOOK_CONFIG.EMAIL.ALLOWED_DOMAINS.some(allowedDomain => 
       domain.includes(allowedDomain)
     )
   }

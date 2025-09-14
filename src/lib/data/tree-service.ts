@@ -140,7 +140,7 @@ class TreeService extends BaseService<Tree> {
    * Update tree information
    */
   async updateTree(treeId: string, data: UpdateTreeData): Promise<Tree> {
-    return this.update(treeId, data)
+    return this.update(treeId, data as any)
   }
 
   /**
@@ -162,7 +162,7 @@ class TreeService extends BaseService<Tree> {
         .select()
         .single(),
       'Failed to add member to tree'
-    ).then(result => result.data as TreeMember)
+    ).then(result => result.data as unknown as TreeMember)
   }
 
   /**
@@ -192,7 +192,7 @@ class TreeService extends BaseService<Tree> {
         .select()
         .single(),
       'Failed to update member role'
-    ).then(result => result.data as TreeMember)
+    ).then(result => result.data as unknown as TreeMember)
   }
 
   /**
@@ -250,7 +250,7 @@ class TreeService extends BaseService<Tree> {
       'Failed to get user role in tree'
     )
 
-    return result.data?.role || null
+    return (result.data as any)?.role || null
   }
 
   /**
@@ -293,9 +293,9 @@ class TreeService extends BaseService<Tree> {
     ])
 
     return {
-      memberCount: memberResult.data?.count || 0,
-      branchCount: branchResult.data?.count || 0,
-      activeMembers: memberResult.data?.count || 0 // Could be refined with activity tracking
+      memberCount: (memberResult as any)?.count || 0,
+      branchCount: (branchResult as any)?.count || 0,
+      activeMembers: (memberResult as any)?.count || 0 // Could be refined with activity tracking
     }
   }
 }
