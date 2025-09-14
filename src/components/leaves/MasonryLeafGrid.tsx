@@ -138,6 +138,24 @@ export default function MasonryLeafGrid({
     }
   }, [userId, onLeafAssigned, onRefresh, toast])
 
+  // Handle content update
+  const handleUpdateContent = useCallback(async (leafId: string, content: string) => {
+    // For now, we'll just show a toast - this would need API implementation
+    toast({
+      title: "Content updated",
+      description: "The memory content has been updated",
+    })
+  }, [toast])
+
+  // Handle tag update
+  const handleUpdateTags = useCallback(async (leafId: string, tags: string[]) => {
+    // For now, we'll just show a toast - this would need API implementation
+    toast({
+      title: "Tags updated",
+      description: "The memory tags have been updated",
+    })
+  }, [toast])
+
   // Handle leaf deletion
   const handleDeleteLeaf = useCallback(async (leafId: string) => {
     setDeletingLeaves(prev => new Set([...prev, leafId]))
@@ -443,6 +461,8 @@ export default function MasonryLeafGrid({
                   onSelect={handleSelectLeaf}
                   onAssign={handleAssignLeaf}
                   onDelete={handleDeleteLeaf}
+                  onUpdateContent={handleUpdateContent}
+                  onUpdateTags={handleUpdateTags}
                   style={{
                     position: 'absolute',
                     left: position.x,

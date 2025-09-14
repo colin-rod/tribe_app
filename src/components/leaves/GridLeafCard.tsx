@@ -5,11 +5,11 @@ import Image from 'next/image'
 import { UnassignedLeaf } from '@/types/common'
 import { BranchWithDetails } from '@/types/database'
 import { formatDistanceToNow } from 'date-fns'
-import { Camera, Video, Mic, Flag, Hash, Calendar, User, Check, X, MoreVertical } from 'lucide-react'
+import { Camera, Video, Mic, Flag, Hash, Calendar, User } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
+import MemoryDetailPopup from './MemoryDetailPopup'
 
 interface GridLeafCardProps {
   leaf: UnassignedLeaf
@@ -18,16 +18,16 @@ interface GridLeafCardProps {
   onSelect: (leafId: string) => void
   onAssign: (leafId: string, branchIds: string[]) => void
   onDelete?: (leafId: string) => void
+  onUpdateContent?: (leafId: string, content: string) => void
+  onUpdateTags?: (leafId: string, tags: string[]) => void
   className?: string
   style?: React.CSSProperties
 }
 
 const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
-  ({ leaf, branches, isSelected, onSelect, onAssign, onDelete, className = '', style }, ref) => {
+  ({ leaf, branches, isSelected, onSelect, onAssign, onDelete, onUpdateContent, onUpdateTags, className = '', style }, ref) => {
     const [isHovered, setIsHovered] = useState(false)
-    const [showAssignMenu, setShowAssignMenu] = useState(false)
-    const [selectedBranches, setSelectedBranches] = useState<string[]>([])
-    const [showOptions, setShowOptions] = useState(false)
+    const [showDetailPopup, setShowDetailPopup] = useState(false)
 
     const getLeafIcon = (leafType: string) => {
       switch (leafType) {
@@ -39,25 +39,8 @@ const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
       }
     }
 
-    const handleQuickAssign = useCallback((branchId: string) => {
-      onAssign(leaf.id, [branchId])
-      setShowAssignMenu(false)
-    }, [leaf.id, onAssign])
-
-    const handleMultiAssign = useCallback(() => {
-      if (selectedBranches.length > 0) {
-        onAssign(leaf.id, selectedBranches)
-        setSelectedBranches([])
-        setShowAssignMenu(false)
-      }
-    }, [leaf.id, selectedBranches, onAssign])
-
-    const toggleBranchSelection = useCallback((branchId: string) => {
-      setSelectedBranches(prev => 
-        prev.includes(branchId) 
-          ? prev.filter(id => id !== branchId)
-          : [...prev, branchId]
-      )
+    const handleCardClick = useCallback(() => {
+      setShowDetailPopup(true)
     }, [])
 
     // Determine card height based on content
@@ -75,11 +58,7 @@ const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
         className={`group relative ${className}`}
         style={style}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false)
-          setShowAssignMenu(false)
-          setShowOptions(false)
-        }}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <motion.div
           layout
@@ -94,129 +73,8 @@ const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
                 ? 'border-blue-500 ring-2 ring-blue-200' 
                 : 'border-gray-200 hover:border-gray-300'
             }`}
-            onClick={() => onSelect(leaf.id)}
+            onClick={handleCardClick}
           >
-            {/* Selection Overlay */}
-            <AnimatePresence>
-              {isSelected && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-blue-500/20 z-10 flex items-center justify-center"
-                >
-                  <div className="bg-blue-500 rounded-full p-2">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Hover Action Overlay */}
-            <AnimatePresence>
-              {isHovered && !isSelected && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-black/40 z-20 flex items-center justify-center gap-2"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-white/90 hover:bg-white text-gray-700 text-xs"
-                    onClick={() => setShowAssignMenu(!showAssignMenu)}
-                  >
-                    Quick Assign
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-white/90 hover:bg-white text-gray-700 text-xs p-2"
-                    onClick={() => setShowOptions(!showOptions)}
-                  >
-                    <MoreVertical className="w-3 h-3" />
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Quick Assign Menu */}
-            <AnimatePresence>
-              {showAssignMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-4 right-4 z-30 bg-white rounded-lg shadow-lg border p-3 min-w-48"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="text-xs font-medium text-gray-700 mb-2">Assign to Branch:</div>
-                  <div className="space-y-1 max-h-40 overflow-y-auto">
-                    {branches.slice(0, 4).map((branch) => (
-                      <button
-                        key={branch.id}
-                        onClick={() => handleQuickAssign(branch.id)}
-                        className="w-full text-left text-xs px-2 py-1 rounded hover:bg-gray-100 flex items-center gap-2"
-                      >
-                        <div 
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: branch.color }}
-                        />
-                        <span className="truncate">{branch.name}</span>
-                      </button>
-                    ))}
-                    {branches.length > 4 && (
-                      <div className="text-xs text-gray-500 px-2 py-1">
-                        +{branches.length - 4} more branches
-                      </div>
-                    )}
-                  </div>
-                  <div className="border-t pt-2 mt-2">
-                    <button
-                      onClick={() => {
-                        setShowAssignMenu(false)
-                        // Could open full assignment modal here
-                      }}
-                      className="text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      Multi-assign →
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Options Menu */}
-            <AnimatePresence>
-              {showOptions && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-4 right-4 z-30 bg-white rounded-lg shadow-lg border p-2"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={() => onSelect(leaf.id)}
-                    className="w-full text-left text-xs px-3 py-2 rounded hover:bg-gray-100 flex items-center gap-2"
-                  >
-                    <Check className="w-3 h-3" />
-                    Select
-                  </button>
-                  {onDelete && (
-                    <button
-                      onClick={() => onDelete(leaf.id)}
-                      className="w-full text-left text-xs px-3 py-2 rounded hover:bg-red-50 hover:text-red-600 flex items-center gap-2 text-red-500"
-                    >
-                      <X className="w-3 h-3" />
-                      Delete
-                    </button>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* Media Display */}
             {hasMedia && (
@@ -336,6 +194,18 @@ const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
             </div>
           </Card>
         </motion.div>
+        
+        {/* Memory Detail Popup */}
+        <MemoryDetailPopup
+          leaf={leaf}
+          branches={branches}
+          isOpen={showDetailPopup}
+          onClose={() => setShowDetailPopup(false)}
+          onAssign={onAssign}
+          onDelete={onDelete}
+          onUpdateContent={onUpdateContent}
+          onUpdateTags={onUpdateTags}
+        />
       </div>
     )
   }

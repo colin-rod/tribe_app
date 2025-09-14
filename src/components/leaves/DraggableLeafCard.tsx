@@ -9,6 +9,9 @@ interface DraggableLeafCardProps {
   leaf: UnassignedLeaf
   onSelect?: (leafId: string) => void
   onAssign?: (leafId: string, branchIds: string[]) => void
+  onDelete?: (leafId: string) => void
+  onUpdateContent?: (leafId: string, content: string) => void
+  onUpdateTags?: (leafId: string, tags: string[]) => void
   isSelected?: boolean
   showAssignmentModal?: (leafId: string) => void
   isAssigning?: boolean
@@ -20,6 +23,9 @@ export default function DraggableLeafCard({
   leaf,
   onSelect,
   onAssign,
+  onDelete,
+  onUpdateContent,
+  onUpdateTags,
   isSelected = false,
   showAssignmentModal,
   isAssigning = false,
@@ -98,6 +104,9 @@ export default function DraggableLeafCard({
           isSelected={isSelected}
           onSelect={onSelect || (() => {})}
           onAssign={onAssign || (() => {})}
+          onDelete={onDelete}
+          onUpdateContent={onUpdateContent}
+          onUpdateTags={onUpdateTags}
         />
       </div>
     </motion.div>
