@@ -36,7 +36,7 @@ export function createValidationMiddleware<T>(
           requestData = await req.json()
         } catch (error) {
           if (logErrors) {
-            logger.warn('Invalid JSON in request body', { metadata: { error: error.message } })
+            logger.warn('Invalid JSON in request body', { metadata: { error: error instanceof Error ? error.message : 'Invalid JSON' } })
           }
           
           if (returnValidationErrors) {

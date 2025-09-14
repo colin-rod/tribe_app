@@ -43,7 +43,6 @@ class RedisRateLimiter {
         // Dynamic import to avoid issues if Redis isn't available
         const { Redis } = await import('ioredis')
         this.redis = new Redis(process.env.REDIS_URL, {
-          retryDelayOnFailover: 100,
           maxRetriesPerRequest: 3,
           lazyConnect: true,
         })
@@ -168,43 +167,43 @@ export const RATE_LIMIT_CONFIGS = {
     windowMs: 15 * 60 * 1000, // 15 minutes
     maxRequests: 100,
     message: 'Too many API requests, please try again later'
-  },
+  } as RateLimitConfig,
   
   // Authentication attempts
   auth: {
     windowMs: 15 * 60 * 1000, // 15 minutes
     maxRequests: 5,
     message: 'Too many authentication attempts, please try again later'
-  },
+  } as RateLimitConfig,
   
   // File uploads
   upload: {
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 50,
     message: 'Too many file uploads, please try again later'
-  },
+  } as RateLimitConfig,
   
   // Password reset requests
   passwordReset: {
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 3,
     message: 'Too many password reset requests, please try again later'
-  },
+  } as RateLimitConfig,
   
   // Invitation creation
   invitations: {
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 10,
     message: 'Too many invitation requests, please try again later'
-  },
+  } as RateLimitConfig,
   
   // Webhook endpoints
   webhooks: {
     windowMs: 60 * 1000, // 1 minute
     maxRequests: 100,
     message: 'Webhook rate limit exceeded'
-  }
-} as const
+  } as RateLimitConfig
+}
 
 /**
  * Apply rate limiting to a request

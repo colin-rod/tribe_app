@@ -96,8 +96,7 @@ class ToastService {
   showSuccess(message: string, action?: { label: string; onClick: () => void }): string {
     if (action) {
       return toast.success(`${message} (Click to ${action.label})`, {
-        duration: 6000,
-        onClick: action.onClick
+        duration: 6000
       })
     }
     return this.success(message)
@@ -110,8 +109,7 @@ class ToastService {
     retryLabel = 'Retry'
   ): string {
     return toast.error(`${message} (Click to ${retryLabel})`, {
-      duration: 8000,
-      onClick: onRetry
+      duration: 8000
     })
   }
 

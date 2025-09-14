@@ -146,10 +146,12 @@ export class UploadQueue {
         uploadFile.processedFile = processed.compressed
         
         logger.info('Image processing completed', {
-          fileId: uploadFile.id,
-          originalSize: processed.originalSize,
-          compressedSize: processed.compressedSize,
-          compressionRatio: processed.compressionRatio
+          metadata: {
+            fileId: uploadFile.id,
+            originalSize: processed.originalSize,
+            compressedSize: processed.compressedSize,
+            compressionRatio: processed.compressionRatio
+          }
         })
       }
 
@@ -218,9 +220,11 @@ export class UploadQueue {
             resolve()
             
             logger.info('File upload completed', {
-              fileId: uploadFile.id,
-              fileName: uploadFile.file.name,
-              url: publicUrl
+              metadata: {
+                fileId: uploadFile.id,
+                fileName: uploadFile.file.name,
+                url: publicUrl
+              }
             })
           } catch (error) {
             reject(error)
@@ -272,10 +276,12 @@ export class UploadQueue {
     const errorMessage = error instanceof Error ? error.message : 'Unknown upload error'
     
     logger.error('Upload failed', error, {
-      fileId: uploadFile.id,
-      fileName: uploadFile.file.name,
-      retries: uploadFile.retries,
-      maxRetries: this.options.maxRetries
+      metadata: {
+        fileId: uploadFile.id,
+        fileName: uploadFile.file.name,
+        retries: uploadFile.retries,
+        maxRetries: this.options.maxRetries
+      }
     })
 
     if (uploadFile.retries < this.options.maxRetries!) {
@@ -291,8 +297,10 @@ export class UploadQueue {
       }, 1000 * Math.pow(2, uploadFile.retries)) // Exponential backoff
       
       logger.info('Retrying upload', {
-        fileId: uploadFile.id,
-        retryAttempt: uploadFile.retries
+        metadata: {
+          fileId: uploadFile.id,
+          retryAttempt: uploadFile.retries
+        }
       })
     } else {
       // Max retries reached
@@ -367,7 +375,7 @@ export class UploadQueue {
     file.status = 'cancelled'
     this.uploading.delete(fileId)
     
-    logger.info('File upload cancelled', { fileId })
+    logger.info('File upload cancelled', { metadata: { fileId } })
     return true
   }
 
@@ -381,8 +389,10 @@ export class UploadQueue {
     )
     
     logger.info('Cleared completed uploads', {
-      removedCount: before - this.queue.length,
-      remainingCount: this.queue.length
+      metadata: {
+        removedCount: before - this.queue.length,
+        remainingCount: this.queue.length
+      }
     })
   }
 

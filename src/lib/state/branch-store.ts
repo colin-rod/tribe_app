@@ -9,7 +9,7 @@ import { Branch, BranchMember, Profile } from '@/types/database'
 import { BranchWithMembers, BranchWithRelations } from '@/types/common'
 
 // Single branch store
-export const createBranchStore = (branchId: string) => createStore<BranchWithRelations>({
+export const createBranchStore = (branchId: string) => createStore<BranchWithRelations | null>({
   fetchFn: () => branchService.findWithRelations(branchId),
   autoFetch: true
 })
@@ -107,7 +107,7 @@ export const createBranchFormStore = (initialData?: Partial<BranchFormData>) => 
         store.setError(null)
         return branch
       } catch (error: unknown) {
-        store.setError(error.message || 'Failed to create branch')
+        store.setError(error instanceof Error ? error.message : 'Failed to create branch')
         return null
       } finally {
         store.setLoading(false)

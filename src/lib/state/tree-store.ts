@@ -9,7 +9,7 @@ import { Tree, TreeMember, Profile } from '@/types/database'
 import { TreeWithMembers, TreeWithRelations } from '@/types/common'
 
 // Single tree store
-export const createTreeStore = (treeId: string) => createStore<TreeWithRelations>({
+export const createTreeStore = (treeId: string) => createStore<TreeWithRelations | null>({
   fetchFn: () => treeService.findWithRelations(treeId),
   autoFetch: true
 })
@@ -114,7 +114,7 @@ export const createTreeFormStore = (initialData?: Partial<TreeFormData>) => {
         store.setError(null)
         return tree
       } catch (error: unknown) {
-        store.setError(error.message || 'Failed to create tree')
+        store.setError(error instanceof Error ? error.message : 'Failed to create tree')
         return null
       } finally {
         store.setLoading(false)
@@ -138,7 +138,7 @@ export const createTreeFormStore = (initialData?: Partial<TreeFormData>) => {
         store.setError(null)
         return tree
       } catch (error: unknown) {
-        store.setError(error.message || 'Failed to update tree')
+        store.setError(error instanceof Error ? error.message : 'Failed to update tree')
         return null
       } finally {
         store.setLoading(false)

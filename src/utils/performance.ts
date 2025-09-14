@@ -126,7 +126,7 @@ export function useCallbackWithDeps<T extends (...args: any[]) => any>(
   deps: React.DependencyList,
   debugName?: string
 ): T {
-  const prevDeps = useRef<React.DependencyList>()
+  const prevDeps = useRef<React.DependencyList | undefined>(undefined)
 
   useEffect(() => {
     if (debugName && process.env.NODE_ENV === 'development') {
@@ -154,7 +154,7 @@ export function useMemoWithDeps<T>(
   deps: React.DependencyList,
   debugName?: string
 ): T {
-  const prevDeps = useRef<React.DependencyList>()
+  const prevDeps = useRef<React.DependencyList | undefined>(undefined)
 
   useEffect(() => {
     if (debugName && process.env.NODE_ENV === 'development') {
@@ -178,7 +178,7 @@ export function useMemoWithDeps<T>(
  * Hook to measure component render performance
  */
 export function useRenderPerformance(componentName: string) {
-  const renderStart = useRef<number>()
+  const renderStart = useRef<number | undefined>(undefined)
   const renderCount = useRef<number>(0)
 
   useEffect(() => {
@@ -217,7 +217,7 @@ export function useRenderPerformance(componentName: string) {
 export function useBatchedState<T>(initialValue: T) {
   const [state, setState] = useState<T>(initialValue)
   const pendingUpdates = useRef<Array<(prev: T) => T>>([])
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const batchedSetState = useCallback((updater: (prev: T) => T) => {
     pendingUpdates.current.push(updater)

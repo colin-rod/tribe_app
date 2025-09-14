@@ -13,7 +13,7 @@ const logger = createComponentLogger('RBACService')
 export class RBACService {
   private static instance: RBACService
   private permissionsCache: Map<string, UserPermissions> = new Map()
-  private roleCache: Map<string, UserRole> = new Map()
+  private roleCache: Map<string, UserRole | 'none'> = new Map()
 
   static getInstance(): RBACService {
     if (!RBACService.instance) {
@@ -96,7 +96,7 @@ export class RBACService {
       return role
 
     } catch (error) {
-      logger.error('Error getting user role', error, { userId, context })
+      logger.error('Error getting user role', error, { metadata: { userId, context } })
       return 'none'
     }
   }
@@ -119,7 +119,7 @@ export class RBACService {
       return data === true
 
     } catch (error) {
-      logger.error('Error checking permission', error, { userId, context, permissionName })
+      logger.error('Error checking permission', error, { metadata: { userId, context, permissionName } })
       return false
     }
   }
@@ -157,7 +157,7 @@ export class RBACService {
       const permissions: UserPermissions = {}
       
       userRoles?.forEach(userRole => {
-        userRole.role?.role_permissions?.forEach(rp => {
+        userRole.role?.role_permissions?.forEach((rp: any) => {
           if (rp.permission?.name) {
             permissions[rp.permission.name] = true
           }
@@ -168,7 +168,7 @@ export class RBACService {
       return permissions
 
     } catch (error) {
-      logger.error('Error getting user permissions', error, { userId, context })
+      logger.error('Error getting user permissions', error, { metadata: { userId, context } })
       return {}
     }
   }
@@ -267,7 +267,7 @@ export class RBACService {
       return permissions
 
     } catch (error) {
-      logger.error('Error getting branch permissions', error, { userId, branchId })
+      logger.error('Error getting branch permissions', error, { metadata: { userId, branchId } })
       return {
         canRead: false,
         canUpdate: false,
@@ -319,7 +319,7 @@ export class RBACService {
       return true
 
     } catch (error) {
-      logger.error('Error assigning role', error, { userId, roleName, context, grantedBy })
+      logger.error('Error assigning role', error, { metadata: { userId, roleName, context, grantedBy } })
       return false
     }
   }
@@ -344,7 +344,7 @@ export class RBACService {
       return true
 
     } catch (error) {
-      logger.error('Error removing role', error, { userId, context })
+      logger.error('Error removing role', error, { metadata: { userId, context } })
       return false
     }
   }
@@ -401,7 +401,7 @@ export async function createCrossTreeAccess(
 
     return !error
   } catch (error) {
-    logger.error('Error creating cross-tree access', error, { branchId, treeId, invitedBy })
+    logger.error('Error creating cross-tree access', error, { metadata: { branchId, treeId, invitedBy } })
     return false
   }
 }
@@ -422,13 +422,13 @@ export async function getCrossTreeAccess(branchId: string): Promise<CrossTreeAcc
       .eq('status', 'active')
 
     if (error) {
-      logger.error('Error fetching cross-tree access', error, { branchId })
+      logger.error('Error fetching cross-tree access', error, { metadata: { branchId } })
       return []
     }
 
     return data || []
   } catch (error) {
-    logger.error('Error getting cross-tree access', error, { branchId })
+    logger.error('Error getting cross-tree access', error, { metadata: { branchId } })
     return []
   }
 }
@@ -442,7 +442,7 @@ export async function revokeCrossTreeAccess(crossTreeAccessId: string): Promise<
 
     return !error
   } catch (error) {
-    logger.error('Error revoking cross-tree access', error, { crossTreeAccessId })
+    logger.error('Error revoking cross-tree access', error, { metadata: { crossTreeAccessId } })
     return false
   }
 }
@@ -469,7 +469,7 @@ export async function hasUserCrossTreeAccess(userId: string, branchId: string): 
 
     return !accessError && crossTreeAccess && crossTreeAccess.length > 0
   } catch (error) {
-    logger.error('Error checking cross-tree access', error, { userId, branchId })
+    logger.error('Error checking cross-tree access', error, { metadata: { userId, branchId } })
     return false
   }
 }

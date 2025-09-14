@@ -110,10 +110,12 @@ export async function validateFile(
   const fileSize = buffer.length
 
   logger.info('Starting file validation', {
-    fileName,
-    mimeType,
-    fileSize,
-    options
+    metadata: {
+      fileName,
+      mimeType,
+      fileSize,
+      options
+    }
   })
 
   // Sanitize file name
@@ -189,10 +191,12 @@ export async function validateFile(
   }
 
   logger.info('File validation completed', {
-    fileName: sanitizedFileName,
-    valid: result.valid,
-    errorCount: errors.length,
-    warningCount: warnings.length
+    metadata: {
+      fileName: sanitizedFileName,
+      valid: result.valid,
+      errorCount: errors.length,
+      warningCount: warnings.length
+    }
   })
 
   return result
@@ -273,7 +277,7 @@ async function scanForMalware(buffer: Buffer, fileName: string): Promise<{ clean
   // Placeholder for integration with malware scanning service
   // Examples: ClamAV, VirusTotal API, AWS GuardDuty, etc.
   
-  logger.info('Malware scan requested', { fileName, size: buffer.length })
+  logger.info('Malware scan requested', { metadata: { fileName, size: buffer.length } })
   
   // Basic checks for now
   if (buffer.length > 100 * 1024 * 1024) { // > 100MB
@@ -342,7 +346,7 @@ function formatBytes(bytes: number): string {
  * Get validation config for file type
  */
 export function getValidationConfig(fileType: 'image' | 'document' | 'audio'): FileValidationOptions {
-  return FILE_VALIDATION_CONFIGS[fileType]
+  return FILE_VALIDATION_CONFIGS[fileType] as unknown as FileValidationOptions
 }
 
 /**

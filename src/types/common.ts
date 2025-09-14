@@ -2,7 +2,7 @@
  * Common TypeScript interfaces and types
  */
 
-import { Tree, Branch, Profile, LeafWithDetails, Leaf, LeafType, LeafAssignment, BranchMember, TreeMember } from './database'
+import { Tree, Branch, Profile, LeafWithDetails, Leaf, LeafType, LeafAssignment } from './database'
 
 // User-related types
 export interface UserProfile extends Profile {

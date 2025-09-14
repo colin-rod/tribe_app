@@ -97,9 +97,11 @@ export function withSecurity(
       
     } catch (error) {
       logger.error('Security middleware error', error, {
-        method: req.method,
-        url: req.url,
-        userAgent: req.headers.get('user-agent')
+        metadata: {
+          method: req.method,
+          url: req.url,
+          userAgent: req.headers.get('user-agent')
+        }
       })
       
       return NextResponse.json(
@@ -216,8 +218,10 @@ export function withWebhookSecurity(
       const providedSecret = req.headers.get(options.secretHeader)
       if (providedSecret !== options.expectedSecret) {
         logger.warn('Webhook authentication failed - invalid secret', {
-          providedSecret: providedSecret ? '[REDACTED]' : 'null',
-          expectedHeader: options.secretHeader
+          metadata: {
+            providedSecret: providedSecret ? '[REDACTED]' : 'null',
+            expectedHeader: options.secretHeader
+          }
         })
         return NextResponse.json(
           { error: 'Unauthorized webhook' },

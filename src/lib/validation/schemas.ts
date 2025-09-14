@@ -38,7 +38,7 @@ export const treeCreateSchema = z.object({
   name: sanitizedTextSchema(1, 100),
   description: sanitizedTextSchema(0, 500),
   privacy: z.enum(['private', 'family_only']).default('private'),
-  settings: z.record(z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const treeUpdateSchema = treeCreateSchema.partial()
@@ -54,7 +54,7 @@ export const branchCreateSchema = z.object({
   category: sanitizedTextSchema(0, 50),
   auto_approve_members: z.boolean().default(true),
   is_discoverable: z.boolean().default(false),
-  settings: z.record(z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const branchUpdateSchema = branchCreateSchema.partial()
@@ -70,7 +70,7 @@ export const leafCreateSchema = z.object({
   scheduled_for: z.string().datetime().optional(),
   media_urls: z.array(urlSchema).max(10, 'Maximum 10 media files allowed').optional(),
   tags: z.array(sanitizedTextSchema(1, 30)).max(20, 'Maximum 20 tags allowed').optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const leafUpdateSchema = leafCreateSchema.partial()
@@ -188,8 +188,8 @@ export const reportSchema = z.object({
 // Bulk operation schemas
 export const bulkDeleteSchema = z.object({
   ids: z.array(uuidSchema).min(1).max(100, 'Cannot delete more than 100 items at once'),
-  confirm: z.literal(true, { 
-    errorMap: () => ({ message: 'Please confirm the bulk delete operation' })
+  confirm: z.literal(true).refine(val => val === true, {
+    message: 'Please confirm the bulk delete operation'
   }),
 })
 
@@ -219,7 +219,7 @@ export function validateData<T>(schema: z.ZodSchema<T>, data: unknown): Validati
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        errors: error.errors.map(err => `${err.path.join('.')}: ${err.message}`),
+        errors: error.issues.map(err => `${err.path.join('.')}: ${err.message}`),
       }
     }
     return {
