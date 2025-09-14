@@ -37,13 +37,13 @@ export abstract class BaseService<T extends BaseEntity> {
    */
   async findById(id: string): Promise<T | null> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from(this.tableName)
         .select('*')
         .eq('id', id)
         .single(),
       `Failed to fetch ${this.tableName.slice(0, -1)}`
-    ).then(result => result.data)
+    ).then(result => result.data as T | null)
   }
 
   /**
@@ -74,11 +74,11 @@ export abstract class BaseService<T extends BaseEntity> {
     }
 
     return AsyncUtils.supabaseQuery(
-      () => query,
+      async () => query,
       `Failed to fetch ${this.tableName}`
     ).then(result => {
-      const data = result.data?.data || []
-      const total = result.data?.count || 0
+      const data = Array.isArray(result.data) ? result.data : []
+      const total = (result as any).count || 0
 
       return {
         data,
@@ -95,13 +95,13 @@ export abstract class BaseService<T extends BaseEntity> {
    */
   async create(data: Omit<T, 'id' | 'created_at' | 'updated_at'>): Promise<T> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from(this.tableName)
         .insert(data)
         .select()
         .single(),
       `Failed to create ${this.tableName.slice(0, -1)}`
-    ).then(result => result.data as T)
+    ).then(result => result.data as unknown as T)
   }
 
   /**
@@ -109,14 +109,14 @@ export abstract class BaseService<T extends BaseEntity> {
    */
   async update(id: string, data: Partial<Omit<T, 'id' | 'created_at' | 'updated_at'>>): Promise<T> {
     return AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from(this.tableName)
         .update({ ...data, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single(),
       `Failed to update ${this.tableName.slice(0, -1)}`
-    ).then(result => result.data as T)
+    ).then(result => result.data as unknown as T)
   }
 
   /**
@@ -124,7 +124,7 @@ export abstract class BaseService<T extends BaseEntity> {
    */
   async delete(id: string): Promise<void> {
     await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from(this.tableName)
         .delete()
         .eq('id', id),
@@ -137,7 +137,7 @@ export abstract class BaseService<T extends BaseEntity> {
    */
   async exists(id: string): Promise<boolean> {
     const result = await AsyncUtils.supabaseQuery(
-      () => this.supabase
+      async () => this.supabase
         .from(this.tableName)
         .select('id')
         .eq('id', id)
@@ -164,10 +164,10 @@ export abstract class BaseService<T extends BaseEntity> {
     }
 
     const result = await AsyncUtils.supabaseQuery(
-      () => query,
+      async () => query,
       `Failed to count ${this.tableName}`
     )
 
-    return result.data?.count || 0
+    return (result as any)?.count || 0
   }
 }

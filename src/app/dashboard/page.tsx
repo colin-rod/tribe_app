@@ -35,8 +35,8 @@ export default function DashboardPage() {
     )
   }
 
-  if (!user) {
-    return null // Will redirect in useEffect
+  if (!user || !profile) {
+    return null // Will redirect in useEffect or still loading
   }
 
   return (

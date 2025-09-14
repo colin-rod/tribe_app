@@ -102,8 +102,10 @@ const LazyWrapper = memo(function LazyWrapper({
       onError={(error, errorInfo) => {
         // Log error using structured logging
         logger.error('LazyWrapper Error', error, { 
-          errorInfo: errorInfo.componentStack,
-          nodeEnv: process.env.NODE_ENV 
+          metadata: {
+            errorInfo: errorInfo.componentStack,
+            nodeEnv: process.env.NODE_ENV 
+          }
         })
         
         // In production, you might want to send to error reporting service

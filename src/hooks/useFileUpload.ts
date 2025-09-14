@@ -100,8 +100,10 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
           setCompleted(true)
           options.onUploadComplete?.(completedUploadsRef.current)
           logger.info('All uploads completed', { 
-            totalFiles: completedUploadsRef.current.length,
-            successful: completedUploadsRef.current.filter(r => r.success).length
+            metadata: {
+              totalFiles: completedUploadsRef.current.length,
+              successful: completedUploadsRef.current.filter(r => r.success).length
+            }
           })
         }
       })
@@ -110,8 +112,10 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
         options.onUploadError?.(errorMessage)
         
         logger.error('Upload failed for file', new Error(errorMessage), {
-          fileId: uploadFile.id,
-          fileName: uploadFile.file.name
+          metadata: {
+            fileId: uploadFile.id,
+            fileName: uploadFile.file.name
+          }
         })
       })
 
@@ -142,7 +146,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
 
     setFiles(prev => [...prev, ...filesWithPreview])
     
-    logger.info('Files added', { count: newFiles.length, totalFiles: files.length + newFiles.length })
+    logger.info('Files added', { metadata: { count: newFiles.length, totalFiles: files.length + newFiles.length } })
 
     // Auto-upload if enabled
     if (options.autoUpload && uploadQueueRef.current) {

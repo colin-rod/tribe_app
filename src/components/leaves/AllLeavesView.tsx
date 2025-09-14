@@ -132,7 +132,7 @@ export function AllLeavesView({ userId, userBranches }: AllLeavesViewProps) {
     switch (status) {
       case 'assigned': return 'text-green-600 bg-green-50'
       case 'unassigned': return 'text-orange-600 bg-orange-50'
-      case 'multi_assigned': return 'text-blue-600 bg-blue-50'
+      case 'multi-assigned': return 'text-blue-600 bg-blue-50'
       default: return 'text-gray-600 bg-gray-50'
     }
   }
@@ -141,7 +141,7 @@ export function AllLeavesView({ userId, userBranches }: AllLeavesViewProps) {
     switch (status) {
       case 'assigned': return 'Assigned'
       case 'unassigned': return 'Unassigned'
-      case 'multi_assigned': return 'Multi-assigned'
+      case 'multi-assigned': return 'Multi-assigned'
       default: return 'Unknown'
     }
   }
@@ -150,7 +150,7 @@ export function AllLeavesView({ userId, userBranches }: AllLeavesViewProps) {
     total: leaves.length,
     assigned: leaves.filter(l => l.assignment_status === 'assigned').length,
     unassigned: leaves.filter(l => l.assignment_status === 'unassigned').length,
-    multiAssigned: leaves.filter(l => l.assignment_status === 'multi_assigned').length,
+    multiAssigned: leaves.filter(l => l.assignment_status === 'multi-assigned').length,
     byType: leaves.reduce((acc, leaf) => {
       acc[leaf.leaf_type] = (acc[leaf.leaf_type] || 0) + 1
       return acc
@@ -380,7 +380,7 @@ function LeafTimelineCard({ leaf }: LeafTimelineCardProps) {
     switch (status) {
       case 'assigned': return 'text-green-600 bg-green-50'
       case 'unassigned': return 'text-orange-600 bg-orange-50'
-      case 'multi_assigned': return 'text-blue-600 bg-blue-50'
+      case 'multi-assigned': return 'text-blue-600 bg-blue-50'
       default: return 'text-gray-600 bg-gray-50'
     }
   }
@@ -389,7 +389,7 @@ function LeafTimelineCard({ leaf }: LeafTimelineCardProps) {
     switch (status) {
       case 'assigned': return 'Assigned'
       case 'unassigned': return 'Unassigned'
-      case 'multi_assigned': return 'Multi-assigned'
+      case 'multi-assigned': return 'Multi-assigned'
       default: return 'Unknown'
     }
   }

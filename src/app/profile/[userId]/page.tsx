@@ -90,7 +90,15 @@ export default function UserProfilePage({ params }: PageProps) {
               currentUserBranchIds.includes(sc.branch_id)
             )
             
-            setSharedBranches(shared)
+            // Transform data to match BranchWithMembers structure
+            const transformedShared = shared.map(branch => ({
+              branch_id: branch.branch_id,
+              branches: (Array.isArray(branch.branches) ? branch.branches[0] : branch.branches) as any, // Type cast for incomplete data
+              member_count: 0, // Would need separate query
+              role: 'member' as const, // Default role
+              permissions: [] // Would need RBAC query
+            })) as BranchWithMembers[]
+            setSharedBranches(transformedShared)
             setCanViewProfile(shared.length > 0)
 
             // If they can view the profile, load recent posts from shared branches
@@ -116,7 +124,7 @@ export default function UserProfilePage({ params }: PageProps) {
                 .limit(5)
 
               if (!postsError && posts) {
-                setRecentPosts(posts)
+                setRecentPosts(posts as unknown as LeafWithDetails[])
               }
             }
           }
@@ -275,16 +283,16 @@ export default function UserProfilePage({ params }: PageProps) {
                   >
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">
-                        {sharedBranch.branches.name}
+                        {sharedBranch.branches?.name}
                       </h3>
-                      {sharedBranch.branches.description && (
+                      {sharedBranch.branches?.description && (
                         <p className="text-sm text-gray-500 mt-1">
                           {sharedBranch.branches.description}
                         </p>
                       )}
                       <div className="mt-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {sharedBranch.branches.type}
+                          {sharedBranch.branches?.type}
                         </span>
                       </div>
                     </div>
@@ -317,7 +325,7 @@ export default function UserProfilePage({ params }: PageProps) {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-blue-600">
-                          {post.branches.name}
+                          {(post as any).branches?.name || 'Branch'}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(post.created_at)}

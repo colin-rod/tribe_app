@@ -9,11 +9,12 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { uploadLeafMedia } from '@/lib/leaves'
+import { uploadMedia, getMediaUrl } from '@/lib/supabase/storage'
 import { createComponentLogger } from '@/lib/logger'
 import { showError } from '@/lib/toast-service'
 import { useCreateUnassignedLeaf } from '@/hooks/use-leaves'
-import { detectLeafType, getLeafTypeDescription, getLeafTypeIcon } from '@/lib/leaf-type-detection'
+import { detectLeafType, getLeafTypeDescription } from '@/lib/leaf-type-detection'
+import { getLeafTypeIcon } from '@/components/ui/IconLibrary'
 import { extractAllTags, isMilestoneTag, getMilestoneTagDisplayName } from '@/lib/milestone-tags'
 import { useMemoryCrystallization, createMemoryPreview, CRYSTALLIZATION_SPRINGS } from '@/hooks/useMemoryCrystallization'
 import MemoryCrystallizationPortal from './MemoryCrystallizationPortal'
@@ -151,8 +152,21 @@ export default function GlobalLeafCreator({
       // Upload media files if any
       let mediaUrls: string[] = []
       if (formData.media_files.length > 0) {
+        const tempLeafId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         const uploadResults = await Promise.all(
-          formData.media_files.map(file => uploadLeafMedia(file))
+          formData.media_files.map(async (file, index) => {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${tempLeafId}_${index}.${fileExt}`
+            const filePath = `${userId}/${tempLeafId}/${fileName}`
+            
+            try {
+              await uploadMedia(file, filePath)
+              return getMediaUrl(filePath)
+            } catch (error) {
+              logger.error('Error uploading media file', error, { metadata: { fileName, filePath } })
+              return null
+            }
+          })
         )
         mediaUrls = uploadResults.filter(url => url !== null) as string[]
       }
@@ -161,14 +175,18 @@ export default function GlobalLeafCreator({
       const leafData = {
         author_id: userId,
         leaf_type: detectionResult.leafType,
-        content: formData.content || null,
+        content: formData.content || undefined,
         media_urls: mediaUrls,
         tags: allTags,
-        milestone_type: null,
-        milestone_date: null
+        milestone_type: undefined,
+        milestone_date: undefined
       }
 
       const createdLeaf = await createLeafMutation.mutateAsync(leafData)
+
+      if (!createdLeaf) {
+        throw new Error('Failed to create leaf - no response from server')
+      }
 
       logger.info('Memory created successfully', {
         action: 'createMemory',

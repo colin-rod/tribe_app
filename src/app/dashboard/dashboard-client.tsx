@@ -1,14 +1,14 @@
 'use client'
 
 import type { User } from '@supabase/supabase-js'
-import type { Profile } from '@/types/database'
-import { TreeWithMembers, BranchWithMembers } from '@/types/common'
+import type { Profile, BranchWithDetails } from '@/types/database'
+import { TreeWithMembers } from '@/types/common'
 import MinimalDashboard from '@/components/dashboard/MinimalDashboard'
 
 interface DashboardClientProps {
   user: User
   profile: Profile
-  userBranches: BranchWithMembers[]
+  userBranches: BranchWithDetails[]
   trees: TreeWithMembers[]
 }
 

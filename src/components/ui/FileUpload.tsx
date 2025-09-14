@@ -85,7 +85,7 @@ export function FileUpload({
     const id = crypto.randomUUID()
     const fileWithPreview: FileWithPreview = Object.assign(file, {
       id,
-      error: validateFile(file)
+      error: validateFile(file) || undefined
     })
 
     // Generate preview for images and videos
@@ -93,14 +93,14 @@ export function FileUpload({
       try {
         fileWithPreview.preview = URL.createObjectURL(file)
       } catch (error) {
-        logger.warn('Failed to create image preview', { fileName: file.name, error })
+        logger.warn('Failed to create image preview', { metadata: { fileName: file.name, error: error instanceof Error ? error.message : 'Unknown error' } })
       }
     } else if (file.type.startsWith('video/')) {
       try {
         // Create video thumbnail
         fileWithPreview.preview = URL.createObjectURL(file)
       } catch (error) {
-        logger.warn('Failed to create video preview', { fileName: file.name, error })
+        logger.warn('Failed to create video preview', { metadata: { fileName: file.name, error: error instanceof Error ? error.message : 'Unknown error' } })
       }
     }
 
@@ -135,8 +135,10 @@ export function FileUpload({
       const updatedFiles = [...value, ...validFiles]
       onFiles(updatedFiles)
       logger.info('Files added successfully', { 
-        count: validFiles.length, 
-        totalFiles: updatedFiles.length 
+        metadata: {
+          count: validFiles.length, 
+          totalFiles: updatedFiles.length
+        }
       })
     }
   }, [value, maxFiles, createFilePreview, onFiles])
@@ -195,7 +197,7 @@ export function FileUpload({
     }
     
     onFiles(updatedFiles)
-    logger.info('File removed', { fileId, remainingFiles: updatedFiles.length })
+    logger.info('File removed', { metadata: { fileId, remainingFiles: updatedFiles.length } })
   }, [value, onFiles])
 
   const getFileIcon = (file: File) => {

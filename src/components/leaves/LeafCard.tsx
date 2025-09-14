@@ -329,7 +329,7 @@ const LeafCard = memo(function LeafCard({
             {(leaf.content || leaf.ai_caption) && (
               <div className="space-y-2">
                 {/* Email Subject Display */}
-                {isEmailOrigin && typeof cleanedContent === 'object' && cleanedContent.emailSubject && (
+                {isEmailOrigin && cleanedContent && typeof cleanedContent === 'object' && cleanedContent.emailSubject && (
                   <div className="bg-flower-400/30 border-l-4 border-flower-400 px-3 py-2 rounded-r-lg">
                     <p className="text-bark-400 font-semibold text-sm flex items-center space-x-2">
                       <Icon name="mail" size="sm" />
@@ -341,9 +341,9 @@ const LeafCard = memo(function LeafCard({
                 {/* Main Content */}
                 {leaf.content && (
                   <p className="text-bark-400 leading-relaxed font-medium">
-                    {isEmailOrigin && typeof cleanedContent === 'object' 
+                    {isEmailOrigin && cleanedContent && typeof cleanedContent === 'object' 
                       ? cleanedContent.cleaned 
-                      : typeof cleanedContent === 'string' 
+                      : cleanedContent && typeof cleanedContent === 'string' 
                         ? cleanedContent 
                         : leaf.content}
                   </p>

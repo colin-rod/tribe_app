@@ -72,13 +72,13 @@ export function useMemoryCrystallization(): UseMemoryCrystallizationReturn {
     setTempMemoryId(id)
     setMemoryPreview(preview)
     setCoordinates(prev => ({
-      ...prev,
       form: {
         x: formRect.x,
         y: formRect.y,
         width: formRect.width,
         height: formRect.height
-      }
+      },
+      grid: prev?.grid || { x: 0, y: 0, width: 0, height: 0 }
     }))
     
     setState('preparing')

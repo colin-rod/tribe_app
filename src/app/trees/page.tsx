@@ -69,7 +69,7 @@ export default function TreesPage() {
             <div key={treeData.tree_id} className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {treeData.trees.name}
+                  {treeData.trees?.name}
                 </h3>
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                   treeData.role === 'owner' 
@@ -82,19 +82,19 @@ export default function TreesPage() {
                 </span>
               </div>
 
-              {treeData.trees.description && (
+              {treeData.trees?.description && (
                 <p className="text-gray-600 text-sm mb-4">
                   {treeData.trees.description}
                 </p>
               )}
 
               <div className="text-xs text-gray-500 mb-4">
-                Created {new Date(treeData.trees.created_at).toLocaleDateString()}
+                Created {treeData.trees?.created_at ? new Date(treeData.trees.created_at).toLocaleDateString() : 'Unknown'}
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600">
-                  {treeData.role === 'owner' ? 'You own this tree' : 'Member since ' + new Date(treeData.joined_at).toLocaleDateString()}
+                  {treeData.role === 'owner' ? 'You own this tree' : 'Tree member'}
                 </div>
                 
                 {(treeData.role === 'owner' || treeData.role === 'admin') && (

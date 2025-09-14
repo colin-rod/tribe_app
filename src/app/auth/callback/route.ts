@@ -9,13 +9,13 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code')
   const origin = requestUrl.origin
 
-  logger.info('Auth callback called', { hasCode: !!code })
+  logger.info('Auth callback called', { metadata: { hasCode: !!code } })
 
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
-    logger.info('Auth session exchange result', { success: !error })
+    logger.info('Auth session exchange result', { metadata: { success: !error } })
     
     if (!error) {
       logger.info('Redirecting to dashboard from callback')

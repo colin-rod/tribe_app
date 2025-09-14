@@ -102,7 +102,7 @@ export default function BranchPermissionsManager({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-gray-900">
-                      {access.tree?.name || 'Unknown Tree'}
+                      {(access as any).tree?.name || 'Unknown Tree'}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
                       Granted {new Date(access.created_at).toLocaleDateString()}
@@ -110,7 +110,7 @@ export default function BranchPermissionsManager({
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="text-sm text-gray-500">
-                      Permissions: {access.permissions.join(', ')}
+                      Permissions: {Array.isArray(access.permissions) ? access.permissions.join(', ') : 'View'}
                     </div>
                     <button
                       onClick={() => handleRevokeAccess(access.id)}

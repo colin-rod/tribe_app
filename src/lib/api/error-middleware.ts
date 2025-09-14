@@ -58,11 +58,13 @@ export function withErrorHandling<T = any>(
       const method = req.method
 
       logger.info(`API request started`, {
-        method,
-        url: requestUrl,
-        requestId,
-        userAgent: req.headers.get('user-agent'),
-        ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
+        metadata: {
+          method,
+          url: requestUrl,
+          requestId,
+          userAgent: req.headers.get('user-agent'),
+          ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
+        }
       })
 
       // Optional auth validation
@@ -98,11 +100,13 @@ export function withErrorHandling<T = any>(
       const duration = Date.now() - startTime
 
       logger.info(`API request completed`, {
-        method,
-        url: requestUrl,
-        requestId,
-        duration,
-        status: 200
+        metadata: {
+          method,
+          url: requestUrl,
+          requestId,
+          duration,
+          status: 200
+        }
       })
 
       // Return success response
@@ -129,11 +133,13 @@ export function withErrorHandling<T = any>(
 
       // Log the error
       logger.error(`API request failed`, appError, {
-        method: req.method,
-        url: req.url,
-        requestId,
-        duration,
-        statusCode: getStatusCodeFromError(appError)
+        metadata: {
+          method: req.method,
+          url: req.url,
+          requestId,
+          duration,
+          statusCode: getStatusCodeFromError(appError)
+        }
       })
 
       // Get user-friendly error message

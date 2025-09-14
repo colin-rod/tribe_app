@@ -26,7 +26,7 @@ function DroppableBranch({ branch, isSelected, onClick, onLeafDrop }: DroppableB
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'LEAF',
     drop: (item: { id: string, type: string }) => {
-      onLeafDrop(item.id, branch.id)
+      onLeafDrop(item.id, branch?.id || '')
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -38,7 +38,7 @@ function DroppableBranch({ branch, isSelected, onClick, onLeafDrop }: DroppableB
 
   return (
     <motion.div
-      ref={drop}
+      ref={drop as any}
       className={`relative group cursor-pointer transition-all duration-300 ${
         isSelected ? 'scale-105 z-10' : ''
       }`}
@@ -61,9 +61,9 @@ function DroppableBranch({ branch, isSelected, onClick, onLeafDrop }: DroppableB
         }`}
         style={{
           background: isActive 
-            ? `linear-gradient(135deg, ${branch.color}20, ${branch.color}10)`
+            ? `linear-gradient(135deg, ${branch?.color || '#0000'}20, ${branch?.color || '#0000'}10)`
             : isSelected
-            ? `linear-gradient(135deg, ${branch.color}15, transparent)`
+            ? `linear-gradient(135deg, ${branch?.color || '#0000'}15, transparent)`
             : undefined
         }}
       >
@@ -93,13 +93,13 @@ function DroppableBranch({ branch, isSelected, onClick, onLeafDrop }: DroppableB
         <div className="flex items-start space-x-4">
           <motion.div
             className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
-            style={{ backgroundColor: branch.color }}
+            style={{ backgroundColor: branch?.color || '#gray' }}
             whileHover={{ scale: 1.2 }}
           />
 
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              {branch.name}
+              {branch?.name || 'Unnamed Branch'}
             </h3>
             
             <div className="flex items-center space-x-4 text-sm text-gray-600">
@@ -132,7 +132,7 @@ function DroppableBranch({ branch, isSelected, onClick, onLeafDrop }: DroppableB
         <motion.div
           className="absolute inset-0 rounded-2xl"
           style={{
-            background: `radial-gradient(circle at 50% 50%, ${branch.color}20, transparent 70%)`
+            background: `radial-gradient(circle at 50% 50%, ${branch?.color || '#0000'}20, transparent 70%)`
           }}
           initial={{ opacity: 0 }}
           whileHover={{ opacity: 1 }}
@@ -149,7 +149,7 @@ export function TreeBranchView({ branchesByTree, selectedBranch, onBranchSelect,
 
   const handleLeafDrop = async (leafId: string, branchId: string) => {
     try {
-      await assignLeafToBranches(leafId, [branchId])
+      await assignLeafToBranches(leafId, [branchId], 'user', branchId)
       toast({
         title: "Memory assigned",
         description: "Successfully moved memory to branch",

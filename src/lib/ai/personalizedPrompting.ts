@@ -218,7 +218,7 @@ class PersonalizedPromptingSystem {
       .slice(0, 8)
       .map(([topic]) => topic)
 
-    const milestones = analyses.map(a => a.milestone).filter(Boolean)
+    const milestones = analyses.map(a => a.milestone).filter((m): m is string => Boolean(m))
     const milestoneTypes = [...new Set(milestones)]
 
     const allPeople = analyses.flatMap(a => a.people || [])
@@ -346,7 +346,7 @@ class PersonalizedPromptingSystem {
         basedOnTopics: pattern.content.commonTopics.slice(0, 3),
         basedOnPeople: pattern.content.peopleOfInterest.slice(0, 2),
         basedOnTiming: pattern.timing.mostActiveHours.includes(time.getHours()),
-        basedOnSentiment: pattern.behavioral.sentimentTrends === 'positive'
+        basedOnSentiment: pattern.behavioral.sentimentTrends === 'improving'
       }
     }
   }

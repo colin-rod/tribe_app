@@ -36,7 +36,7 @@ export function createValidationMiddleware<T>(
           requestData = await req.json()
         } catch (error) {
           if (logErrors) {
-            logger.warn('Invalid JSON in request body', { error: error.message })
+            logger.warn('Invalid JSON in request body', { metadata: { error: error.message } })
           }
           
           if (returnValidationErrors) {
@@ -66,10 +66,12 @@ export function createValidationMiddleware<T>(
         if (!validationResult.success) {
           if (logErrors) {
             logger.warn('Request validation failed', {
-              errors: validationResult.errors,
-              data: requestData,
-              url: req.url,
-              method: req.method,
+              metadata: {
+                errors: validationResult.errors,
+                data: requestData,
+                url: req.url,
+                method: req.method,
+              }
             })
           }
 
@@ -96,8 +98,10 @@ export function createValidationMiddleware<T>(
       } catch (error) {
         if (logErrors) {
           logger.error('Validation middleware error', error, {
-            url: req.url,
-            method: req.method,
+            metadata: {
+              url: req.url,
+              method: req.method,
+            }
           })
         }
 
@@ -149,8 +153,10 @@ export function validateQueryParams<T>(
 
     if (!result.success && logErrors) {
       logger.warn('Query parameter validation failed', {
-        errors: result.errors,
-        params: Object.fromEntries(searchParams.entries()),
+        metadata: {
+          errors: result.errors,
+          params: Object.fromEntries(searchParams.entries()),
+        }
       })
     }
 
@@ -214,10 +220,12 @@ export function createRateLimitMiddleware(options: RateLimitOptions) {
       // Check if limit exceeded
       if (limitData.count >= maxRequests) {
         logger.warn('Rate limit exceeded', {
-          key,
-          count: limitData.count,
-          maxRequests,
-          resetTime: limitData.resetTime,
+          metadata: {
+            key,
+            count: limitData.count,
+            maxRequests,
+            resetTime: limitData.resetTime,
+          }
         })
 
         return NextResponse.json(

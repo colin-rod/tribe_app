@@ -87,10 +87,10 @@ class BranchService extends BaseService<Branch> {
     }
 
     return AsyncUtils.supabaseQuery(
-      () => query,
+      async () => query,
       'Failed to fetch branches'
     ).then(result => {
-      const data = (result.data?.data || []).map((item: { branch_id: string; branches: Branch | null; role: string; permissions: string[] }) => ({
+      const data = (Array.isArray(result.data) ? result.data : []).map((item: { branch_id: string; branches: Branch | null; role: string; permissions: string[] }) => ({
         branch_id: item.branch_id,
         branches: item.branches,
         role: item.role,
@@ -98,7 +98,7 @@ class BranchService extends BaseService<Branch> {
         member_count: item.branches?.member_count || 0
       }))
 
-      const total = result.data?.count || 0
+      const total = (result as any)?.count || 0
 
       return {
         data,

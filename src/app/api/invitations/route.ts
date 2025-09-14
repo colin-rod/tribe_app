@@ -82,15 +82,18 @@ export async function POST(req: NextRequest) {
       }
 
       // Security checks
-      await performSecurityChecks(Promise.resolve(supabase), user.id, validatedData, sanitizedEmail)
+      await performSecurityChecks(supabase, user.id, validatedData, sanitizedEmail)
 
       // Check permissions
       if (isBranchInvitation) {
+        if (!validatedData.branch_id || typeof validatedData.branch_id !== 'string') {
+          throw new ValidationError('branch_id is required for branch invitations')
+        }
         const permissions = await getUserBranchPermissions(user.id, validatedData.branch_id)
         if (!permissions.canInviteMembers) {
           throw new SecurityError('Insufficient permissions to invite members', 'branch_id')
         }
-      } else if (validatedData.tree_id) {
+      } else if ('tree_id' in validatedData && validatedData.tree_id) {
         // Check tree permissions (simplified)
         const { data: treeMember } = await supabase
           .from('tree_members')
@@ -125,8 +128,10 @@ export async function POST(req: NextRequest) {
       if (invitationError) {
         logger.error('Failed to create invitation', invitationError, { 
           userId: user.id,
-          email: sanitizedEmail,
-          type: isBranchInvitation ? 'branch' : 'tree'
+          metadata: { 
+            email: sanitizedEmail,
+            type: isBranchInvitation ? 'branch' : 'tree'
+          }
         })
 
         // Handle specific database errors
@@ -145,11 +150,13 @@ export async function POST(req: NextRequest) {
 
       // Log successful invitation
       logger.info('Invitation created successfully', {
-        invitationId: invitation.id,
-        inviterId: user.id,
-        inviteeEmail: sanitizedEmail,
-        type: isBranchInvitation ? 'branch' : 'tree',
-        targetId: validatedData.branch_id || validatedData.tree_id,
+        userId: user.id,
+        metadata: {
+          invitationId: invitation.id,
+          inviteeEmail: sanitizedEmail,
+          type: isBranchInvitation ? 'branch' : 'tree',
+          targetId: validatedData.branch_id || ('tree_id' in validatedData ? validatedData.tree_id : undefined),
+        }
       })
 
       // Send email notification
@@ -159,14 +166,18 @@ export async function POST(req: NextRequest) {
         await invitationEmailService.sendInvitationEmail(emailData)
         
         logger.info('Invitation email sent successfully', {
-          invitationId: invitation.id,
-          email: sanitizedEmail
+          metadata: {
+            invitationId: invitation.id,
+            email: sanitizedEmail
+          }
         })
       } catch (emailError) {
         // Log email error but don't fail the invitation creation
         logger.error('Failed to send invitation email', emailError, {
-          invitationId: invitation.id,
-          email: sanitizedEmail
+          metadata: {
+            invitationId: invitation.id,
+            email: sanitizedEmail
+          }
         })
       }
 
@@ -206,7 +217,7 @@ export async function POST(req: NextRequest) {
  * Security checks for invitation creation
  */
 async function performSecurityChecks(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   validatedData: Record<string, unknown>,
   sanitizedEmail: string
@@ -229,7 +240,7 @@ async function performSecurityChecks(
   }
 
   // Check if email is already a member
-  if (validatedData.tree_id) {
+  if ('tree_id' in validatedData && validatedData.tree_id) {
     const { data: existingMember } = await supabase
       .from('tree_members')
       .select('id')
@@ -260,7 +271,7 @@ async function performSecurityChecks(
     .from(validatedData.branch_id ? 'branch_invitations' : 'invitations')
     .select('id')
     .eq('email', sanitizedEmail)
-    .eq(validatedData.branch_id ? 'branch_id' : 'tree_id', validatedData.branch_id || validatedData.tree_id)
+    .eq(validatedData.branch_id ? 'branch_id' : 'tree_id', validatedData.branch_id || ('tree_id' in validatedData ? validatedData.tree_id : undefined))
     .eq('status', 'pending')
     .single()
 
@@ -272,7 +283,7 @@ async function performSecurityChecks(
 /**
  * Helper functions
  */
-async function getCurrentUserEmail(supabase: ReturnType<typeof createClient>, userId: string): Promise<string | null> {
+async function getCurrentUserEmail(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<string | null> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('email')
@@ -282,7 +293,7 @@ async function getCurrentUserEmail(supabase: ReturnType<typeof createClient>, us
   return profile?.email || null
 }
 
-async function getUserIdByEmail(supabase: ReturnType<typeof createClient>, email: string): Promise<string | null> {
+async function getUserIdByEmail(supabase: Awaited<ReturnType<typeof createClient>>, email: string): Promise<string | null> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('id')
@@ -296,15 +307,15 @@ async function getUserIdByEmail(supabase: ReturnType<typeof createClient>, email
  * Get additional data needed for invitation email
  */
 async function getInvitationEmailData(
-  supabase: ReturnType<typeof createClient>, 
-  invitation: { inviter_id: string; tree_id?: string; branch_id?: string; email: string; message?: string }, 
+  supabase: Awaited<ReturnType<typeof createClient>>, 
+  invitation: Record<string, unknown>, 
   isBranchInvitation: boolean
 ) {
   // Get inviter name
   const { data: inviterProfile } = await supabase
     .from('profiles')
     .select('first_name, last_name')
-    .eq('id', invitation.invited_by)
+    .eq('id', invitation.invited_by || invitation.inviter_id)
     .single()
 
   const inviterName = inviterProfile 
@@ -330,13 +341,13 @@ async function getInvitationEmailData(
   }
 
   return {
-    id: invitation.id,
-    email: invitation.email,
-    role: invitation.role,
-    invited_by: invitation.invited_by,
-    tree_id: invitation.tree_id,
-    branch_id: invitation.branch_id,
-    expires_at: invitation.expires_at,
+    id: invitation.id as string,
+    email: invitation.email as string,
+    role: invitation.role as string,
+    invited_by: invitation.invited_by as string,
+    tree_id: invitation.tree_id as string | undefined,
+    branch_id: invitation.branch_id as string | undefined,
+    expires_at: (invitation.expires_at as string) || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Default to 7 days from now
     tree_name: !isBranchInvitation ? targetName : undefined,
     branch_name: isBranchInvitation ? targetName : undefined,
     inviter_name: inviterName

@@ -41,6 +41,19 @@ export function Card({
     )
   }
 
+  // Separate HTML props from motion props to avoid conflicts
+  const { 
+    onDrag, 
+    onDragStart, 
+    onDragEnd,
+    onAnimationStart,
+    onAnimationEnd,
+    onAnimationIteration,
+    onTransitionStart,
+    onTransitionEnd,
+    ...restProps 
+  } = props
+
   return (
     <motion.div 
       className={classes}
@@ -49,7 +62,7 @@ export function Card({
         perspective: 1000
       }}
       {...motionProps}
-      {...props}
+      {...restProps}
     >
       {variant === 'bulletin' && (
         <>

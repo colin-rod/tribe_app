@@ -68,7 +68,7 @@ export default function ProfilePage() {
           .order('joined_at', { ascending: false })
 
         if (!branchesError && branches) {
-          setUserBranches(branches)
+          setUserBranches(branches as unknown as BranchWithMembers[])
         }
 
         // Get user's recent posts (last 5)
@@ -90,7 +90,7 @@ export default function ProfilePage() {
           .limit(5)
 
         if (!postsError && posts) {
-          setRecentPosts(posts)
+          setRecentPosts(posts as unknown as LeafWithDetails[])
         }
 
       } catch (error) {
@@ -226,9 +226,9 @@ export default function ProfilePage() {
                     >
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900">
-                          {membership.branches.name}
+                          {membership.branches?.name}
                         </h3>
-                        {membership.branches.description && (
+                        {membership.branches?.description && (
                           <p className="text-sm text-gray-500 mt-1">
                             {membership.branches.description}
                           </p>
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                             {membership.role}
                           </span>
                           <span className="text-xs text-gray-500">
-                            Joined {formatDate(membership.joined_at)}
+                            Joined {formatDate((membership as any).joined_at)}
                           </span>
                         </div>
                       </div>
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-blue-600">
-                          {post.branches.name}
+                          {(post as any).branches?.name || 'Branch'}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(post.created_at)}

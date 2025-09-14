@@ -81,7 +81,7 @@ const TreeExplorer = memo(function TreeExplorer({
     if (selectedBranch && trees.length > 0) {
       const branch = userBranches.find(ub => ub.branches?.id === selectedBranch.id)
       if (branch?.branches?.tree_id) {
-        const tree = trees.find(t => t.tree_id === branch.branches.tree_id)
+        const tree = trees.find(t => t.tree_id === branch.branches?.tree_id)
         setSelectedTree(tree || null)
         
         // Animate tree selection
@@ -312,7 +312,7 @@ const TreeExplorer = memo(function TreeExplorer({
                       filter === key ? 'shadow-lg' : ''
                     }`}
                   >
-                    <Icon name={icon} size="sm" className="mr-2" />
+                    <Icon name={icon as any} size="sm" className="mr-2" />
                     {label}
                   </Button>
                 ))}

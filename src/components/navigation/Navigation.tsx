@@ -177,7 +177,7 @@ export default function Navigation({ user }: NavigationProps) {
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-red-600"
                       >
-                        <Icon name="logOut" size="sm" className="text-red-500" />
+                        <Icon name="user" size="sm" className="text-red-500" />
                         <span className="text-sm">Sign Out</span>
                       </button>
                     </div>

@@ -28,8 +28,8 @@ const logger = createComponentLogger('TreeLeavesPage')
 function calculateChildAge(tree: Tree): number | undefined {
   try {
     // Check if there's a birth date in tree settings
-    if (tree.settings?.child_birth_date) {
-      const birthDate = new Date(tree.settings.child_birth_date)
+    if ((tree.settings as any)?.child_birth_date) {
+      const birthDate = new Date((tree.settings as any).child_birth_date)
       const now = new Date()
       const diffTime = Math.abs(now.getTime() - birthDate.getTime())
       const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)) // Average month length
@@ -47,7 +47,7 @@ function calculateChildAge(tree: Tree): number | undefined {
     
     return undefined
   } catch (error) {
-    logger.error('Error calculating child age', error, { treeId: tree.id })
+    logger.error('Error calculating child age', error, { metadata: { treeId: tree.id } })
     return undefined
   }
 }
@@ -98,7 +98,7 @@ export default function TreeLeavesPage() {
         .single()
 
       if (treeError) {
-        logger.error('Error loading tree', treeError, { treeId })
+        logger.error('Error loading tree', treeError, { metadata: { treeId } })
         return
       }
 
@@ -119,7 +119,7 @@ export default function TreeLeavesPage() {
         .eq('tree_id', treeId)
 
       if (branchError) {
-        logger.error('Error loading branches', branchError, { treeId })
+        logger.error('Error loading branches', branchError, { metadata: { treeId } })
       } else {
         setBranches(branchData || [])
       }
@@ -138,7 +138,7 @@ export default function TreeLeavesPage() {
       setTreeStats(stats)
 
     } catch (error) {
-      logger.error('Error loading initial data', error, { treeId })
+      logger.error('Error loading initial data', error, { metadata: { treeId } })
     } finally {
       setIsLoading(false)
     }
@@ -195,7 +195,7 @@ export default function TreeLeavesPage() {
         ))
       }
     } catch (error) {
-      logger.error('Error refreshing leaf', error, { leafId })
+      logger.error('Error refreshing leaf', error, { metadata: { leafId } })
     }
   }
 
@@ -217,7 +217,7 @@ export default function TreeLeavesPage() {
         setTreeStats(updatedStats)
       }
     } catch (error) {
-      logger.error('Error creating leaf', error, { leafData: data })
+      logger.error('Error creating leaf', error, { metadata: { leafData } })
     }
   }
 

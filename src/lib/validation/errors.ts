@@ -144,10 +144,12 @@ export function createUserFriendlyMessage(error: unknown): string {
 export function handleValidationError(error: unknown, context?: Record<string, unknown>) {
   if (error instanceof ValidationError) {
     logger.warn('Validation error occurred', {
-      code: error.code,
-      field: error.field,
-      message: error.message,
-      ...context,
+      metadata: {
+        code: error.code,
+        field: error.field,
+        message: error.message,
+        ...context,
+      }
     })
     return {
       type: 'validation',
@@ -170,9 +172,11 @@ export function handleValidationError(error: unknown, context?: Record<string, u
 
   if (error instanceof RateLimitError) {
     logger.warn('Rate limit exceeded', {
-      message: error.message,
-      retryAfter: error.retryAfter,
-      ...context,
+      metadata: {
+        message: error.message,
+        retryAfter: error.retryAfter,
+        ...context,
+      }
     })
     return {
       type: 'rateLimit',
@@ -288,9 +292,11 @@ export async function withRetry<T>(
       )
 
       logger.info('Retrying operation after error', {
-        attempt,
-        maxRetries,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        metadata: {
+          attempt,
+          maxRetries,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }
       })
     }
   }

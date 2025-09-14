@@ -54,7 +54,7 @@ export function useFormValidation<T extends Record<string, unknown>>(
   const validateField = useCallback((field: keyof T, value: unknown): string | null => {
     try {
       // Create a minimal object to validate just this field
-      const fieldSchema = schema.pick({ [field]: true } as any)
+      const fieldSchema = (schema as any).pick({ [field]: true })
       const result = validateData(fieldSchema, { [field]: value })
       
       if (result.success) {
@@ -82,7 +82,9 @@ export function useFormValidation<T extends Record<string, unknown>>(
 
       if (result.success) {
         clearErrors()
-        onValidationSuccess?.(result.data)
+        if (result.data) {
+          onValidationSuccess?.(result.data)
+        }
       } else {
         // Convert Zod errors to field-specific errors
         const fieldErrors: Record<string, string> = {}
@@ -144,7 +146,7 @@ export function useFieldValidation<T extends Record<string, unknown>>(
     
     try {
       // Extract just the schema for this field
-      const fieldSchema = schema.pick({ [field]: true } as any)
+      const fieldSchema = (schema as any).pick({ [field]: true })
       const result = validateData(fieldSchema, { [field]: value })
       
       if (result.success) {

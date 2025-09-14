@@ -101,7 +101,7 @@ export async function getBranchLeaves(branchId: string, limit = 20, offset = 0):
       .range(offset, offset + limit - 1)
 
     if (error) {
-      logger.error('Error fetching branch leaves', error, { branchId, offset, limit })
+      logger.error('Error fetching branch leaves', error, { metadata: { branchId, offset, limit } })
       return []
     }
 

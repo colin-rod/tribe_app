@@ -93,7 +93,7 @@ function MemoryCard({ memoryPreview }: { memoryPreview: MemoryPreview }) {
   return (
     <motion.div
       className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/30 overflow-hidden"
-      whileHover={false} // Disable hover during flight
+      // Hover disabled during flight animation
     >
       {/* Media Preview */}
       {hasMedia && primaryMediaFile && (
@@ -115,7 +115,7 @@ function MemoryCard({ memoryPreview }: { memoryPreview: MemoryPreview }) {
           {/* Type indicator */}
           <div className="absolute top-2 right-2 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center">
             <Icon 
-              name={getLeafTypeIcon(memoryPreview.leafType)} 
+              name={getLeafTypeIcon(memoryPreview.leafType as any) as any} 
               size="xs" 
               className="text-leaf-600" 
             />

@@ -198,7 +198,7 @@ export async function removeLeafFromBranch(
 
     return true
   } catch (error) {
-    logger.error('Error removing leaf from branch', error, { leafId, branchId })
+    logger.error('Error removing leaf from branch', error, { metadata: { leafId, branchId } })
     return false
   }
 }
@@ -218,7 +218,7 @@ export async function deleteUnassignedLeaf(leafId: string, userId: string): Prom
       .single()
 
     if (leafError || !leaf) {
-      logger.error('Leaf not found or not eligible for deletion', leafError, { leafId, userId })
+      logger.error('Leaf not found or not eligible for deletion', leafError, { metadata: { leafId, userId } })
       return false
     }
 
@@ -235,7 +235,7 @@ export async function deleteUnassignedLeaf(leafId: string, userId: string): Prom
 
     return true
   } catch (error) {
-    logger.error('Error deleting unassigned leaf', error, { leafId, userId })
+    logger.error('Error deleting unassigned leaf', error, { metadata: { leafId, userId } })
     return false
   }
 }
@@ -285,7 +285,7 @@ export async function canUserAssignTosBranch(
       (permissions && permissions.includes('manage_content'))
     )
   } catch (error) {
-    logger.error('Error checking assignment permissions', error, { userId, branchId })
+    logger.error('Error checking assignment permissions', error, { metadata: { userId, branchId } })
     return false
   }
 }

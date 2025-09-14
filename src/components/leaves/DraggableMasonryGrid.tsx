@@ -121,7 +121,7 @@ export default function DraggableMasonryGrid({
     setAssigningLeaves(prev => new Set([...prev, leafId]))
     
     try {
-      await assignLeafToBranches(leafId, branchIds)
+      await assignLeafToBranches(leafId, branchIds, userId)
       
       onLeafAssigned?.(leafId, branchIds)
       

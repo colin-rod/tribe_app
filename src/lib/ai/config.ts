@@ -96,7 +96,7 @@ export async function testAIConnection() {
         logger.info('OpenAI API connection successful')
         return true
       } else {
-        logger.error('OpenAI API error', null, { status: response.status, statusText: response.statusText })
+        logger.error('OpenAI API error', { metadata: { status: response.status, statusText: response.statusText } })
         return false
       }
     }

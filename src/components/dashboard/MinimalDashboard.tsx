@@ -6,7 +6,8 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import { TreeWithMembers, BranchWithMembers } from '@/types/common'
+import { TreeWithMembers } from '@/types/common'
+import { BranchWithDetails, Profile } from '@/types/database'
 import { supabase } from '@/lib/supabase/client'
 import { PinterestInboxPanel } from '@/components/leaves/PinterestInboxPanel'
 import { TreeBranchView } from './TreeBranchView'
@@ -20,11 +21,12 @@ import { useDashboardNavigation } from '@/hooks/useDashboardNavigation'
 
 interface MinimalDashboardProps {
   user: User
-  userBranches: BranchWithMembers[]
+  profile?: Profile
+  userBranches: BranchWithDetails[]
   trees: TreeWithMembers[]
 }
 
-export default function MinimalDashboard({ user, userBranches, trees }: MinimalDashboardProps) {
+export default function MinimalDashboard({ user, profile, userBranches, trees }: MinimalDashboardProps) {
   // Basic prop validation
   if (!user?.id) {
     throw new Error('MinimalDashboard: user.id is required')
@@ -35,7 +37,7 @@ export default function MinimalDashboard({ user, userBranches, trees }: MinimalD
   if (!Array.isArray(trees)) {
     throw new Error('MinimalDashboard: trees must be an array')
   }
-  const [selectedBranch, setSelectedBranch] = useState<BranchWithMembers['branches'] | null>(null)
+  const [selectedBranch, setSelectedBranch] = useState<any | null>(null)
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -47,7 +49,7 @@ export default function MinimalDashboard({ user, userBranches, trees }: MinimalD
 
   // Memoize expensive computations
   const branchesByTree = useMemo(() => 
-    groupBranchesByTree(userBranches, trees), 
+    groupBranchesByTree(userBranches as any, trees), 
     [userBranches, trees]
   )
   

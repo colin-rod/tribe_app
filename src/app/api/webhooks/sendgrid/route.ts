@@ -65,15 +65,15 @@ async function handleSendGridWebhook(req: NextRequest): Promise<NextResponse> {
         logger.debug('MIME parsing results', {
           metadata: {
             subject: parsed.subject || 'No subject',
-            from: parsed.from?.text || 'Unknown sender',
-            to: parsed.to?.text || 'Unknown recipient',
+            from: Array.isArray(parsed.from) ? parsed.from[0]?.text : parsed.from?.text || 'Unknown sender',
+            to: Array.isArray(parsed.to) ? parsed.to[0]?.text : parsed.to?.text || 'Unknown recipient',
             attachmentCount: parsed.attachments?.length || 0
           }
         })
         
         emailData = {
-          to: parsed.to?.text || formData.get('to') as string || '',
-          from: parsed.from?.text || formData.get('from') as string || '',
+          to: Array.isArray(parsed.to) ? parsed.to[0]?.text : parsed.to?.text || formData.get('to') as string || '',
+          from: Array.isArray(parsed.from) ? parsed.from[0]?.text : parsed.from?.text || formData.get('from') as string || '',
           subject: parsed.subject || '',
           text: parsed.text || '',
           html: parsed.html as string || '',

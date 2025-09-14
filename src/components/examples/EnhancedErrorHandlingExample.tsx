@@ -13,6 +13,9 @@ import { LoadingButton, LoadingOverlay, LoadingSkeleton, LoadingSpinner } from '
 import { ErrorDisplay, InlineError } from '@/components/ui/ErrorDisplay'
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
 import { AppError, ErrorCodes, createError } from '@/lib/error-handler'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('EnhancedErrorHandlingExample')
 import { treeCreateSchema } from '@/lib/validation/schemas'
 import { z } from 'zod'
 
@@ -27,8 +30,6 @@ export default function EnhancedErrorHandlingExample() {
       email: z.string().email('Please enter a valid email'),
       description: z.string().min(10, 'Description must be at least 10 characters')
     }),
-    validateOnChange: true,
-    validateOnBlur: true,
     sanitize: true
   })
 
@@ -184,16 +185,16 @@ export default function EnhancedErrorHandlingExample() {
                 onChange={(e) => {
                   const value = e.target.value
                   setFormData(prev => ({ ...prev, name: value }))
-                  formValidation.handleFieldChange('name', value)
+                  formValidation.validateField('name', value)
                 }}
-                onBlur={(e) => formValidation.handleFieldBlur('name', e.target.value)}
+                onBlur={(e) => formValidation.validateField('name', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formValidation.hasFieldError('name') ? 'border-red-500' : 'border-gray-300'
+                  formValidation.errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter your name"
               />
-              {formValidation.hasFieldError('name') && (
-                <InlineError message={formValidation.getFieldError('name')!} />
+              {formValidation.errors.name && (
+                <InlineError message={formValidation.errors.name!} />
               )}
             </div>
 
@@ -207,16 +208,16 @@ export default function EnhancedErrorHandlingExample() {
                 onChange={(e) => {
                   const value = e.target.value
                   setFormData(prev => ({ ...prev, email: value }))
-                  formValidation.handleFieldChange('email', value)
+                  formValidation.validateField('email', value)
                 }}
-                onBlur={(e) => formValidation.handleFieldBlur('email', e.target.value)}
+                onBlur={(e) => formValidation.validateField('email', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formValidation.hasFieldError('email') ? 'border-red-500' : 'border-gray-300'
+                  formValidation.errors.email ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter your email"
               />
-              {formValidation.hasFieldError('email') && (
-                <InlineError message={formValidation.getFieldError('email')!} />
+              {formValidation.errors.email && (
+                <InlineError message={formValidation.errors.email!} />
               )}
             </div>
 
@@ -229,17 +230,17 @@ export default function EnhancedErrorHandlingExample() {
                 onChange={(e) => {
                   const value = e.target.value
                   setFormData(prev => ({ ...prev, description: value }))
-                  formValidation.handleFieldChange('description', value)
+                  formValidation.validateField('description', value)
                 }}
-                onBlur={(e) => formValidation.handleFieldBlur('description', e.target.value)}
+                onBlur={(e) => formValidation.validateField('description', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formValidation.hasFieldError('description') ? 'border-red-500' : 'border-gray-300'
+                  formValidation.errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter description (min 10 characters)"
                 rows={3}
               />
-              {formValidation.hasFieldError('description') && (
-                <InlineError message={formValidation.getFieldError('description')!} />
+              {formValidation.errors.description && (
+                <InlineError message={formValidation.errors.description!} />
               )}
             </div>
 
@@ -282,7 +283,7 @@ export default function EnhancedErrorHandlingExample() {
                 loading={retryOperation.isRetrying}
                 className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
               >
-                Operation with Retry ({retryOperation.currentAttempt}/{retryOperation.maxRetries || 3})
+                Operation with Retry ({retryOperation.currentAttempt}/3)
               </LoadingButton>
 
               <LoadingButton

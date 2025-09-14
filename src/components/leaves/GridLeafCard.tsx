@@ -124,7 +124,7 @@ const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
                 >
                   <Button
                     size="sm"
-                    variant="secondary"
+                    variant="outline"
                     className="bg-white/90 hover:bg-white text-gray-700 text-xs"
                     onClick={() => setShowAssignMenu(!showAssignMenu)}
                   >
@@ -132,7 +132,7 @@ const GridLeafCard = forwardRef<HTMLDivElement, GridLeafCardProps>(
                   </Button>
                   <Button
                     size="sm"
-                    variant="secondary"
+                    variant="outline"
                     className="bg-white/90 hover:bg-white text-gray-700 text-xs p-2"
                     onClick={() => setShowOptions(!showOptions)}
                   >

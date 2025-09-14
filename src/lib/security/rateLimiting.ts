@@ -87,7 +87,7 @@ class RedisRateLimiter {
         total: config.maxRequests
       }
     } catch (error) {
-      logger.error('Redis rate limit check failed, allowing request', error, { key })
+      logger.error('Redis rate limit check failed, allowing request', error, { metadata: { key } })
       // Fail open - allow request if Redis is down
       return {
         allowed: true,
@@ -226,10 +226,12 @@ export async function applyRateLimit(
   // Log rate limit violations
   if (!result.allowed) {
     logger.warn('Rate limit exceeded', {
-      key,
-      config: typeof configName === 'string' ? configName : 'custom',
-      remaining: result.remaining,
-      resetTime: new Date(result.resetTime).toISOString()
+      metadata: {
+        key,
+        config: typeof configName === 'string' ? configName : 'custom',
+        remaining: result.remaining,
+        resetTime: new Date(result.resetTime).toISOString()
+      }
     })
   }
   

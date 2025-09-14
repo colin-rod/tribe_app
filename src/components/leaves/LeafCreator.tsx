@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { LeafType, Milestone, LeafEnhancementRequest, LeafEnhancementResult } from '@/types/database'
+import { LeafType, Milestone } from '@/types/database'
+import { LeafEnhancementRequest, LeafEnhancementResult } from '@/lib/ai/promptingEngine'
 import { getPromptingEngine } from '@/lib/ai/promptingEngine'
 import { supabase } from '@/lib/supabase/client'
 import { uploadLeafMedia } from '@/lib/leaves'
@@ -70,8 +71,10 @@ export default function LeafCreator({
     generateThumbnails: true,
     onUploadComplete: (results) => {
       logger.info('File uploads completed', { 
-        count: results.length,
-        successful: results.filter(r => r.success).length
+        metadata: {
+          count: results.length,
+          successful: results.filter(r => r.success).length
+        }
       })
     },
     onUploadError: (error) => {
@@ -179,13 +182,14 @@ export default function LeafCreator({
 
   const handleAIEnhance = async () => {
     setIsEnhancing(true)
+    
+    // Get preview URLs from uploaded files  
+    const mediaUrls = fileUpload.files
+      .filter(file => file.preview)
+      .map(file => file.preview!)
+    
     try {
       const promptingEngine = getPromptingEngine()
-      
-      // Get preview URLs from uploaded files
-      const mediaUrls = fileUpload.files
-        .filter(file => file.preview)
-        .map(file => file.preview!)
       
       const request: LeafEnhancementRequest = {
         leafId: '', // Will be generated on save
@@ -245,8 +249,10 @@ export default function LeafCreator({
         
         if (uploadResults.some(r => !r.success)) {
           logger.warn('Some file uploads failed', {
-            failed: uploadResults.filter(r => !r.success).length,
-            total: uploadResults.length
+            metadata: {
+              failed: uploadResults.filter(r => !r.success).length,
+              total: uploadResults.length
+            }
           })
         }
       }
@@ -331,7 +337,7 @@ export default function LeafCreator({
               }`}
             >
               <div className="mb-1 flex justify-center">
-                <Icon name={option.icon} size="xl" className="text-bark-400" />
+                <Icon name={option.icon as any} size="xl" className="text-bark-400" />
               </div>
               <div className="font-medium text-sm">{option.label}</div>
               <div className="text-xs text-gray-500 mt-1">{option.description}</div>
@@ -409,7 +415,7 @@ export default function LeafCreator({
               }))}
               onRetry={(fileId) => {
                 // Retry logic could be added here if needed
-                logger.info('Retry requested for file', { fileId })
+                logger.info('Retry requested for file', { metadata: { fileId } })
               }}
               onCancel={(fileId) => fileUpload.removeFile(fileId)}
             />

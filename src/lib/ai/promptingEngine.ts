@@ -181,7 +181,7 @@ class SmartPromptingEngine {
 
       return smartPrompt
     } catch (error) {
-      logger.error('Error generating proactive prompt', error, { userId, branchId })
+      logger.error('Error generating proactive prompt', error, { metadata: { userId, branchId } })
       return null
     }
   }
@@ -221,9 +221,7 @@ class SmartPromptingEngine {
       await contextManager.updateUserState(userId, branchId, {
         prompt: prompt.content,
         response: userResponse,
-        engagement,
-        analysis,
-        tags: responseAnalyzer.generateSuggestedTags(analysis)
+        engagement
       })
 
       // Generate follow-up if appropriate
@@ -279,7 +277,7 @@ class SmartPromptingEngine {
 
       return null
     } catch (error) {
-      logger.error('Error processing user response', error, { userId, promptId, response: response.length + ' chars' })
+      logger.error('Error processing user response', error, { metadata: { userId, promptId, responseLength: userResponse.length } })
       return null
     }
   }
@@ -355,7 +353,7 @@ class SmartPromptingEngine {
 
       return prompts
     } catch (error) {
-      logger.error('Error checking for milestones', error, { userId, branchId })
+      logger.error('Error checking for milestones', error)
       return []
     }
   }
@@ -387,7 +385,7 @@ class SmartPromptingEngine {
         status: 'pending'
       })) || []
     } catch (error) {
-      logger.error('Error getting pending prompts', error, { userId, branchId })
+      logger.error('Error getting pending prompts', error)
       return []
     }
   }
@@ -525,10 +523,10 @@ class SmartPromptingEngine {
         })
 
       if (error && error.code !== '42P01') { // Ignore table doesn't exist error for now
-        logger.error('Error storing response analysis', error, { responseId, userId, branchId })
+        logger.error('Error storing response analysis', error, { metadata: { userId, branchId } })
       }
     } catch (error) {
-      logger.error('Error in storeResponseAnalysis', error, { responseId, userId, branchId })
+      logger.error('Error in storeResponseAnalysis', error, { metadata: { userId, branchId } })
     }
   }
 
@@ -550,7 +548,7 @@ class SmartPromptingEngine {
       })
 
     if (error) {
-      logger.error('Error saving smart prompt', error, { promptId: prompt.id, branchId: prompt.branchId, promptType: prompt.promptType })
+      logger.error('Error saving smart prompt', error, { metadata: { promptId: prompt.id, branchId: prompt.branchId, promptType: prompt.promptType } })
       throw error
     }
   }
@@ -587,7 +585,7 @@ class SmartPromptingEngine {
       .eq('id', promptId)
 
     if (error) {
-      logger.error('Error updating prompt status', error, { promptId, status })
+      logger.error('Error updating prompt status', error, { metadata: { promptId, status } })
     }
   }
 
@@ -673,7 +671,7 @@ class SmartPromptingEngine {
         confidence: aiResponse.confidence
       }
     } catch (error) {
-      logger.error('Error enhancing leaf', error, { leafId: request.leafId, leafType: request.leafType })
+      logger.error('Error enhancing leaf', error, { metadata: { leafId: request.leafId } })
       return this.generateDemoLeafEnhancement(request)
     }
   }
@@ -713,7 +711,7 @@ class SmartPromptingEngine {
       const analysis = this.analyzeContentPatterns(content, mediaUrls)
       return analysis
     } catch (error) {
-      logger.error('Error analyzing leaf content', error, { contentLength: content?.length || 0, mediaCount: mediaUrls?.length || 0 })
+      logger.error('Error analyzing leaf content', error, { metadata: { contentLength: content?.length || 0, mediaCount: mediaUrls?.length || 0 } })
       return {
         contentQuality: 'low',
         suggestions: ['Unable to analyze content'],

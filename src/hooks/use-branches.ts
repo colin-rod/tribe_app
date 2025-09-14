@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { branchService } from '@/lib/data'
 import { queryKeys, invalidateQueries } from '@/lib/query-client'
 import { Branch, BranchMember, BranchPermissions } from '@/types/database'
-import { BranchWithMembers, BranchWithRelations } from '@/types/common'
+import { BranchWithMembers } from '@/types/common'
 import { CreateBranchData, UpdateBranchData } from '@/lib/data/branch-service'
 import { getUserBranchPermissions } from '@/lib/rbac'
 import toast from 'react-hot-toast'
@@ -31,7 +31,7 @@ export const useUserBranches = (userId: string, treeId?: string, enabled = true)
     queryKey: queryKeys.branches.byUser(userId, treeId),
     queryFn: async () => {
       const { getUserBranches } = await import('@/lib/branches')
-      return getUserBranches(userId, treeId)
+      return getUserBranches(userId)
     },
     enabled: !!userId && enabled,
     staleTime: 2 * 60 * 1000,

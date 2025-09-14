@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
-import type { Profile } from '@/types/database'
+import type { Profile, FamilyRole } from '@/types/database'
 import {
   ProfileSettings,
   PrivacySettings,
@@ -91,7 +91,7 @@ export default function SettingsPage() {
 
       return publicUrl
     } catch (error) {
-      logger.error('Error uploading avatar', error, { file: file.name, fileSize: file.size })
+      logger.error('Error uploading avatar', error, { metadata: { file: avatarFile.name, fileSize: avatarFile.size } })
       throw error
     }
   }
@@ -142,15 +142,15 @@ export default function SettingsPage() {
         first_name: data.firstName,
         last_name: data.lastName,
         bio: data.bio,
-        family_role: data.familyRole || null,
+        family_role: (data.familyRole || null) as FamilyRole | null,
         avatar_url: avatarUrl,
       })
 
       showMessage('success', 'Profile updated successfully!')
       
     } catch (error: unknown) {
-      logger.error('Error updating profile', error, { userId: user?.id, profileData: data })
-      showMessage('error', error.message || 'Failed to update profile')
+      logger.error('Error updating profile', error, { metadata: { userId: user?.id, profileData: data } })
+      showMessage('error', (error instanceof Error ? error.message : 'Unknown error') || 'Failed to update profile')
     } finally {
       setSaving(false)
     }
@@ -171,7 +171,7 @@ export default function SettingsPage() {
       showMessage('success', 'Password changed successfully!')
     } catch (error: unknown) {
       logger.error('Error changing password', error, { userId: user?.id })
-      throw new Error(error.message || 'Failed to change password')
+      throw new Error((error instanceof Error ? error.message : 'Unknown error') || 'Failed to change password')
     }
   }
 
@@ -273,7 +273,7 @@ export default function SettingsPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <Icon name={tab.icon} size="sm" className="mr-2" />
+                <Icon name={tab.icon as any} size="sm" className="mr-2" />
                 {tab.name}
               </button>
             ))}

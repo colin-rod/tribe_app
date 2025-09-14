@@ -44,7 +44,7 @@ const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
 
 export function useRetryOperation(config: RetryConfig = {}) {
   const finalConfig = { ...DEFAULT_RETRY_CONFIG, ...config }
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   
   const [state, setState] = useState<RetryState>({
     isRetrying: false,

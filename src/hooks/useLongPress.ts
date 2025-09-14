@@ -30,8 +30,8 @@ export function useLongPress({
   delay = 500,
   preventDefault = true
 }: UseLongPressOptions): LongPressHandlers {
-  const timeoutRef = useRef<NodeJS.Timeout>()
-  const animationFrameRef = useRef<number>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const animationFrameRef = useRef<number | undefined>(undefined)
   const isLongPressRef = useRef(false)
   const startTimeRef = useRef<number>(0)
 
@@ -107,7 +107,7 @@ export function useTouchLongPress(
   onLongPress: () => void,
   delay: number = 500
 ) {
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const handleTouchStart = useCallback(() => {
     timeoutRef.current = setTimeout(onLongPress, delay)

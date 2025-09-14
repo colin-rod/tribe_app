@@ -9,8 +9,8 @@ interface TreeData {
     id: string
     name: string
     person_name: string
-    person_birth_date?: string
-    description?: string
+    person_birth_date?: string | null
+    description?: string | null
   } | null
 }
 
@@ -112,7 +112,7 @@ export function PersonTreeSelector({
             const isSelected = selectedTreeIds.includes(treeData.tree_id)
             const tree = treeData.trees
             const personName = tree?.person_name || tree?.name || 'Unknown Person'
-            const age = formatPersonAge(tree?.person_birth_date)
+            const age = formatPersonAge(tree?.person_birth_date || undefined)
             
             return (
               <label 

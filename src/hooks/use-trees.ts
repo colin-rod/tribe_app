@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { treeService } from '@/lib/data'
 import { queryKeys, invalidateQueries } from '@/lib/query-client'
 import { Tree, TreeMember } from '@/types/database'
-import { TreeWithMembers, TreeWithRelations } from '@/types/common'
+import { TreeWithMembers } from '@/types/common'
 import { CreateTreeData, UpdateTreeData } from '@/lib/data/tree-service'
 import toast from 'react-hot-toast'
 

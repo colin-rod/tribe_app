@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
         const isWebhookCall = !user && apiKey
         
         if (!user && !isWebhookCall) {
-          logger.warn('Unauthorized leaf creation attempt', { userError })
+          logger.warn('Unauthorized leaf creation attempt', { metadata: { userError } })
           return NextResponse.json(
             { error: 'Unauthorized' },
             { status: 401 }
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
         if (isWebhookCall) {
           const expectedApiKey = process.env.WEBHOOK_API_KEY
           if (!expectedApiKey || apiKey !== expectedApiKey) {
-            logger.warn('Invalid API key for webhook call', { providedKey: apiKey?.substring(0, 8) + '...' })
+            logger.warn('Invalid API key for webhook call', { metadata: { providedKey: apiKey?.substring(0, 8) + '...' } })
             return NextResponse.json(
               { error: 'Invalid API key' },
               { status: 401 }
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
             .single()
             
           if (authorError || !authorProfile) {
-            logger.warn('Invalid author_id in webhook call', { authorId: validatedData.author_id })
+            logger.warn('Invalid author_id in webhook call', { metadata: { authorId: validatedData.author_id } })
             return NextResponse.json(
               { error: 'Invalid author ID' },
               { status: 400 }
@@ -99,9 +99,9 @@ export async function POST(req: NextRequest) {
         })
 
         if (!leaf) {
-          logger.error('Failed to create unassigned leaf', { 
+          logger.error('Failed to create unassigned leaf', undefined, { 
             userId: authorId, 
-            data: validatedData 
+            metadata: { data: validatedData }
           })
           return NextResponse.json(
             { error: 'Failed to create leaf' },
@@ -110,10 +110,12 @@ export async function POST(req: NextRequest) {
         }
 
         logger.info('Unassigned leaf created successfully', { 
-          leafId: leaf.id, 
           userId: authorId,
-          leafType: leaf.leaf_type,
-          isWebhook: isWebhookCall
+          metadata: {
+            leafId: leaf.id, 
+            leafType: leaf.leaf_type,
+            isWebhook: isWebhookCall
+          }
         })
 
         return NextResponse.json(

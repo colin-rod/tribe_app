@@ -53,11 +53,20 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
 
       if (updateError) throw updateError
 
+      // Get the tree_id from the branch first
+      const { data: branch, error: branchError } = await supabase
+        .from('branches')
+        .select('tree_id')
+        .eq('id', invitation.branch_id)
+        .single()
+
+      if (branchError || !branch) throw new Error('Branch not found')
+
       // Add user to tree
       const { error: memberError } = await supabase
         .from('tree_members')
         .insert({
-          tree_id: invitation.tree_id,
+          tree_id: branch.tree_id,
           user_id: user.id,
           role: invitation.role
         })
@@ -69,7 +78,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
       const { data: branches, error: branchesError } = await supabase
         .from('branches')
         .select('id')
-        .eq('tree_id', invitation.tree_id)
+        .eq('tree_id', branch.tree_id)
 
       if (branchesError) throw branchesError
 
@@ -91,8 +100,8 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
       router.push('/dashboard')
 
     } catch (error: unknown) {
-      logger.error('Error accepting invitation', error, { invitationId: invitation.id, userId: user?.id })
-      setError(error.message)
+      logger.error('Error accepting invitation', error, { metadata: { invitationId: invitation.id, userId: currentUser?.id } })
+      setError(error instanceof Error ? error.message : 'Unknown error')
       setLoading(false)
     }
   }
@@ -127,7 +136,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
         }
       }
     } catch (error: unknown) {
-      setError(error.message)
+      setError(error instanceof Error ? error.message : 'Unknown error')
     } finally {
       setLoading(false)
     }
@@ -145,7 +154,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Joining Your Tree</h2>
           <p className="text-gray-600">
-            Please wait while we add you to {invitation.trees.name}...
+            Please wait while we add you to the branch...
           </p>
         </div>
       </div>
@@ -169,17 +178,13 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
           <div className="text-center mb-6">
             <p className="text-gray-600 mb-2">
               <strong className="text-gray-900">
-                {invitation.profiles?.first_name} {invitation.profiles?.last_name}
+                Someone
               </strong> has invited you to join
             </p>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {invitation.trees.name}
+              {invitation.branch_name || 'Branch'}
             </h3>
-            {invitation.trees.description && (
-              <p className="text-sm text-gray-600 mb-4">
-                {invitation.trees.description}
-              </p>
-            )}
+            {/* Description would be fetched separately */}
             <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
               {invitation.role === 'admin' ? 'Admin' : invitation.role === 'member' ? 'Member' : 'Viewer'} Access
             </div>

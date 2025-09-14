@@ -34,7 +34,7 @@ export function useDashboardNavigation({
     onDrag: ({ direction: [dx], distance, cancel }) => {
       if (!enableSwipeNavigation) return
       
-      if (distance > 100) {
+      if (Array.isArray(distance) ? Math.hypot(distance[0], distance[1]) > 100 : distance > 100) {
         if (dx > 0 && currentView === 'tree') {
           setCurrentView('inbox')
           cancel()

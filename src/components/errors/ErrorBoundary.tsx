@@ -85,10 +85,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Log React error info using structured logging
       logger.error('React Error Boundary caught an error', appError, {
-        errorId,
-        componentStack: errorInfo.componentStack,
-        errorBoundary: this.constructor.name,
-        nodeEnv: process.env.NODE_ENV
+        metadata: {
+          errorId,
+          componentStack: errorInfo.componentStack,
+          errorBoundary: this.constructor.name,
+          nodeEnv: process.env.NODE_ENV
+        }
       })
     }
   }
@@ -97,7 +99,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     const { resetKeys, resetOnPropsChange } = this.props
     const { hasError } = this.state
 
-    if (hasError && !prevProps.hasError) {
+    if (hasError) {
       return
     }
 

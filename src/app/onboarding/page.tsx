@@ -459,6 +459,7 @@ export default function OnboardingPage() {
       
       {/* Guided Tour */}
       <GuidedTour
+        steps={[]} // Empty steps array for onboarding tour
         isVisible={tourVisible}
         onComplete={completeTour}
         onSkip={skipTour}

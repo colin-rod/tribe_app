@@ -74,7 +74,7 @@ class ConversationContextManager {
       familyRole: userProfile.family_role,
       recentMessages: recentMessages.map(msg => ({
         content: msg.content || '',
-        author: `${msg.profiles?.first_name} ${msg.profiles?.last_name}`.trim(),
+        author: `${(msg.profiles as any)?.first_name || ''} ${(msg.profiles as any)?.last_name || ''}`.trim(),
         timestamp: new Date(msg.created_at),
         milestoneType: msg.milestone_type || undefined
       })),
@@ -264,7 +264,7 @@ class ConversationContextManager {
       .limit(1)
 
     if (error) {
-      logger.error('Error fetching user conversation state', error, { userId, branchId })
+      logger.error('Error fetching user conversation state', error, { metadata: { userId, branchId } })
     }
 
     const existingState = existingStates?.[0]
@@ -322,7 +322,7 @@ class ConversationContextManager {
       })
 
     if (error) {
-      logger.error('Error persisting user state', error, { userId: state.userId, branchId: state.branchId })
+      logger.error('Error persisting user state', error, { metadata: { userId: state.userId, branchId: state.branchId } })
     }
   }
 

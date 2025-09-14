@@ -120,7 +120,7 @@ class AIService {
         confidenceScore: this.calculateConfidenceScore(response)
       }
     } catch (error) {
-      logger.error('AI Service Error', error, { promptType, contextType: context?.branchType })
+      logger.error('AI Service Error', error, { metadata: { promptType, contextType: context?.branchType } })
       throw new Error('Failed to generate AI response')
     }
   }
@@ -171,7 +171,7 @@ class AIService {
         confidenceScore: this.calculateConfidenceScore(response)
       }
     } catch (error) {
-      logger.error('AI Follow-up Error', error, { userResponse: userResponse.length + ' chars' })
+      logger.error('AI Follow-up Error', error, { metadata: { userMessage: userMessage.length + ' chars' } })
       throw new Error('Failed to process user response')
     }
   }
@@ -503,7 +503,7 @@ Keep responses concise (2-3 sentences) and conversational. Focus on drawing out 
         }
       }
     } catch (error) {
-      logger.error('Error generating leaf enhancement', error, { request })
+      logger.error('Error generating leaf enhancement', error, { metadata: { promptLength: prompt.length } })
       throw error
     }
   }

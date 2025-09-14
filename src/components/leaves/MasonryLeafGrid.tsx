@@ -271,6 +271,9 @@ export default function MasonryLeafGrid({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <FormInput
+              id="search-memories"
+              name="search"
+              label=""
               type="text"
               placeholder="Search memories..."
               value={searchQuery}
@@ -404,18 +407,21 @@ export default function MasonryLeafGrid({
       >
         {filteredAndSortedLeaves.length === 0 ? (
           <EmptyState
+            icon={<div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center"><span className="text-gray-400 text-2xl">📝</span></div>}
             title={searchQuery ? "No memories found" : "No unassigned memories"}
             description={
               searchQuery 
                 ? `Try adjusting your search or filters to find what you're looking for.`
                 : "Great! All your memories have been organized into branches."
             }
-            action={
-              searchQuery ? (
-                <Button onClick={() => setSearchQuery('')} variant="outline">
-                  Clear Search
-                </Button>
-              ) : undefined
+            actions={
+              searchQuery ? [
+                {
+                  label: 'Clear Search',
+                  onClick: () => setSearchQuery(''),
+                  variant: 'outline' as const
+                }
+              ] : undefined
             }
           />
         ) : (

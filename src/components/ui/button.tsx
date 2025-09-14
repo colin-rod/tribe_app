@@ -57,12 +57,25 @@ export function Button({
 
   const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`.trim()
 
+  // Separate HTML props from motion props to avoid conflicts
+  const { 
+    onDrag, 
+    onDragStart, 
+    onDragEnd,
+    onAnimationStart,
+    onAnimationEnd,
+    onAnimationIteration,
+    onTransitionStart,
+    onTransitionEnd,
+    ...restProps 
+  } = props
+
   return (
     <motion.button
       className={classes}
       onClick={handleClick}
       {...(tactile ? motionProps : {})}  // Only apply tactile motion if enabled
-      {...props}
+      {...restProps}
     >
       {/* Optional leaf icon motion */}
       {variant === 'leaf' && !shouldReduceMotion && (
