@@ -155,6 +155,7 @@ function detectMilestoneContent(content: string): { isMilestone: boolean; keywor
 export function getLeafTypeDescription(leafType: LeafType): string {
   const descriptions = {
     photo: 'Photo Memory',
+    video: 'Video Memory',
     audio: 'Voice Memory',
     text: 'Written Memory',
     milestone: 'Milestone Memory'
@@ -169,6 +170,7 @@ export function getLeafTypeDescription(leafType: LeafType): string {
 export function getLeafTypeIcon(leafType: LeafType): string {
   const icons = {
     photo: 'camera',
+    video: 'video',
     audio: 'mic',
     text: 'pencil',
     milestone: 'star'

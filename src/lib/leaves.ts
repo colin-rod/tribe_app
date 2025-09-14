@@ -39,7 +39,7 @@ export async function createLeaf(leafData: CreateLeafData): Promise<Leaf | null>
       .single()
 
     if (error) {
-      logger.error('Failed to create leaf in database', error, { action: 'createLeaf' })
+      logger.error('Failed to create leaf in database', error, { metadata: { action: 'createLeaf' } })
       return null
     }
 
@@ -49,7 +49,7 @@ export async function createLeaf(leafData: CreateLeafData): Promise<Leaf | null>
     })
     return data
   } catch (error) {
-    logger.error('Unexpected error creating leaf', error, { action: 'createLeaf' })
+    logger.error('Unexpected error creating leaf', error, { metadata: { action: 'createLeaf' } })
     return null
   }
 }
@@ -107,7 +107,7 @@ export async function getBranchLeaves(branchId: string, limit = 20, offset = 0):
 
     return data || []
   } catch (error) {
-    logger.error('Error fetching branch leaves', error, { branchId, offset, limit })
+    logger.error('Error fetching branch leaves', error, { metadata: { branchId, offset, limit } })
     return []
   }
 }
@@ -128,13 +128,13 @@ export async function addLeafReaction(leafId: string, reactionType: ReactionType
       })
 
     if (error) {
-      logger.error('Error adding leaf reaction', error, { leafId, reactionType })
+      logger.error('Error adding leaf reaction', error, { metadata: { leafId, reactionType } })
       return false
     }
 
     return true
   } catch (error) {
-    logger.error('Error adding leaf reaction', error, { leafId, reactionType })
+    logger.error('Error adding leaf reaction', error, { metadata: { leafId, reactionType } })
     return false
   }
 }
@@ -155,13 +155,13 @@ export async function removeLeafReaction(leafId: string, reactionType: ReactionT
       .eq('reaction_type', reactionType)
 
     if (error) {
-      logger.error('Error removing leaf reaction', error, { leafId, reactionType })
+      logger.error('Error removing leaf reaction', error, { metadata: { leafId, reactionType } })
       return false
     }
 
     return true
   } catch (error) {
-    logger.error('Error removing leaf reaction', error, { leafId, reactionType })
+    logger.error('Error removing leaf reaction', error, { metadata: { leafId, reactionType } })
     return false
   }
 }
@@ -192,13 +192,13 @@ export async function shareLeafWithBranches(leafId: string, branchIds: string[])
       .insert(shareData)
 
     if (error) {
-      logger.error('Error sharing leaf', error, { leafId, branchIds })
+      logger.error('Error sharing leaf', error, { metadata: { leafId, branchIds } })
       return false
     }
 
     return true
   } catch (error) {
-    logger.error('Error sharing leaf', error, { leafId, branchIds })
+    logger.error('Error sharing leaf', error, { metadata: { leafId, branchIds } })
     return false
   }
 }
@@ -220,13 +220,13 @@ export async function addLeafComment(leafId: string, content: string): Promise<b
       })
 
     if (error) {
-      logger.error('Error adding leaf comment', error, { leafId, content: content.length + ' chars' })
+      logger.error('Error adding leaf comment', error, { metadata: { leafId, content: content.length + ' chars' } })
       return false
     }
 
     return true
   } catch (error) {
-    logger.error('Error adding leaf comment', error, { leafId, content: content.length + ' chars' })
+    logger.error('Error adding leaf comment', error, { metadata: { leafId, content: content.length + ' chars' } })
     return false
   }
 }
@@ -266,13 +266,13 @@ export async function getMilestonesByCategory(category: string): Promise<Milesto
       .order('typical_age_months', { ascending: true })
 
     if (error) {
-      logger.error('Error fetching milestones by category', error, { category })
+      logger.error('Error fetching milestones by category', error, { metadata: { category } })
       return []
     }
 
     return data || []
   } catch (error) {
-    logger.error('Error fetching milestones by category', error, { category })
+    logger.error('Error fetching milestones by category', error, { metadata: { category } })
     return []
   }
 }
@@ -338,13 +338,13 @@ export async function searchLeaves(
       .limit(50)
 
     if (error) {
-      logger.error('Error searching leaves', error, { query, filters })
+      logger.error('Error searching leaves', error, { metadata: { query, filters } })
       return []
     }
 
     return data || []
   } catch (error) {
-    logger.error('Error searching leaves', error, { query, filters })
+    logger.error('Error searching leaves', error, { metadata: { query, filters } })
     return []
   }
 }
@@ -366,7 +366,7 @@ export async function getTreeStats(treeId: string): Promise<{
       .eq('tree_id', treeId)
 
     if (error) {
-      logger.error('Error fetching tree stats', error, { treeId })
+      logger.error('Error fetching tree stats', error, { metadata: { treeId } })
       return {
         totalLeaves: 0,
         milestoneCount: 0,
@@ -400,7 +400,7 @@ export async function getTreeStats(treeId: string): Promise<{
 
     return stats
   } catch (error) {
-    logger.error('Error calculating tree stats', error, { treeId })
+    logger.error('Error calculating tree stats', error, { metadata: { treeId } })
     return {
       totalLeaves: 0,
       milestoneCount: 0,
@@ -429,7 +429,7 @@ export async function uploadLeafMedia(files: File[], leafId: string): Promise<st
         .upload(filePath, file)
 
       if (error) {
-        logger.error('Error uploading file', error, { leafId, fileName, filePath })
+        logger.error('Error uploading file', error, { metadata: { leafId, fileName, filePath } })
         return null
       }
 
@@ -444,7 +444,7 @@ export async function uploadLeafMedia(files: File[], leafId: string): Promise<st
     const results = await Promise.all(uploadPromises)
     return results.filter((url): url is string => url !== null)
   } catch (error) {
-    logger.error('Error uploading leaf media', error, { leafId, fileCount: files.length })
+    logger.error('Error uploading leaf media', error, { metadata: { leafId, fileCount: files.length } })
     return []
   }
 }

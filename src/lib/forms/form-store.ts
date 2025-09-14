@@ -305,21 +305,23 @@ export function createFormStore<T extends Record<string, any>>(
       const fieldConfig = fields[field]
       const initialValue = fieldConfig.initialValue
 
-      setState(prev => ({
-        ...prev,
-        data: {
-          ...prev.data,
-          [field]: initialValue
-        },
-        touched: {
-          ...prev.touched,
-          [field]: false
-        },
-        errors: {
-          ...prev.errors,
-          [field]: undefined
-        }
-      }))
+      setState(prev => {
+        const newErrors = { ...prev.errors }
+        delete (newErrors as any)[field]
+        
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            [field]: initialValue
+          },
+          touched: {
+            ...prev.touched,
+            [field]: false
+          },
+          errors: newErrors
+        } as FormState<T>
+      })
     }, [fields])
 
     // Cleanup
@@ -336,7 +338,7 @@ export function createFormStore<T extends Record<string, any>>(
       setError,
       setFieldTouched,
       setTouched,
-      validate: validateField,
+      validate: (field?: keyof T) => field ? validateField(field) : false,
       validateAll,
       submit,
       reset,

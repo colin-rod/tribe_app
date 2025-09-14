@@ -91,9 +91,11 @@ export class UploadQueue {
     this.queue.push(...newFiles)
     
     logger.info('Files added to upload queue', {
-      count: files.length,
-      leafId,
-      totalQueueSize: this.queue.length
+      metadata: {
+        count: files.length,
+        leafId,
+        totalQueueSize: this.queue.length
+      }
     })
 
     // Start processing if not paused
@@ -129,8 +131,10 @@ export class UploadQueue {
       // Process image if enabled and applicable
       if (this.options.processImages && isProcessableImage(uploadFile.file)) {
         logger.info('Processing image before upload', { 
-          fileId: uploadFile.id,
-          fileName: uploadFile.file.name 
+          metadata: {
+            fileId: uploadFile.id,
+            fileName: uploadFile.file.name 
+          }
         })
 
         const processed = await processImage(uploadFile.file, {

@@ -57,9 +57,11 @@ export async function processImage(
   const opts = { ...DEFAULT_OPTIONS, ...options }
   
   logger.info('Starting image processing', {
-    fileName: file.name,
-    originalSize: file.size,
-    options: opts
+    metadata: {
+      fileName: file.name,
+      originalSize: file.size,
+      options: opts
+    }
   })
 
   try {
@@ -84,18 +86,22 @@ export async function processImage(
     }
 
     logger.info('Image processing completed', {
-      fileName: file.name,
-      originalSize: file.size,
-      compressedSize: compressed.size,
-      compressionRatio: `${(compressionRatio * 100).toFixed(1)}%`,
-      thumbnailSize: thumbnail.size
+      metadata: {
+        fileName: file.name,
+        originalSize: file.size,
+        compressedSize: compressed.size,
+        compressionRatio: `${(compressionRatio * 100).toFixed(1)}%`,
+        thumbnailSize: thumbnail.size
+      }
     })
 
     return result
   } catch (error) {
     logger.error('Image processing failed', error, {
-      fileName: file.name,
-      fileSize: file.size
+      metadata: {
+        fileName: file.name,
+        fileSize: file.size
+      }
     })
     throw new Error(`Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
@@ -128,7 +134,7 @@ async function compressImage(file: File, options: ImageProcessingOptions): Promi
       lastModified: compressedFile.lastModified || Date.now()
     })
   } catch (error) {
-    logger.error('Image compression failed', error, { fileName: file.name })
+    logger.error('Image compression failed', error, { metadata: { fileName: file.name } })
     throw error
   }
 }
@@ -156,7 +162,7 @@ async function generateThumbnail(file: File, size: number = 300): Promise<File> 
       lastModified: thumbnail.lastModified || Date.now()
     })
   } catch (error) {
-    logger.error('Thumbnail generation failed', error, { fileName: file.name })
+    logger.error('Thumbnail generation failed', error, { metadata: { fileName: file.name } })
     throw error
   }
 }
@@ -213,8 +219,10 @@ export async function processImages(
       results.push(processed)
     } catch (error) {
       logger.error('Failed to process image in batch', error, { 
-        fileName: file.name,
-        index: i 
+        metadata: {
+          fileName: file.name,
+          index: i 
+        }
       })
       // Continue with other files even if one fails
     }

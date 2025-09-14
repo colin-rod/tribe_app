@@ -20,13 +20,13 @@ export async function getUserUnassignedLeaves(
   offset = 0
 ): Promise<UnassignedLeaf[]> {
   return AsyncUtils.supabaseQuery(
-    () => supabase.rpc('get_user_unassigned_leaves', {
+    async () => supabase.rpc('get_user_unassigned_leaves', {
       user_id: userId,
       limit_count: limit,
       offset_count: offset
     }),
     'Failed to fetch unassigned leaves'
-  ).then(result => result.data || [])
+  ).then(result => (result.data as UnassignedLeaf[]) || [])
 }
 
 /**
@@ -38,14 +38,14 @@ export async function getAllUserLeaves(
   offset = 0
 ): Promise<LeafWithAssignments[]> {
   return AsyncUtils.supabaseQuery(
-    () => supabase
+    async () => supabase
       .from('leaves_with_assignments')
       .select('*')
       .eq('author_id', userId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1),
     'Failed to fetch user leaves'
-  ).then(result => result.data || [])
+  ).then(result => (result.data as LeafWithAssignments[]) || [])
 }
 
 /**
@@ -59,7 +59,7 @@ export async function assignLeafToBranches(
 ): Promise<LeafAssignmentResult> {
   try {
     const result = await AsyncUtils.supabaseQuery(
-      () => supabase.rpc('assign_leaf_to_branches', {
+      async () => supabase.rpc('assign_leaf_to_branches', {
         p_leaf_id: leafId,
         p_branch_ids: branchIds,
         p_assigned_by: assignedBy,
@@ -87,7 +87,7 @@ export async function assignLeafToBranches(
       success: false,
       leaf_id: leafId,
       assignments: [],
-      error: error.message || 'Assignment failed'
+      error: error instanceof Error ? error.message : 'Assignment failed'
     }
   }
 }
@@ -113,7 +113,7 @@ export async function createUnassignedLeaf(
   const client = clientOverride || supabase
   
   return AsyncUtils.supabaseQuery(
-    () => client
+    async () => client
       .from('posts')
       .insert({
         ...leafData,
@@ -128,7 +128,7 @@ export async function createUnassignedLeaf(
       .select()
       .single(),
     'Failed to create unassigned leaf'
-  ).then(result => result.data)
+  ).then(result => result.data as Leaf)
 }
 
 /**
@@ -136,7 +136,7 @@ export async function createUnassignedLeaf(
  */
 export async function getLeafAssignments(leafId: string): Promise<LeafAssignment[]> {
   return AsyncUtils.supabaseQuery(
-    () => supabase
+    async () => supabase
       .from('leaf_assignments')
       .select(`
         *,
@@ -149,7 +149,7 @@ export async function getLeafAssignments(leafId: string): Promise<LeafAssignment
       .eq('leaf_id', leafId)
       .order('assigned_at', { ascending: false }),
     'Failed to fetch leaf assignments'
-  ).then(result => result.data || [])
+  ).then(result => (result.data as LeafAssignment[]) || [])
 }
 
 /**
@@ -161,7 +161,7 @@ export async function removeLeafFromBranch(
 ): Promise<boolean> {
   try {
     const result = await AsyncUtils.supabaseQuery(
-      () => supabase
+      async () => supabase
         .from('leaf_assignments')
         .delete()
         .eq('leaf_id', leafId)
@@ -174,7 +174,7 @@ export async function removeLeafFromBranch(
     
     if (remainingAssignments.length === 0) {
       await AsyncUtils.supabaseQuery(
-        () => supabase
+        async () => supabase
           .from('posts')
           .update({ 
             assignment_status: 'unassigned',
@@ -185,7 +185,7 @@ export async function removeLeafFromBranch(
       )
     } else if (remainingAssignments.length === 1) {
       await AsyncUtils.supabaseQuery(
-        () => supabase
+        async () => supabase
           .from('posts')
           .update({ 
             assignment_status: 'assigned',
@@ -224,7 +224,7 @@ export async function deleteUnassignedLeaf(leafId: string, userId: string): Prom
 
     // Delete the leaf
     const result = await AsyncUtils.supabaseQuery(
-      () => supabase
+      async () => supabase
         .from('posts')
         .delete()
         .eq('id', leafId)
@@ -249,14 +249,14 @@ export async function getBranchLeaves(
   offset = 0
 ): Promise<LeafWithAssignments[]> {
   return AsyncUtils.supabaseQuery(
-    () => supabase
+    async () => supabase
       .from('leaves_with_assignments')
       .select('*')
       .eq('assignments->branch_id', branchId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1),
     'Failed to fetch branch leaves'
-  ).then(result => result.data || [])
+  ).then(result => (result.data as LeafWithAssignments[]) || [])
 }
 
 /**
@@ -268,7 +268,7 @@ export async function canUserAssignTosBranch(
 ): Promise<boolean> {
   try {
     const result = await AsyncUtils.supabaseQuery(
-      () => supabase
+      async () => supabase
         .from('user_branches')
         .select('permissions, role')
         .eq('user_id', userId)
@@ -279,11 +279,10 @@ export async function canUserAssignTosBranch(
 
     if (!result.data) return false
 
-    const { permissions, role } = result.data
-    return (
-      ['owner', 'admin'].includes(role) ||
-      (permissions && permissions.includes('manage_content'))
-    )
+    const { permissions, role } = result.data as { permissions: string[] | null; role: string }
+    const hasRole = ['owner', 'admin'].includes(role)
+    const hasPermission = permissions ? permissions.includes('manage_content') : false
+    return hasRole || hasPermission
   } catch (error) {
     logger.error('Error checking assignment permissions', error, { metadata: { userId, branchId } })
     return false
@@ -303,7 +302,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
     const results = await Promise.all([
       // Total leaves
       AsyncUtils.supabaseQuery(
-        () => supabase
+        async () => supabase
           .from('posts')
           .select('id', { count: 'exact' })
           .eq('author_id', userId),
@@ -311,7 +310,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
       ),
       // Assigned leaves
       AsyncUtils.supabaseQuery(
-        () => supabase
+        async () => supabase
           .from('posts')
           .select('id', { count: 'exact' })
           .eq('author_id', userId)
@@ -320,7 +319,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
       ),
       // Unassigned leaves
       AsyncUtils.supabaseQuery(
-        () => supabase
+        async () => supabase
           .from('posts')
           .select('id', { count: 'exact' })
           .eq('author_id', userId)
@@ -329,7 +328,7 @@ export async function getUserAssignmentStats(userId: string): Promise<{
       ),
       // Multi-assigned leaves
       AsyncUtils.supabaseQuery(
-        () => supabase
+        async () => supabase
           .from('posts')
           .select('id', { count: 'exact' })
           .eq('author_id', userId)
@@ -339,10 +338,10 @@ export async function getUserAssignmentStats(userId: string): Promise<{
     ])
 
     return {
-      totalLeaves: results[0].data?.count || 0,
-      assignedLeaves: results[1].data?.count || 0,
-      unassignedLeaves: results[2].data?.count || 0,
-      multiAssignedLeaves: results[3].data?.count || 0
+      totalLeaves: (results[0].data as any)?.count || 0,
+      assignedLeaves: (results[1].data as any)?.count || 0,
+      unassignedLeaves: (results[2].data as any)?.count || 0,
+      multiAssignedLeaves: (results[3].data as any)?.count || 0
     }
   } catch (error) {
     logger.error('Error getting assignment stats', error, { userId })

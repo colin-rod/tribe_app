@@ -170,9 +170,10 @@ class Logger {
       
       // Sentry integration (if SENTRY_DSN is configured)
       if (typeof window !== 'undefined' && window.Sentry && entry.level >= LogLevel.ERROR) {
+        const sentry = window.Sentry
         promises.push(
           Promise.resolve().then(() => {
-            window.Sentry.captureMessage(entry.message, {
+            sentry.captureMessage(entry.message, {
               level: entry.level === LogLevel.ERROR ? 'error' : 'fatal',
               contexts: {
                 logger: {
@@ -181,7 +182,7 @@ class Logger {
                   metadata: entry.context.metadata
                 }
               },
-              extra: entry.context
+              extra: entry.context as Record<string, unknown>
             })
           })
         )

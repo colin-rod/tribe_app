@@ -4,6 +4,7 @@
  */
 
 // Form store and types
+import { createFormStore, FormFieldConfig, FormState, FormActions } from './form-store'
 export {
   createFormStore,
   type FormConfig,
