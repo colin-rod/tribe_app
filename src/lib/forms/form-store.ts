@@ -258,9 +258,9 @@ export function createFormStore<T extends Record<string, any>>(
         }))
         
         // Handle validation errors from server
-        if (error.context?.fieldErrors) {
-          const serverErrors = Object.keys(error.context.fieldErrors).reduce((acc, key) => {
-            const fieldErrors = error.context.fieldErrors[key]
+        if ((error as any)?.context?.fieldErrors) {
+          const serverErrors = Object.keys((error as any).context.fieldErrors).reduce((acc: any, key: string) => {
+            const fieldErrors = (error as any).context.fieldErrors[key]
             acc[key] = {
               isValid: false,
               errors: fieldErrors,

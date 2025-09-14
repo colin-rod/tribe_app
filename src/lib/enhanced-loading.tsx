@@ -66,7 +66,9 @@ export function useGlobalLoadingStates() {
   useEffect(() => {
     const unsubscribe = loadingStateManager.subscribe(setStates)
     setStates(loadingStateManager.getLoadingStates())
-    return unsubscribe
+    return () => {
+      unsubscribe()
+    }
   }, [])
 
   return {

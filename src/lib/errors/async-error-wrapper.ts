@@ -121,13 +121,17 @@ export function createAsyncOperation<T>(
       data: result.data,
       error: result.error,
       isLoading: false,
-      retry: executeOperation
+      retry: async () => { 
+        await executeOperation()
+      }
     }
 
     return currentState
   }
 
-  currentState.retry = executeOperation
+  currentState.retry = async () => { 
+    await executeOperation()
+  }
   return executeOperation
 }
 

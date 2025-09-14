@@ -32,7 +32,7 @@ export function FormProvider<T extends Record<string, any>>({
   children: React.ReactNode
 }) {
   return (
-    <FormContext.Provider value={{ form }}>
+    <FormContext.Provider value={{ form: form as any }}>
       {children}
     </FormContext.Provider>
   )
@@ -66,8 +66,8 @@ export function TextField<T extends Record<string, any>>({
   const { form } = useFormContext<T>()
   const fieldName = name as keyof T
   const value = form.data[fieldName] || ''
-  const error = form.errors[fieldName]
-  const touched = form.touched[fieldName]
+  const error = (form.errors as any)[fieldName]
+  const touched = (form.touched as any)[fieldName]
   const showError = touched && error && !error.isValid
 
   return (
@@ -136,8 +136,8 @@ export function TextareaField<T extends Record<string, any>>({
   const { form } = useFormContext<T>()
   const fieldName = name as keyof T
   const value = form.data[fieldName] || ''
-  const error = form.errors[fieldName]
-  const touched = form.touched[fieldName]
+  const error = (form.errors as any)[fieldName]
+  const touched = (form.touched as any)[fieldName]
   const showError = touched && error && !error.isValid
 
   return (
@@ -211,8 +211,8 @@ export function SelectField<T extends Record<string, any>>({
   const { form } = useFormContext<T>()
   const fieldName = name as keyof T
   const value = form.data[fieldName] || ''
-  const error = form.errors[fieldName]
-  const touched = form.touched[fieldName]
+  const error = (form.errors as any)[fieldName]
+  const touched = (form.touched as any)[fieldName]
   const showError = touched && error && !error.isValid
 
   return (
