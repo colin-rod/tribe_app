@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createValidationMiddleware, createRateLimitMiddleware } from '@/lib/validation/middleware'
 import { createComponentLogger } from '@/lib/logger'
 import { createUnassignedLeaf, getUserUnassignedLeaves } from '@/lib/leaf-assignments'
+import { notifications } from '@/lib/notifications/scheduler'
 
 const logger = createComponentLogger('LeavesAPI')
 
@@ -117,6 +118,22 @@ export async function POST(req: NextRequest) {
             isWebhook: isWebhookCall
           }
         })
+
+        // For webhook-created leaves (email processing), send notification about successful processing
+        if (isWebhookCall && leaf.content) {
+          try {
+            await notifications.notifyEmailProcessingSuccess({
+              userId: authorId,
+              emailSubject: 'Email processed to memory',
+              memoryId: leaf.id,
+              memoryTitle: leaf.content.substring(0, 100) + (leaf.content.length > 100 ? '...' : '')
+            })
+          } catch (notifError) {
+            logger.warn('Failed to send email processing success notification', notifError, {
+              metadata: { leafId: leaf.id, userId: authorId }
+            })
+          }
+        }
 
         return NextResponse.json(
           { 

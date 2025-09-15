@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
-  // Temporarily allow warnings during builds (TODO: Fix all ESLint warnings)
+  // ESLint configuration - enabled with most critical issues fixed
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
+    // Allow builds to proceed with warnings, but fail on errors
+    dirs: ['src']
   },
   typescript: {
     ignoreBuildErrors: false,
@@ -87,7 +90,7 @@ const nextConfig: NextConfig = {
     ]
   },
   
-  outputFileTracingRoot: '/Users/colinrodrigues/tribe_app',
+  outputFileTracingRoot: path.resolve(__dirname),
 };
 
 export default nextConfig;

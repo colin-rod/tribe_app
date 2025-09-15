@@ -29,7 +29,7 @@ export function useDebounce<T>(value: T, delay: number): T {
 /**
  * Throttle hook for frequent events
  */
-export function useThrottle<T extends (...args: any[]) => any>(
+export function useThrottle<T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T {
@@ -121,7 +121,7 @@ export function useVirtualScroll<T>({
 /**
  * Memoized callback with dependency logging
  */
-export function useCallbackWithDeps<T extends (...args: any[]) => any>(
+export function useCallbackWithDeps<T extends (...args: unknown[]) => unknown>(
   callback: T,
   deps: React.DependencyList,
   debugName?: string
@@ -141,7 +141,7 @@ export function useCallbackWithDeps<T extends (...args: any[]) => any>(
       }
       prevDeps.current = deps
     }
-  }, deps)
+  }, [debugName, deps])
 
   return useCallback(callback, deps)
 }
@@ -169,7 +169,7 @@ export function useMemoWithDeps<T>(
       }
       prevDeps.current = deps
     }
-  }, deps)
+  }, [debugName, deps])
 
   return useMemo(factory, deps)
 }
@@ -248,7 +248,7 @@ export function useBatchedState<T>(initialValue: T) {
 /**
  * Component performance wrapper
  */
-export function withPerformanceMonitoring<P extends Record<string, any>>(
+export function withPerformanceMonitoring<P extends Record<string, unknown>>(
   Component: React.ComponentType<P>,
   componentName?: string
 ) {

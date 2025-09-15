@@ -21,7 +21,7 @@ const rateLimitMiddleware = createRateLimitMiddleware({
  * DELETE /api/auth/delete-account
  * Delete user account and all associated data
  */
-export async function DELETE(req: NextRequest) {
+export async function DELETE(_req: NextRequest) {
   return rateLimitMiddleware(async (req: NextRequest) => {
     try {
       const supabase = await createClient()

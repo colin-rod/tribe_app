@@ -184,7 +184,7 @@ const config: Config = {
   },
   plugins: [
     // Custom plugin for text shadows
-    function({ addUtilities }: any) {
+    function({ addUtilities }: { addUtilities: (utilities: Record<string, Record<string, string>>) => void }) {
       const newUtilities = {
         '.text-shadow-sm': {
           'text-shadow': '0 1px 2px rgba(0, 0, 0, 0.3)',
@@ -203,7 +203,7 @@ const config: Config = {
     },
     
     // Custom plugin for game-like components
-    function({ addComponents }: any) {
+    function({ addComponents }: { addComponents: (components: Record<string, Record<string, Record<string, string>>>) => void }) {
       const components = {
         '.btn-leaf': {
           '@apply relative bg-bark-400 text-leaf-100 border-2 border-bark-400 rounded-lg shadow-md font-semibold transition-all duration-150 hover:bg-bark-200 hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:scale-95': {},

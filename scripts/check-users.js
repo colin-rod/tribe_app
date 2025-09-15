@@ -4,7 +4,7 @@
  * Check what users exist in the database
  */
 
-const https = require('https')
+import https from 'https'
 
 const DOMAIN = 'www.colinrodrigues.com'
 const API_KEY = 'tenxipvzimvpdrfevcmhlolqbqhwlruo'

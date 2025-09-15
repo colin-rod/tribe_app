@@ -2,7 +2,8 @@
  * Common TypeScript interfaces and types
  */
 
-import { Tree, Branch, Profile, LeafWithDetails, Leaf, LeafType, LeafAssignment } from './database'
+import { Tree, Branch, Profile, LeafWithDetails, Leaf, LeafType } from './database'
+// Removed unused import: LeafAssignment
 
 // User-related types
 export interface UserProfile extends Profile {
@@ -252,6 +253,55 @@ export interface UserPreferences {
     show_activity: boolean
     show_email: boolean
   }
+}
+
+// Notification-related utility types
+export interface NotificationPreferencesForm {
+  // Memory-related notifications
+  email_new_memories: boolean
+  email_memory_assignments: boolean
+  email_memory_processing: boolean
+  
+  // Email-to-memory notifications
+  email_processing_success: boolean
+  email_processing_failed: boolean
+  
+  // Branch and tree notifications
+  email_branch_invitations: boolean
+  email_tree_invitations: boolean
+  email_branch_activity: boolean
+  
+  // System notifications
+  email_system_updates: boolean
+  
+  // Digest options
+  email_daily_digest: boolean
+  email_weekly_digest: boolean
+  
+  // In-app notifications
+  inapp_new_memories: boolean
+  inapp_memory_assignments: boolean
+  inapp_branch_invitations: boolean
+  inapp_tree_invitations: boolean
+  inapp_system_updates: boolean
+  
+  // Notification frequency and timing
+  digest_frequency: 'daily' | 'weekly' | 'never'
+  quiet_hours_start: string
+  quiet_hours_end: string
+  timezone: string
+}
+
+// Notification creation request
+export interface CreateNotificationRequest {
+  user_id: string
+  notification_type: string
+  title: string
+  message: string
+  context_type?: string
+  context_id?: string
+  metadata?: Record<string, unknown>
+  scheduled_for?: string
 }
 
 // Error types

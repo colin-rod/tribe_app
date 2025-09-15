@@ -18,8 +18,18 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "scripts/**",
+      "dev-tools/**",
+      "jest.config.js",
     ],
   },
+  {
+    files: ["scripts/**/*.js", "dev-tools/**/*.js", "jest.config.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-unused-vars": "warn"
+    }
+  }
 ];
 
 export default eslintConfig;

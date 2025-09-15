@@ -32,7 +32,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
       // User is signed in with wrong email
       setError('You need to sign out and sign in with the invited email address.')
     }
-  }, [currentUser, invitation.email])
+  }, [currentUser, invitation.email, acceptInvitation])
 
   const acceptInvitation = async () => {
     setLoading(true)

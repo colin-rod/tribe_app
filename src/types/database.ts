@@ -600,3 +600,156 @@ export interface CrossTreeContentShare {
   shared_at: string
 }
 
+// ============================================
+// NOTIFICATION SYSTEM TYPES
+// ============================================
+
+// Comprehensive notification preferences
+export interface UserNotificationPreferences {
+  id: string
+  user_id: string
+  
+  // Memory-related notifications
+  email_new_memories: boolean
+  email_memory_assignments: boolean
+  email_memory_processing: boolean
+  
+  // Email-to-memory notifications
+  email_processing_success: boolean
+  email_processing_failed: boolean
+  
+  // Branch and tree notifications
+  email_branch_invitations: boolean
+  email_tree_invitations: boolean
+  email_branch_activity: boolean
+  
+  // System notifications
+  email_system_updates: boolean
+  
+  // Digest options
+  email_daily_digest: boolean
+  email_weekly_digest: boolean
+  
+  // In-app notifications
+  inapp_new_memories: boolean
+  inapp_memory_assignments: boolean
+  inapp_branch_invitations: boolean
+  inapp_tree_invitations: boolean
+  inapp_system_updates: boolean
+  
+  // Notification frequency and timing
+  digest_frequency: 'daily' | 'weekly' | 'never'
+  quiet_hours_start: string // TIME format
+  quiet_hours_end: string // TIME format
+  timezone: string
+  
+  created_at: string
+  updated_at: string
+}
+
+// Notification queue for managing delivery
+export interface NotificationQueue {
+  id: string
+  user_id: string
+  
+  // Notification details
+  notification_type: NotificationType
+  title: string
+  message: string
+  
+  // Context and metadata
+  context_type?: string
+  context_id?: string
+  metadata: Record<string, unknown>
+  
+  // Delivery channels
+  send_email: boolean
+  send_inapp: boolean
+  
+  // Status and timing
+  status: 'pending' | 'sent' | 'failed' | 'cancelled'
+  scheduled_for: string
+  sent_at?: string
+  
+  // Retry logic
+  retry_count: number
+  max_retries: number
+  error_message?: string
+  
+  created_at: string
+  updated_at: string
+}
+
+// Notification history for tracking
+export interface NotificationHistory {
+  id: string
+  user_id: string
+  
+  // Notification details
+  notification_type: NotificationType
+  title: string
+  message: string
+  
+  // Context and metadata
+  context_type?: string
+  context_id?: string
+  metadata: Record<string, unknown>
+  
+  // Delivery details
+  delivery_channel: 'email' | 'inapp'
+  delivery_status: 'delivered' | 'failed' | 'bounced'
+  
+  // User interaction
+  read_at?: string
+  clicked_at?: string
+  
+  created_at: string
+}
+
+// In-app notifications
+export interface InAppNotification {
+  id: string
+  user_id: string
+  
+  // Notification content
+  title: string
+  message: string
+  icon?: string
+  
+  // Context and actions
+  context_type?: string
+  context_id?: string
+  action_url?: string
+  
+  // Status
+  is_read: boolean
+  read_at?: string
+  
+  // Priority and grouping
+  priority: number // 1-5
+  group_key?: string
+  
+  // Expiration
+  expires_at?: string
+  
+  created_at: string
+}
+
+// Notification type enum
+export type NotificationType = 
+  | 'memory_created'
+  | 'memory_assigned'
+  | 'email_processing_success'
+  | 'email_processing_failed'
+  | 'branch_invitation'
+  | 'tree_invitation'
+  | 'system_update'
+  | 'daily_digest'
+  | 'weekly_digest'
+
+// Notification delivery status
+export type NotificationDeliveryStatus = 'delivered' | 'failed' | 'bounced'
+
+// Notification context types
+export type NotificationContextType = 'memory' | 'branch' | 'tree' | 'system' | 'user'
+

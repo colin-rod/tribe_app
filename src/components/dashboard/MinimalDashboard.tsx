@@ -18,6 +18,7 @@ import { useMemoryCrystallization } from '@/hooks/useMemoryCrystallization'
 import { groupBranchesByTree, createDashboardHandlers } from '@/lib/dashboard-utils'
 import { useInboxState } from '@/hooks/useInboxState'
 import { useDashboardNavigation } from '@/hooks/useDashboardNavigation'
+import { createComponentLogger } from '@/lib/logger'
 
 interface MinimalDashboardProps {
   user: User
@@ -25,6 +26,8 @@ interface MinimalDashboardProps {
   userBranches: BranchWithDetails[]
   trees: TreeWithMembers[]
 }
+
+const logger = createComponentLogger('MinimalDashboard')
 
 export default function MinimalDashboard({ user, profile, userBranches, trees }: MinimalDashboardProps) {
   // Basic prop validation
@@ -59,14 +62,20 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
       try {
         // Handle memory assignment to branches
         if (!leafId || !branchIds?.length) {
-          console.warn('Invalid memory assignment data:', { leafId, branchIds })
+          logger.warn('Invalid memory assignment data', {
+            metadata: { leafId, branchIds }
+          })
           return
         }
-        console.log('Memory assigned:', { leafId, branchIds })
+        logger.info('Memory assigned successfully', {
+          metadata: { leafId, branchIds }
+        })
         // TODO: Implement actual assignment logic
         inbox.handleRefresh()
       } catch (error) {
-        console.error('Error assigning memory:', error)
+        logger.error('Error assigning memory', error, {
+          metadata: { leafId, branchIds }
+        })
       }
     },
     onContentCreation: () => {
@@ -96,7 +105,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
       await supabase.auth.signOut()
       router.push('/')
     } catch (error) {
-      console.error('Sign out error:', error)
+      logger.error('Sign out failed', error)
       // Still redirect on error as a fallback
       router.push('/')
     }

@@ -7,6 +7,7 @@ import { ValidationError, SecurityError } from '@/lib/validation/errors'
 import { createComponentLogger } from '@/lib/logger'
 import { getUserBranchPermissions } from '@/lib/rbac'
 import { invitationEmailService } from '@/lib/email/invitation-email-service'
+import { notifications } from '@/lib/notifications/scheduler'
 
 const logger = createComponentLogger('InvitationsAPI')
 
@@ -177,6 +178,66 @@ export async function POST(req: NextRequest) {
           metadata: {
             invitationId: invitation.id,
             email: sanitizedEmail
+          }
+        })
+      }
+
+      // Send in-app notification about the invitation
+      try {
+        // Get the invitee's user ID if they have an account
+        const inviteeUserId = await getUserIdByEmail(supabase, sanitizedEmail)
+        
+        if (inviteeUserId) {
+          // Get inviter name for notification
+          const { data: inviterProfile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', user.id)
+            .single()
+
+          const inviterName = inviterProfile 
+            ? `${inviterProfile.first_name || ''} ${inviterProfile.last_name || ''}`.trim() || 'Someone'
+            : 'Someone'
+
+          if (isBranchInvitation && validatedData.branch_id) {
+            // Get branch name
+            const { data: branch } = await supabase
+              .from('branches')
+              .select('name')
+              .eq('id', validatedData.branch_id)
+              .single()
+
+            await notifications.notifyBranchInvitation({
+              invitedUserId: inviteeUserId,
+              branchId: validatedData.branch_id,
+              branchName: branch?.name || 'Branch',
+              inviterName,
+              inviterId: user.id
+            })
+          } else if ('tree_id' in validatedData && validatedData.tree_id) {
+            // Get tree name
+            const { data: tree } = await supabase
+              .from('trees')
+              .select('name')
+              .eq('id', validatedData.tree_id)
+              .single()
+
+            await notifications.notifyTreeInvitation({
+              invitedUserId: inviteeUserId,
+              treeId: validatedData.tree_id,
+              treeName: tree?.name || 'Tree',
+              inviterName,
+              inviterId: user.id
+            })
+          }
+        }
+      } catch (notificationError) {
+        // Log notification error but don't fail the invitation creation
+        logger.warn('Failed to send invitation notification', {
+          metadata: {
+            invitationId: invitation.id,
+            email: sanitizedEmail,
+            error: notificationError
           }
         })
       }

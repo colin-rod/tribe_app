@@ -4,6 +4,9 @@
  */
 
 import { TreeWithMembers, BranchWithMembers } from '@/types/common'
+import { createComponentLogger } from '@/lib/logger'
+
+const logger = createComponentLogger('DashboardUtils')
 
 /**
  * Group user branches by their parent tree
@@ -33,14 +36,13 @@ export function groupBranchesByTree(
  * Format memory assignment for logging/analytics
  */
 export function logMemoryAssignment(leafId: string, branchIds: string[]) {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[Memory Assignment]', {
+  logger.info('Memory assignment completed', {
+    metadata: {
       memoryId: leafId,
       assignedToBranches: branchIds,
-      branchCount: branchIds.length,
-      timestamp: new Date().toISOString()
-    })
-  }
+      branchCount: branchIds.length
+    }
+  })
   
   // In production, this could send to analytics service
   // analytics.track('memory_assigned', { leafId, branchIds })
@@ -50,12 +52,11 @@ export function logMemoryAssignment(leafId: string, branchIds: string[]) {
  * Format content creation event for logging/analytics  
  */
 export function logContentCreation(type: string) {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[Content Creation]', {
-      contentType: type,
-      timestamp: new Date().toISOString()
-    })
-  }
+  logger.info('Content creation initiated', {
+    metadata: {
+      contentType: type
+    }
+  })
   
   // In production, this could send to analytics service
   // analytics.track('content_creation_started', { type })
