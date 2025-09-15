@@ -12,10 +12,10 @@ const AIPromptingEngine = lazy(() =>
 )
 
 interface LazyAIPromptingEngineProps {
-  onResult?: (result: any) => void
+  onResult?: (result: unknown) => void
   onError?: (error: Error) => void
   fallback?: React.ReactNode
-  [key: string]: any
+  [key: string]: unknown
 }
 
 function AILoadingFallback() {
