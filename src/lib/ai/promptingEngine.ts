@@ -795,7 +795,7 @@ class SmartPromptingEngine {
   private buildLeafEnhancementPrompt(request: LeafEnhancementRequest): string {
     const { context } = request
     
-    let prompt = `You are helping parents capture precious memories of their children. Analyze this memory and provide helpful suggestions.
+    const prompt = `You are helping parents capture precious memories of their children. Analyze this memory and provide helpful suggestions.
 
 Context:
 - Parent: ${context.authorName}

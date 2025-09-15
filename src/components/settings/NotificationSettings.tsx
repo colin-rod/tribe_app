@@ -4,7 +4,9 @@ import { useState } from 'react'
 import { useNotificationPreferences } from '@/hooks/useNotifications'
 import type { NotificationPreferencesForm } from '@/types/common'
 
-interface NotificationSettingsProps {}
+interface NotificationSettingsProps {
+  // No props needed for this component
+}
 
 export default function NotificationSettings({}: NotificationSettingsProps) {
   const {

@@ -117,7 +117,9 @@ export function CardTitle({ children, className = '', decorative = false, ...pro
   )
 }
 
-interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  // No additional props beyond HTML div attributes
+}
 
 export function CardContent({ children, className = '', ...props }: CardContentProps) {
   return (
@@ -130,7 +132,9 @@ export function CardContent({ children, className = '', ...props }: CardContentP
   )
 }
 
-interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+  // No additional props beyond HTML div attributes
+}
 
 export function CardFooter({ children, className = '', ...props }: CardFooterProps) {
   return (

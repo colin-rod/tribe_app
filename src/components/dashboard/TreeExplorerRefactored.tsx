@@ -208,7 +208,7 @@ const TreeExplorer = memo(function TreeExplorer({
               className="text-gray-600 max-w-md mx-auto leading-relaxed"
             >
               Choose a branch from your family tree to view and explore memories. 
-              Each branch contains unique stories and moments from your family's journey.
+              Each branch contains unique stories and moments from your family&apos;s journey.
             </motion.p>
             
             <motion.button

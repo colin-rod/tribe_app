@@ -315,7 +315,7 @@ export class NotificationDeliveryService {
     
     // Default template
     let subject = title
-    let htmlContent = `
+    const htmlContent = `
       <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
         <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
           <h2 style="color: #1f2937; margin: 0 0 16px 0;">${title}</h2>
@@ -330,7 +330,7 @@ export class NotificationDeliveryService {
         </div>
       </div>
     `
-    let textContent = `${title}\n\n${message}\n\nView in Dashboard: ${baseUrl}/dashboard\n\nManage notifications: ${baseUrl}/settings/notifications`
+    const textContent = `${title}\n\n${message}\n\nView in Dashboard: ${baseUrl}/dashboard\n\nManage notifications: ${baseUrl}/settings/notifications`
 
     // Customize templates based on notification type
     switch (type) {

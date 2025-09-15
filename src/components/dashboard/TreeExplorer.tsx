@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DragDropProvider } from '@/components/common/DragDropProvider'
 import { motion, useAnimation, AnimatePresence } from 'framer-motion'
-import { Icon } from '@/components/ui/IconLibrary'
+import { Icon, IconName } from '@/components/ui/IconLibrary'
 
 interface TreeExplorerProps {
   selectedBranch: Branch | null
@@ -312,7 +312,7 @@ const TreeExplorer = memo(function TreeExplorer({
                       filter === key ? 'shadow-lg' : ''
                     }`}
                   >
-                    <Icon name={icon as any} size="sm" className="mr-2" />
+                    <Icon name={icon as unknown as IconName} size="sm" className="mr-2" />
                     {label}
                   </Button>
                 ))}

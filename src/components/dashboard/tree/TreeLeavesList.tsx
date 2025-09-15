@@ -52,7 +52,7 @@ export function TreeLeavesList({
         <Icon name="leaf" className="w-16 h-16 mb-4 text-gray-300" />
         <h3 className="text-lg font-medium mb-2">No memories found</h3>
         <p className="text-sm text-center max-w-md">
-          This tree doesn't have any memories yet, or none match your current filter. 
+          This tree doesn&apos;t have any memories yet, or none match your current filter. 
           Try changing the filter or add some memories to get started!
         </p>
       </motion.div>
