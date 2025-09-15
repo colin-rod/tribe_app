@@ -238,7 +238,7 @@ export default function ProfilePage() {
                             {membership.role}
                           </span>
                           <span className="text-xs text-gray-500">
-                            Joined {formatDate((membership as any).joined_at)}
+                            Joined {formatDate((membership as { joined_at: string }).joined_at)}
                           </span>
                         </div>
                       </div>
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-blue-600">
-                          {(post as any).branches?.name || 'Branch'}
+                          {(post as { branches?: { name?: string } }).branches?.name || 'Branch'}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(post.created_at)}

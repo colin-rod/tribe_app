@@ -12,7 +12,7 @@ import {
   AccountSettings
 } from '@/components/settings'
 import { createComponentLogger } from '@/lib/logger'
-import { Icon } from '@/components/ui/IconLibrary'
+import { Icon, type IconName } from '@/components/ui/IconLibrary'
 
 const logger = createComponentLogger('SettingsPage')
 
@@ -273,7 +273,7 @@ export default function SettingsPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <Icon name={tab.icon as any} size="sm" className="mr-2" />
+                <Icon name={tab.icon as IconName} size="sm" className="mr-2" />
                 {tab.name}
               </button>
             ))}

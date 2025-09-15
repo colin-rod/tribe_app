@@ -7,7 +7,7 @@ export interface PerformanceMetric {
   value: number
   unit: 'ms' | 'bytes' | 'count'
   timestamp: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export class PerformanceMonitor {
@@ -125,7 +125,7 @@ export class PerformanceMonitor {
   }
 
   // Measure a function's execution time
-  async measureAsync<T>(name: string, fn: () => Promise<T>, metadata?: Record<string, any>): Promise<T> {
+  async measureAsync<T>(name: string, fn: () => Promise<T>, metadata?: Record<string, unknown>): Promise<T> {
     const startTime = performance.now()
     
     try {
@@ -163,7 +163,7 @@ export class PerformanceMonitor {
     }
   }
 
-  measureSync<T>(name: string, fn: () => T, metadata?: Record<string, any>): T {
+  measureSync<T>(name: string, fn: () => T, metadata?: Record<string, unknown>): T {
     const startTime = performance.now()
     
     try {
@@ -229,7 +229,7 @@ export class PerformanceMonitor {
       return
     }
 
-    const memory = (performance as any).memory
+    const memory = (performance as typeof performance & { memory: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory
     this.recordMetric({
       name: 'memory-usage',
       value: memory.usedJSHeapSize,

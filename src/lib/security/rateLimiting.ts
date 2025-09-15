@@ -31,7 +31,7 @@ const memoryCache = new Map<string, { count: number; resetTime: number }>()
  * Redis-based rate limiter for production
  */
 class RedisRateLimiter {
-  private redis: any = null
+  private redis: typeof import('ioredis').default | null = null
 
   constructor() {
     this.initRedis()

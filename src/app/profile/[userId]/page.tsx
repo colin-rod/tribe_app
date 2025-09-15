@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
-import type { Profile, LeafWithDetails } from '@/types/database'
+import type { Profile, LeafWithDetails, Branch } from '@/types/database'
 import { BranchWithMembers } from '@/types/common'
 import { createComponentLogger } from '@/lib/logger'
 
@@ -93,7 +93,7 @@ export default function UserProfilePage({ params }: PageProps) {
             // Transform data to match BranchWithMembers structure
             const transformedShared = shared.map(branch => ({
               branch_id: branch.branch_id,
-              branches: (Array.isArray(branch.branches) ? branch.branches[0] : branch.branches) as any, // Type cast for incomplete data
+              branches: (Array.isArray(branch.branches) ? branch.branches[0] : branch.branches) as Branch | null,
               member_count: 0, // Would need separate query
               role: 'member' as const, // Default role
               permissions: [] // Would need RBAC query
@@ -325,7 +325,7 @@ export default function UserProfilePage({ params }: PageProps) {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-blue-600">
-                          {(post as any).branches?.name || 'Branch'}
+                          {(post as { branches?: { name?: string } }).branches?.name || 'Branch'}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDate(post.created_at)}

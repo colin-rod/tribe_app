@@ -157,7 +157,7 @@ export class RBACService {
       const permissions: UserPermissions = {}
       
       userRoles?.forEach(userRole => {
-        userRole.role?.role_permissions?.forEach((rp: any) => {
+        userRole.role?.role_permissions?.forEach((rp: { permission?: { name?: string } }) => {
           if (rp.permission?.name) {
             permissions[rp.permission.name] = true
           }

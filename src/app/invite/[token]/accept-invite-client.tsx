@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
@@ -32,9 +32,9 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
       // User is signed in with wrong email
       setError('You need to sign out and sign in with the invited email address.')
     }
-  }, [currentUser, invitation.email, acceptInvitation])
+  }, [currentUser, invitation.email])
 
-  const acceptInvitation = async () => {
+  const acceptInvitation = useCallback(async () => {
     setLoading(true)
     setError(null)
 

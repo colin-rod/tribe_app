@@ -3,7 +3,7 @@
  * Tests the overall API functionality and error handling
  */
 
-import { createMockUser, createMockProfile, createMockTree } from '@/__tests__/utils/test-utils'
+import { createMockUser } from '@/__tests__/utils/test-utils'
 
 // Mock the Supabase server client
 jest.mock('@/lib/supabase/server', () => ({

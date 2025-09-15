@@ -134,7 +134,7 @@ function addSecurityHeaders(response: NextResponse) {
  * Authentication middleware helper
  */
 export function withAuth(
-  handler: (req: NextRequest, user: any) => Promise<NextResponse> | NextResponse
+  handler: (req: NextRequest, user: { id: string; email?: string }) => Promise<NextResponse> | NextResponse
 ) {
   return async function authWrapper(req: NextRequest): Promise<NextResponse> {
     // Get authorization header
@@ -173,7 +173,7 @@ export function withAuth(
  * Request validation middleware
  */
 export function withValidation<T>(
-  schema: (data: any) => T,
+  schema: (data: unknown) => T,
   handler: (req: NextRequest, validatedData: T) => Promise<NextResponse> | NextResponse
 ) {
   return async function validationWrapper(req: NextRequest): Promise<NextResponse> {
@@ -194,8 +194,8 @@ export function withValidation<T>(
 /**
  * Compose multiple middleware functions
  */
-export function compose(...middlewares: Array<(handler: any) => any>) {
-  return (handler: any) => {
+export function compose(...middlewares: Array<(handler: unknown) => unknown>) {
+  return (handler: unknown) => {
     return middlewares.reduceRight((acc, middleware) => middleware(acc), handler)
   }
 }

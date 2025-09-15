@@ -6,15 +6,14 @@ import { Tree, Branch, LeafWithDetails, Milestone, ReactionType } from '@/types/
 import TreeTimeline from '@/components/leaves/TreeTimeline'
 import LeafCreator from '@/components/leaves/LeafCreator'
 import LeafViewer from '@/components/leaves/LeafViewer'
-import BranchSelector from '@/components/leaves/BranchSelector'
 import { 
   getTreeLeaves, 
   addLeafReaction, 
   addLeafComment, 
   shareLeafWithBranches, 
   createLeaf,
-  getMilestones,
-  getTreeStats,
+  getMilestones
+,
   CreateLeafData
 } from '@/lib/leaves'
 import { supabase } from '@/lib/supabase/client'
@@ -28,8 +27,8 @@ const logger = createComponentLogger('TreeLeavesPage')
 function calculateChildAge(tree: Tree): number | undefined {
   try {
     // Check if there's a birth date in tree settings
-    if ((tree.settings as any)?.child_birth_date) {
-      const birthDate = new Date((tree.settings as any).child_birth_date)
+    if (tree.settings?.custom_fields?.child_birth_date) {
+      const birthDate = new Date(tree.settings.custom_fields.child_birth_date as string)
       const now = new Date()
       const diffTime = Math.abs(now.getTime() - birthDate.getTime())
       const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)) // Average month length
@@ -52,9 +51,6 @@ function calculateChildAge(tree: Tree): number | undefined {
   }
 }
 
-interface TreeLeavesPageProps {
-  params: { treeId: string }
-}
 
 export default function TreeLeavesPage() {
   const params = useParams()
@@ -72,13 +68,7 @@ export default function TreeLeavesPage() {
   // UI State
   const [showCreator, setShowCreator] = useState(false)
   const [viewerIndex, setViewerIndex] = useState<number | null>(null)
-  const [treeStats, setTreeStats] = useState({
-    totalLeaves: 0,
-    milestoneCount: 0,
-    recentLeaves: 0,
-    leafTypeBreakdown: {} as { [key: string]: number },
-    seasonBreakdown: {} as { [key: string]: number }
-  })
+  // Tree stats removed as they're not used in the UI
 
   // Load initial data
   useEffect(() => {
@@ -133,9 +123,7 @@ export default function TreeLeavesPage() {
       setLeaves(leavesData)
       setHasMore(leavesData.length === 20)
 
-      // Load tree stats
-      const stats = await getTreeStats(treeId)
-      setTreeStats(stats)
+      // Tree stats loading removed
 
     } catch (error) {
       logger.error('Error loading initial data', error, { metadata: { treeId } })
@@ -212,9 +200,7 @@ export default function TreeLeavesPage() {
         setLeaves(updatedLeaves)
         setShowCreator(false)
 
-        // Update stats
-        const updatedStats = await getTreeStats(treeId)
-        setTreeStats(updatedStats)
+        // Stats update removed
       }
     } catch (error) {
       logger.error('Error creating leaf', error, { metadata: { leafData } })

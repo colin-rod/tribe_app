@@ -97,7 +97,7 @@ export class NotificationSchedulerService {
     message: string
     contextType?: string
     contextId?: string
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
     scheduledFor?: Date
   }): Promise<string | null> {
     try {
@@ -414,7 +414,7 @@ export const notifications = {
     title: string
     message: string
     userIds?: string[]
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   }): Promise<void> {
     // If no specific users, get all users with system update notifications enabled
     let targetUsers = params.userIds
