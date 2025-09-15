@@ -38,7 +38,7 @@ export function TreeHeader({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <Icon name="tree" className="w-6 h-6 mr-2 text-green-600" />
+              <Icon name="trees" className="w-6 h-6 mr-2 text-green-600" />
               {selectedTree.trees?.name || 'Family Tree'}
             </h2>
             <p className="text-gray-600 mt-1">

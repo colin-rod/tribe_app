@@ -238,7 +238,7 @@ export default function ProfilePage() {
                             {membership.role}
                           </span>
                           <span className="text-xs text-gray-500">
-                            Joined {formatDate((membership as { joined_at: string }).joined_at)}
+                            Joined {formatDate((membership as unknown as { joined_at: string }).joined_at)}
                           </span>
                         </div>
                       </div>

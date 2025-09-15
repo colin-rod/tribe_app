@@ -6,7 +6,7 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import { TreeWithMembers } from '@/types/common'
+import { TreeWithMembers, BranchWithMembers } from '@/types/common'
 import { BranchWithDetails, Profile } from '@/types/database'
 import { supabase } from '@/lib/supabase/client'
 import { PinterestInboxPanel } from '@/components/leaves/PinterestInboxPanel'
@@ -40,7 +40,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
   if (!Array.isArray(trees)) {
     throw new Error('MinimalDashboard: trees must be an array')
   }
-  const [selectedBranch, setSelectedBranch] = useState<any | null>(null)
+  const [selectedBranch, setSelectedBranch] = useState<BranchWithDetails | null>(null)
   const [showGlobalCreator, setShowGlobalCreator] = useState(false)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -52,7 +52,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
 
   // Memoize expensive computations
   const branchesByTree = useMemo(() => 
-    groupBranchesByTree(userBranches as any, trees), 
+    groupBranchesByTree(userBranches as unknown as BranchWithMembers[], trees), 
     [userBranches, trees]
   )
   
@@ -98,6 +98,11 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
     setShowGlobalCreator(false)
     crystallization.resetCrystallization()
   }, [crystallization])
+
+  // Wrapper function to handle branch selection type conversion
+  const handleBranchSelect = useCallback((branch: BranchWithMembers['branches'] | null) => {
+    setSelectedBranch(branch as BranchWithDetails | null)
+  }, [])
 
   // Handle sign out with error handling
   const handleSignOut = useCallback(async () => {
@@ -211,7 +216,7 @@ export default function MinimalDashboard({ user, profile, userBranches, trees }:
                 <TreeBranchView
                   branchesByTree={branchesByTree}
                   selectedBranch={selectedBranch}
-                  onBranchSelect={setSelectedBranch}
+                  onBranchSelect={handleBranchSelect}
                   userId={user.id}
                 />
               </motion.div>

@@ -31,7 +31,7 @@ const memoryCache = new Map<string, { count: number; resetTime: number }>()
  * Redis-based rate limiter for production
  */
 class RedisRateLimiter {
-  private redis: typeof import('ioredis').default | null = null
+  private redis: import('ioredis').Redis | null = null
 
   constructor() {
     this.initRedis()
@@ -41,7 +41,7 @@ class RedisRateLimiter {
     if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
       try {
         // Dynamic import to avoid issues if Redis isn't available
-        const { Redis } = await import('ioredis')
+        const Redis = (await import('ioredis')).default
         this.redis = new Redis(process.env.REDIS_URL, {
           maxRetriesPerRequest: 3,
           lazyConnect: true,
@@ -65,6 +65,10 @@ class RedisRateLimiter {
   }
 
   private async checkRedisLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
+    if (!this.redis) {
+      throw new Error('Redis not available')
+    }
+    
     const windowStart = Math.floor(Date.now() / config.windowMs) * config.windowMs
     const windowKey = `ratelimit:${key}:${windowStart}`
     
@@ -74,6 +78,9 @@ class RedisRateLimiter {
       pipeline.expire(windowKey, Math.ceil(config.windowMs / 1000))
       
       const results = await pipeline.exec()
+      if (!results) {
+        throw new Error('Pipeline execution failed')
+      }
       const count = results[0][1] as number
       
       const remaining = Math.max(0, config.maxRequests - count)

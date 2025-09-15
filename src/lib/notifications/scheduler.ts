@@ -420,7 +420,8 @@ export const notifications = {
     let targetUsers = params.userIds
     
     if (!targetUsers) {
-      const { data: users, error } = await notificationScheduler.supabase
+      const supabase = createServiceClient()
+      const { data: users, error } = await supabase
         .from('user_notification_preferences')
         .select('user_id')
         .or('email_system_updates.eq.true,inapp_system_updates.eq.true')

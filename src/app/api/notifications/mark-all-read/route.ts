@@ -8,7 +8,7 @@ const logger = createComponentLogger('NotificationMarkAllReadAPI')
  * POST /api/notifications/mark-all-read
  * Mark all notifications as read for the current user
  */
-export async function POST(_req: NextRequest) {
+export async function POST() {
   try {
     const supabase = await createClient()
     

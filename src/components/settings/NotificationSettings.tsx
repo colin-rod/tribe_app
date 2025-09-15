@@ -24,7 +24,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
   const handleToggle = (key: keyof NotificationPreferencesForm) => {
     if (!preferences) return
     
-    const newValue = !preferences[key]
+    const newValue = !(preferences as unknown as NotificationPreferencesForm)[key]
     updatePreferences({ [key]: newValue })
     
     // Show success message
@@ -150,7 +150,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_new_memories ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_new_memories ?? true}
               onChange={() => handleToggle('email_new_memories')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -164,7 +164,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_memory_assignments ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_memory_assignments ?? true}
               onChange={() => handleToggle('email_memory_assignments')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -178,7 +178,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_memory_processing ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_memory_processing ?? true}
               onChange={() => handleToggle('email_memory_processing')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -192,7 +192,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_processing_success ?? false}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_processing_success ?? false}
               onChange={() => handleToggle('email_processing_success')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -206,7 +206,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_processing_failed ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_processing_failed ?? true}
               onChange={() => handleToggle('email_processing_failed')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -220,7 +220,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_branch_invitations ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_branch_invitations ?? true}
               onChange={() => handleToggle('email_branch_invitations')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -234,7 +234,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_tree_invitations ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_tree_invitations ?? true}
               onChange={() => handleToggle('email_tree_invitations')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -248,7 +248,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_branch_activity ?? false}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_branch_activity ?? false}
               onChange={() => handleToggle('email_branch_activity')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -262,7 +262,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_system_updates ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_system_updates ?? true}
               onChange={() => handleToggle('email_system_updates')}
               disabled={isUpdating}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
@@ -287,7 +287,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_daily_digest ?? false}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_daily_digest ?? false}
               onChange={() => handleToggle('email_daily_digest')}
               disabled={isUpdating}
               className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded disabled:opacity-50"
@@ -301,7 +301,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.email_weekly_digest ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.email_weekly_digest ?? true}
               onChange={() => handleToggle('email_weekly_digest')}
               disabled={isUpdating}
               className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded disabled:opacity-50"
@@ -326,7 +326,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.inapp_new_memories ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.inapp_new_memories ?? true}
               onChange={() => handleToggle('inapp_new_memories')}
               disabled={isUpdating}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded disabled:opacity-50"
@@ -340,7 +340,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.inapp_memory_assignments ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.inapp_memory_assignments ?? true}
               onChange={() => handleToggle('inapp_memory_assignments')}
               disabled={isUpdating}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded disabled:opacity-50"
@@ -354,7 +354,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.inapp_branch_invitations ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.inapp_branch_invitations ?? true}
               onChange={() => handleToggle('inapp_branch_invitations')}
               disabled={isUpdating}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded disabled:opacity-50"
@@ -368,7 +368,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.inapp_tree_invitations ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.inapp_tree_invitations ?? true}
               onChange={() => handleToggle('inapp_tree_invitations')}
               disabled={isUpdating}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded disabled:opacity-50"
@@ -382,7 +382,7 @@ export default function NotificationSettings({}: NotificationSettingsProps) {
             </div>
             <input
               type="checkbox"
-              checked={preferences?.inapp_system_updates ?? true}
+              checked={(preferences as unknown as NotificationPreferencesForm)?.inapp_system_updates ?? true}
               onChange={() => handleToggle('inapp_system_updates')}
               disabled={isUpdating}
               className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded disabled:opacity-50"

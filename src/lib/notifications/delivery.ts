@@ -2,7 +2,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { createComponentLogger } from '@/lib/logger'
 import sgMail from '@sendgrid/mail'
 import type { 
-  NotificationQueueItem, 
+  NotificationQueue, 
   InAppNotification, 
   UserNotificationPreferences 
 } from '@/types/database'
@@ -81,7 +81,7 @@ export class NotificationDeliveryService {
   /**
    * Process a single notification item
    */
-  private async processNotificationItem(item: NotificationQueueItem): Promise<void> {
+  private async processNotificationItem(item: NotificationQueue): Promise<void> {
     try {
       logger.info('Processing notification item', {
         metadata: { 
@@ -100,8 +100,8 @@ export class NotificationDeliveryService {
         })
         .eq('id', item.id)
 
-      const preferences = item.user_notification_preferences as UserNotificationPreferences
-      const context = item.metadata as NotificationContext || {}
+      const preferences = (item as unknown as { user_notification_preferences: UserNotificationPreferences }).user_notification_preferences
+      const context = (item as unknown as { metadata: unknown }).metadata as NotificationContext || {}
 
       // Determine delivery methods based on preferences
       const shouldSendEmail = this.shouldSendEmail(item.notification_type, preferences)
@@ -155,7 +155,7 @@ export class NotificationDeliveryService {
         .update({
           status: finalStatus,
           delivered_at: finalStatus === 'completed' ? new Date().toISOString() : null,
-          delivery_attempts: item.delivery_attempts + 1,
+          delivery_attempts: ((item as unknown as { delivery_attempts: number }).delivery_attempts || 0) + 1,
           last_error: deliveryResults.errors.length > 0 ? deliveryResults.errors.join('; ') : null
         })
         .eq('id', item.id)
@@ -200,7 +200,7 @@ export class NotificationDeliveryService {
         .from('notification_queue')
         .update({
           status: 'failed',
-          delivery_attempts: item.delivery_attempts + 1,
+          delivery_attempts: ((item as unknown as { delivery_attempts: number }).delivery_attempts || 0) + 1,
           last_error: error instanceof Error ? error.message : 'Unknown error'
         })
         .eq('id', item.id)
@@ -249,7 +249,7 @@ export class NotificationDeliveryService {
    * Send email notification using SendGrid
    */
   private async sendEmailNotification(
-    item: NotificationQueueItem, 
+    item: NotificationQueue, 
     context: NotificationContext
   ): Promise<void> {
     if (!process.env.SENDGRID_API_KEY) {
@@ -280,7 +280,7 @@ export class NotificationDeliveryService {
    * Send in-app notification
    */
   private async sendInAppNotification(
-    item: NotificationQueueItem,
+    item: NotificationQueue,
     context: NotificationContext
   ): Promise<void> {
     const { error } = await this.supabase

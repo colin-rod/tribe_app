@@ -92,14 +92,10 @@ export function TreeLeavesList({
             >
               <LeafCard
                 leaf={leaf}
-                userId={userId}
-                userBranches={userBranches}
                 onReaction={onReaction}
                 onComment={onComment}
                 onShare={onShare}
                 onMove={onLeafMove}
-                showBranchInfo={true}
-                compact={false}
               />
             </motion.div>
           ))}
@@ -120,7 +116,7 @@ export function TreeLeavesList({
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
           >
-            <Icon name="arrow-up" className="w-4 h-4 mr-2" />
+            <Icon name="rocket" className="w-4 h-4 mr-2" />
             Back to top
           </motion.button>
         </motion.div>

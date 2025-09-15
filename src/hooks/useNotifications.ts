@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createComponentLogger } from '@/lib/logger'
 import type { 
   UserNotificationPreferences, 
-  InAppNotification,
-  NotificationPreferencesForm 
+  InAppNotification
 } from '@/types/database'
+import type { NotificationPreferencesForm } from '@/types/common'
 
 const logger = createComponentLogger('useNotifications')
 
@@ -30,7 +30,7 @@ export function useNotificationPreferences() {
       return result.data
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   })
 
   // Update notification preferences

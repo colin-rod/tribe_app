@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Icon, type IconName } from '@/components/ui/IconLibrary'
 import { useLongPress } from '@/hooks/useLongPress'
-import { SPRING_CONFIGS, COMMON_ANIMATIONS } from '@/lib/animations'
+import { SPRING_CONFIGS } from '@/lib/animations'
 
 interface FloatingActionMenuProps {
   onCreateMemory: () => void

@@ -104,7 +104,7 @@ export default function AcceptInviteClient({ invitation, currentUser }: AcceptIn
       setError(error instanceof Error ? error.message : 'Unknown error')
       setLoading(false)
     }
-  }
+  }, [currentUser, invitation, router])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()

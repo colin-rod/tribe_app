@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Tree, Branch, LeafWithDetails, Milestone, ReactionType } from '@/types/database'
 import TreeTimeline from '@/components/leaves/TreeTimeline'
@@ -75,9 +75,9 @@ export default function TreeLeavesPage() {
     if (treeId) {
       loadInitialData()
     }
-  }, [treeId])
+  }, [treeId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     setIsLoading(true)
     try {
       // Load tree data
@@ -130,7 +130,7 @@ export default function TreeLeavesPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [treeId])
 
   const loadMoreLeaves = async () => {
     if (!hasMore || isLoading) return

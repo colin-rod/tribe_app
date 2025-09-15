@@ -2,10 +2,9 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  // ESLint configuration - temporarily allow warnings during builds
+  // ESLint configuration - now re-enabled after fixing compilation errors
   eslint: {
-    ignoreDuringBuilds: true,
-    // TODO: Re-enable after fixing remaining TypeScript errors
+    ignoreDuringBuilds: false,
     dirs: ['src']
   },
   typescript: {

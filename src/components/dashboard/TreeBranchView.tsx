@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useDrop } from 'react-dnd'
-import { BranchWithMembers } from '@/types/common'
+import { BranchWithMembers, TreeWithMembers } from '@/types/common'
 import { Icon } from '@/components/ui/IconLibrary'
 import { assignLeafToBranches } from '@/lib/leaf-assignments'
 import { useToast } from '@/hooks/use-toast'
 
 interface TreeBranchViewProps {
-  branchesByTree: Record<string, { tree: any, branches: BranchWithMembers[] }>
+  branchesByTree: Record<string, { tree: TreeWithMembers, branches: BranchWithMembers[] }>
   selectedBranch: BranchWithMembers['branches'] | null
   onBranchSelect: (branch: BranchWithMembers['branches'] | null) => void
   userId: string
@@ -38,7 +38,7 @@ function DroppableBranch({ branch, isSelected, onClick, onLeafDrop }: DroppableB
 
   return (
     <motion.div
-      ref={drop as any}
+      ref={drop as unknown as React.RefObject<HTMLDivElement>}
       className={`relative group cursor-pointer transition-all duration-300 ${
         isSelected ? 'scale-105 z-10' : ''
       }`}
@@ -215,7 +215,7 @@ export function TreeBranchView({ branchesByTree, selectedBranch, onBranchSelect,
                       <Icon name="trees" size="md" className="text-bark-700" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">{treeData.tree.name}</h3>
+                      <h3 className="text-xl font-semibold text-gray-900">{treeData.tree.trees?.name || 'Family Tree'}</h3>
                       <p className="text-sm text-gray-600">
                         {treeData.branches.length} branch{treeData.branches.length !== 1 ? 'es' : ''}
                       </p>

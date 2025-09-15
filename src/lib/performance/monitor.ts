@@ -26,9 +26,13 @@ export class PerformanceMonitor {
       // Observe Core Web Vitals
       const vitalsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
+          // Different performance entry types have different value properties
+          const value = (entry as unknown as { value?: number }).value || 
+                       entry.duration || 
+                       0
           this.recordMetric({
             name: entry.name,
-            value: entry.value || 0,
+            value,
             unit: 'ms',
             timestamp: Date.now(),
             metadata: {
@@ -56,12 +60,12 @@ export class PerformanceMonitor {
           const navEntry = entry as PerformanceNavigationTiming
           this.recordMetric({
             name: 'page-load-time',
-            value: navEntry.loadEventEnd - navEntry.navigationStart,
+            value: navEntry.loadEventEnd - navEntry.startTime,
             unit: 'ms',
             timestamp: Date.now(),
             metadata: {
-              domContentLoaded: navEntry.domContentLoadedEventEnd - navEntry.navigationStart,
-              firstPaint: navEntry.responseEnd - navEntry.navigationStart
+              domContentLoaded: navEntry.domContentLoadedEventEnd - navEntry.startTime,
+              firstPaint: navEntry.responseEnd - navEntry.startTime
             }
           })
         }
@@ -71,7 +75,7 @@ export class PerformanceMonitor {
       this.observers.push(navigationObserver)
 
     } catch (error) {
-      logger.warn('Performance monitoring not fully supported', error)
+      logger.warn('Performance monitoring not fully supported', error as Error)
     }
   }
 
@@ -237,8 +241,8 @@ export class PerformanceMonitor {
       timestamp: Date.now(),
       metadata: {
         totalHeapSize: memory.totalJSHeapSize,
-        heapSizeLimit: memory.jsHeapSizeLimit,
-        usagePercentage: Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100)
+        heapSizeLimit: (memory as unknown as { jsHeapSizeLimit?: number }).jsHeapSizeLimit || memory.totalJSHeapSize,
+        usagePercentage: Math.round((memory.usedJSHeapSize / (memory.totalJSHeapSize || 1)) * 100)
       }
     })
   }

@@ -26,7 +26,7 @@ const createNotificationSchema = z.object({
   message: z.string().min(1, 'Message is required'),
   context_type: z.string().optional(),
   context_id: z.string().uuid().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   scheduled_for: z.string().datetime().optional(),
 })
 
@@ -104,8 +104,8 @@ export async function GET(req: NextRequest) {
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
       if (countError) {
-        logger.warn('Failed to get unread count', countError, {
-          metadata: { userId: user.id }
+        logger.warn('Failed to get unread count', {
+          metadata: { userId: user.id, error: countError }
         })
       }
 

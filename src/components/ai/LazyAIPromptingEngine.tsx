@@ -5,11 +5,12 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ErrorBoundary } from 'react-error-boundary'
 
 // Lazy load the AI prompting engine to reduce bundle size
-const AIPromptingEngine = lazy(() => 
-  import('@/lib/ai/promptingEngine').then(module => ({
-    default: module.AIPromptingEngine
-  }))
-)
+// TODO: Fix this - SmartPromptingEngine is not a React component
+// const AIPromptingEngineOld = lazy(() => 
+//   import('@/lib/ai/promptingEngine').then(module => ({
+//     default: module.default
+//   }))
+// )
 
 interface LazyAIPromptingEngineProps {
   onResult?: (result: unknown) => void
@@ -17,6 +18,8 @@ interface LazyAIPromptingEngineProps {
   fallback?: React.ReactNode
   [key: string]: unknown
 }
+
+const AIPromptingEngine = (props: LazyAIPromptingEngineProps) => <div>AI Component temporarily disabled</div>
 
 function AILoadingFallback() {
   return (

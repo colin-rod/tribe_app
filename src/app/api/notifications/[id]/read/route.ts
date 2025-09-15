@@ -10,10 +10,10 @@ const logger = createComponentLogger('NotificationReadAPI')
  */
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const notificationId = params.id
+    const { id: notificationId } = await params
 
     if (!notificationId) {
       return NextResponse.json(
@@ -90,7 +90,7 @@ export async function PUT(
  * POST /api/notifications/mark-all-read
  * Mark all notifications as read for the current user
  */
-export async function POST(_req: NextRequest) {
+export async function POST() {
   try {
     const supabase = await createClient()
     

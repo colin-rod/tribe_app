@@ -129,8 +129,8 @@ export async function POST(req: NextRequest) {
               memoryTitle: leaf.content.substring(0, 100) + (leaf.content.length > 100 ? '...' : '')
             })
           } catch (notifError) {
-            logger.warn('Failed to send email processing success notification', notifError, {
-              metadata: { leafId: leaf.id, userId: authorId }
+            logger.warn('Failed to send email processing success notification', {
+              metadata: { leafId: leaf.id, userId: authorId, error: notifError }
             })
           }
         }

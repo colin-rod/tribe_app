@@ -102,10 +102,10 @@ export default function BranchPermissionsManager({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-gray-900">
-                      {(access as any).tree?.name || 'Unknown Tree'}
+                      {'Tree ' + access.tree_id}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
-                      Granted {new Date(access.created_at).toLocaleDateString()}
+                      Granted {new Date(access.invited_at).toLocaleDateString()}
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">

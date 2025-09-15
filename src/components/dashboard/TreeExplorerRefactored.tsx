@@ -152,7 +152,6 @@ const TreeExplorer = memo(function TreeExplorer({
       <DragDropProvider>
         <motion.div 
           className="h-full flex items-center justify-center bg-gradient-to-br from-leaf-100 to-sky-100 relative overflow-hidden"
-          animate={backgroundControls}
           {...animations.entrance}
         >
           {/* Background decorative elements */}

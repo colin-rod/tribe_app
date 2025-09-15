@@ -122,7 +122,7 @@ const LazyWrapper = memo(function LazyWrapper({
 export default LazyWrapper
 
 // Utility function to create lazy components with consistent loading
-export function createLazyComponent<T extends Record<string, any>>(
+export function createLazyComponent<T extends Record<string, unknown>>(
   importFn: () => Promise<{ default: React.ComponentType<T> }>,
   options?: {
     fallback?: React.ComponentType
@@ -142,7 +142,7 @@ export function createLazyComponent<T extends Record<string, any>>(
 }
 
 // Higher-order component for lazy loading
-export function withLazyLoading<T extends Record<string, any>>(
+export function withLazyLoading<T extends Record<string, unknown>>(
   Component: React.ComponentType<T>,
   options?: {
     fallback?: React.ComponentType

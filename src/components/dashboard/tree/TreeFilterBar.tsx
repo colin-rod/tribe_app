@@ -3,7 +3,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Icon } from '@/components/ui/IconLibrary'
+import { Icon, IconName } from '@/components/ui/IconLibrary'
 
 type FilterType = 'all' | 'milestones' | 'recent'
 
@@ -28,19 +28,19 @@ export function TreeFilterBar({
     { 
       key: 'all' as FilterType, 
       label: 'All Memories', 
-      icon: 'grid', 
+      icon: 'square' as IconName, 
       color: 'blue' 
     },
     { 
       key: 'milestones' as FilterType, 
       label: 'Milestones', 
-      icon: 'star', 
+      icon: 'star' as IconName, 
       color: 'purple' 
     },
     { 
       key: 'recent' as FilterType, 
       label: 'Recent', 
-      icon: 'clock', 
+      icon: 'calendarDays' as IconName, 
       color: 'green' 
     }
   ]
@@ -86,7 +86,7 @@ export function TreeFilterBar({
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Icon name="shake" className="w-5 h-5 text-blue-500 mr-2" />
+              <Icon name="sparkles" className="w-5 h-5 text-blue-500 mr-2" />
               <span className="text-sm text-blue-700">
                 💡 Try shaking your device to shuffle through filters!
               </span>

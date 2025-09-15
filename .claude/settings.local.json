@@ -10,7 +10,8 @@
       "Bash(find:*)",
       "WebSearch",
       "Bash(npm run dev:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []
