@@ -153,7 +153,7 @@ export default function BranchInvitePage({ params }: PageProps) {
       logger.info('Creating branch invitation')
       
       // Create the branch-specific invitation
-      const { data: invitation, error: inviteError } = await supabase
+      const { error: inviteError } = await supabase
         .from('branch_invitations')
         .insert({
           branch_id: branchId,

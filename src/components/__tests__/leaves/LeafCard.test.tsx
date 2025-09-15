@@ -1,4 +1,4 @@
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { render, createMockLeaf, createMockProfile, createMockBranch } from '@/__tests__/utils/test-utils'
 import LeafCard from '@/components/leaves/LeafCard'

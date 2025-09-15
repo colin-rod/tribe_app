@@ -1,6 +1,6 @@
 'use client'
 
-import React, { lazy, Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -19,7 +19,7 @@ interface LazyAIPromptingEngineProps {
   [key: string]: unknown
 }
 
-const AIPromptingEngine = (props: LazyAIPromptingEngineProps) => <div>AI Component temporarily disabled</div>
+const AIPromptingEngine = () => <div>AI Component temporarily disabled</div>
 
 function AILoadingFallback() {
   return (
@@ -32,7 +32,7 @@ function AILoadingFallback() {
   )
 }
 
-function AIErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+function AIErrorFallback({ resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <div className="flex items-center justify-center p-8">
       <div className="text-center">

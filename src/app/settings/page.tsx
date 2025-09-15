@@ -113,7 +113,7 @@ export default function SettingsPage() {
       if (data.avatarFile) {
         try {
           avatarUrl = await uploadAvatar(data.avatarFile)
-        } catch (error) {
+        } catch {
           showMessage('error', 'Failed to upload avatar')
           return
         }

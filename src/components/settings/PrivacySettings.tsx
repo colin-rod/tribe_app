@@ -2,11 +2,7 @@
 
 import { useState } from 'react'
 
-interface PrivacySettingsProps {
-  // Future: Add user settings prop when privacy settings are implemented
-}
-
-export default function PrivacySettings({}: PrivacySettingsProps) {
+export default function PrivacySettings() {
   // These will be connected to actual user settings later
   const [profileVisibility, setProfileVisibility] = useState<'public' | 'family' | 'private'>('family')
   const [showEmail, setShowEmail] = useState(false)

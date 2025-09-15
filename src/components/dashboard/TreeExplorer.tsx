@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, memo } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import { useRouter } from 'next/navigation'
-import { LeafWithDetails, Branch, ReactionType } from '@/types/database'
-import { TreeWithMembers, BranchWithMembers, FilterOption } from '@/types/common'
+import { Branch, ReactionType } from '@/types/database'
+import { TreeWithMembers, BranchWithMembers } from '@/types/common'
 import LeafCard from '@/components/leaves/LeafCard'
 import { useTreeLeaves, useAddLeafReaction, useAddLeafComment, useShareLeafWithBranches } from '@/hooks/use-leaves'
 import { useTreeStats } from '@/hooks/use-trees'
@@ -21,23 +21,15 @@ interface TreeExplorerProps {
   userId: string
 }
 
-interface TreeStats {
-  totalLeaves: number
-  milestoneCount: number
-  recentLeaves: number
-  leafTypeBreakdown: { [key: string]: number }
-  seasonBreakdown: { [key: string]: number }
-}
 
 const TreeExplorer = memo(function TreeExplorer({ 
   selectedBranch, 
   trees, 
-  userBranches, 
-  userId 
+  userBranches
 }: TreeExplorerProps) {
   const [selectedTree, setSelectedTree] = useState<TreeWithMembers | null>(null)
   const [filter, setFilter] = useState<'all' | 'milestones' | 'recent'>('all')
-  const [showShakeHint, setShowShakeHint] = useState(false)
+  const [showShakeHint] = useState(false)
   const router = useRouter()
 
   // Tactile interactions
@@ -122,7 +114,7 @@ const TreeExplorer = memo(function TreeExplorer({
     shareLeafMutation.mutate({ leafId, branchIds })
   }
 
-  const handleLeafMove = (leafId: string, targetBranchId: string) => {
+  const handleLeafMove = () => {
     // Handle leaf movement between branches
     createParticles(window.innerWidth / 2, 200, 5)
   }

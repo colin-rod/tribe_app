@@ -41,13 +41,6 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
 
   const selectedTreeData = trees.find(t => t.trees?.id === selectedTree)
 
-  const handleBranchToggle = (branchId: string) => {
-    setSelectedBranches(prev => 
-      prev.includes(branchId) 
-        ? prev.filter(id => id !== branchId)
-        : [...prev, branchId]
-    )
-  }
 
   const sendInvitation = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,7 +69,7 @@ export default function InviteClient({ user, trees }: InviteClientProps) {
 
     try {
       // Create the invitation
-      const { data: invitation, error: inviteError } = await supabase
+      const { error: inviteError } = await supabase
         .from('invitations')
         .insert({
           tree_id: selectedTree,

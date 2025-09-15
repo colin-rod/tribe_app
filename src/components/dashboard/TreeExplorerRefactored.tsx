@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, memo } from 'react'
 import { useRouter } from 'next/navigation'
-import { LeafWithDetails, Branch, ReactionType } from '@/types/database'
+import { Branch, ReactionType } from '@/types/database'
 import { TreeWithMembers, BranchWithMembers } from '@/types/common'
 import { useTreeLeaves, useAddLeafReaction, useAddLeafComment, useShareLeafWithBranches } from '@/hooks/use-leaves'
 import { useTreeStats } from '@/hooks/use-trees'
 import { useTreeFiltering, FilterType } from '@/hooks/useTreeFiltering'
 import { useTreeAnimations } from '@/hooks/useTreeAnimations'
 import { DragDropProvider } from '@/components/common/DragDropProvider'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { TreeHeader } from './tree/TreeHeader'
 import { TreeFilterBar } from './tree/TreeFilterBar'
 import { TreeLeavesList } from './tree/TreeLeavesList'
@@ -24,13 +24,6 @@ interface TreeExplorerProps {
   userId: string
 }
 
-interface TreeStats {
-  totalLeaves: number
-  milestoneCount: number
-  recentLeaves: number
-  leafTypeBreakdown: { [key: string]: number }
-  seasonBreakdown: { [key: string]: number }
-}
 
 const TreeExplorer = memo(function TreeExplorer({ 
   selectedBranch, 

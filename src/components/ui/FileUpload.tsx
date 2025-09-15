@@ -282,7 +282,7 @@ export function FileUpload({
                 {file.type.startsWith('image/') && file.preview && (
                   <img
                     src={file.preview}
-                    alt={file.name}
+                    alt={`Preview of ${file.name}`}
                     className="w-full h-full object-cover"
                   />
                 )}

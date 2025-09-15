@@ -19,7 +19,7 @@ interface TreeHeaderProps {
   treeStats?: TreeStats
   loading: boolean
   scrollY: number
-  headerControls: any
+  headerControls: unknown
 }
 
 export function TreeHeader({ 

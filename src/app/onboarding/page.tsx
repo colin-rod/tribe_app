@@ -43,7 +43,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const { isVisible: tourVisible, showTour, completeTour, skipTour, hasSeenTour } = useGuidedTour()
+  const { isVisible: tourVisible, showTour, completeTour, skipTour } = useGuidedTour()
   
   // Template selection
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
