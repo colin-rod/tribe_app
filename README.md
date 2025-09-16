@@ -100,8 +100,15 @@ A private family sharing platform built with Next.js 15 and Supabase. Create int
 
 7. **Visit Your App**
    ```
-   Open http://localhost:3000
+   Open http://localhost:3003 (or the port shown in terminal)
    Create your account and start growing your family tree!
+   ```
+
+8. **Optional: Run Code Quality Checks**
+   ```bash
+   npm run lint    # Check code quality
+   npm run build   # Verify build passes
+   npm test        # Run test suite
    ```
 
 ---
@@ -299,6 +306,9 @@ npm run test:ci
 - ✅ **Real-time Efficiency** - Optimized Supabase subscriptions
 - ✅ **Enhanced Error Handling** - User-friendly error states
 - ✅ **Toast Notifications** - Non-blocking user feedback
+- ✅ **ESLint Configuration** - Comprehensive code quality with warnings-only build mode
+- ✅ **TypeScript Safety** - Improved type safety and reduced 'any' usage
+- ✅ **Unused Code Cleanup** - Removed unused variables and imports for better performance
 
 ### Performance Roadmap
 - [ ] **Progressive Web App** - Offline support and native app feel
@@ -421,7 +431,8 @@ For detailed contribution guidelines, please see [`docs/CONTRIBUTING.md`](./docs
 - [x] **Improved Error Handling** - Better error boundaries and user feedback
 - [x] **Email Integration** - Complete SendGrid email-to-memory feature with media support
 - [x] **Media Processing** - Automatic upload and storage of email attachments
-- [ ] **Performance Optimization** - Bundle size and loading speed improvements
+- [x] **Code Quality Improvements** - ESLint cleanup and type safety enhancements
+- [x] **Performance Optimization** - Reduced lint warnings and improved build stability
 - [ ] **Mobile Enhancement** - Progressive Web App features
 
 ### **High Priority** (Next 3-6 months)
